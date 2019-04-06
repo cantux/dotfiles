@@ -1,0 +1,5 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =3
+let g:netrw_dirhist_1='/net/svr6081/user1/mborsalino/proj/mirmware/pse/blockmint/process_500K_block'
+let g:netrw_dirhist_2='/net/svr6081/user1/mborsalino/proj/mst/.git/hooks'
+let g:netrw_dirhist_3='/home/ctuksavul/Desktop/log'
