@@ -21,6 +21,8 @@
     set directory=$HOME/tmp/.vimbk
   endif
 
+set encoding=utf-8
+
 " [global] undodir           directory for persistent undo 
   if (&term == "win32" || "pcterm" || has("gui_win32"))
     set undodir=$VIM\undo
@@ -126,23 +128,23 @@ let g:miniBufExplMapCTabSwitchBufs = 1
 let g:miniBufExplModSelTarget = 1
 
 " TagBar
-let tagbar_ctags_bin='/home/cant/.ctags/uctags_bin/bin/ctags'
+let tagbar_ctags_bin='~/.ctags/uctags_bin/bin/ctags'
 " autocmd vimenter * TagbarOpen
 autocmd VimEnter * nested :TagbarOpen
 
 " TagList
-let Tlist_Ctags_Cmd='/home/cant/.ctags/uctags_bin/bin/ctags'
+let Tlist_Ctags_Cmd='~/.ctags/uctags_bin/bin/ctags'
 " show tag drop down menu in GVIM
 let Tlist_Show_Menu = 1 
 " default behavior is sort by name
 let Tlist_Sort_Type = 'name'
 
 " EasyTags
-let g:easytags_cmd = '/home/cant/.ctags/uctags_bin/bin/ctags'
-let g:easytags_file = '/home/cant/.ctags/tags'
+let g:easytags_cmd = '~/.ctags/uctags_bin/bin/ctags'
+let g:easytags_file = '~/.ctags/tags'
 let g:easytags_auto_update = 0
 let g:easytags_always_enabled = 0
-let g:easytags_by_filetype = '/home/cant/.ctags/tags'
+let g:easytags_by_filetype = '~/.ctags/tags'
 let g:easytags_auto_highlight = 0
 
 " NERDTree
@@ -150,24 +152,27 @@ let g:easytags_auto_highlight = 0
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 " Open NERDTree when vim starts
-autocmd vimenter * NERDTree
-let NERDTreeMinimalUI = 1
-let NERDTreeDirArrows = 1
+" autocmd vimenter * NERDTree
+" let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 0
+let NERDTreeAutoDeleteBuffer = 1
+let g:NERDTreeWinSize = 40 
 
 augroup NERD
     au!
     autocmd VimEnter * NERDTree
     autocmd VimEnter * wincmd p
 augroup END
+
 " CtrlP
-set runtimepath^=/home/cant/.vim/bundle/ctrlp.vim
+set runtimepath^=~/.vim/bundle/ctrlp.vim
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/build/*,*/dist/*
 
 set nocompatible              " be iMproved, required
 filetype off                  " required
 
 " set the runtime path to include Vundle and initialize
-set rtp+=/home/cant/.vim/bundle/Vundle.vim
+set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 
 Plugin 'VundleVim/Vundle.vim'
@@ -175,7 +180,7 @@ Plugin 'fholgado/minibufexpl.vim'
 Plugin 'Valloric/YouCompleteMe'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'scrooloose/nerdtree'
-Plugin 'Xuyuanp/nerdtree-git-plugin'
+" Plugin 'Xuyuanp/nerdtree-git-plugin'
 
 call vundle#end()            " required
 filetype plugin indent on    " required
