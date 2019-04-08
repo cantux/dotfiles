@@ -1,2 +1,0 @@
-utl_3_0a.vba: call delete('/home/mborsalino/.vim/doc/utl_usr.txt')|call delete('/home/mborsalino/.vim/autoload/utl_lib.vim')|call delete('/home/mborsalino/.vim/plugin/utl.vim')|call delete('/home/mborsalino/.vim/plugin/utl_rc.vim')|call delete('/home/mborsalino/.vim/plugin/utl_scm.vim')|call delete('/home/mborsalino/.vim/plugin/utl_uri.vim')
-screen.vba.vba: call delete('/home/mborsalino/.vim/autoload/screen.vim')|call delete('/home/mborsalino/.vim/doc/screen.txt')|call delete('/home/mborsalino/.vim/plugin/screen.vim')

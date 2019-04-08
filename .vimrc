@@ -47,13 +47,139 @@ autocmd BufRead *.ipy set smartindent cinwords=if,elif,else,for,while,try,except
 " Appearance 
 "----------------------------------------------------------------------------------------------------------------------"
 " set color scheme to dark blue 
-colorscheme slate
+colorscheme wombat256
 
 " start with ruler
 set ruler
 
 " show title
 set title
+
+" syntax on wax off
+syntax on
+
+"----------------------------------------------------------------------------------------------------------------------"
+" Mappings
+"
+"" block commenting
+noremap <F2> :call Comment()<CR>
+noremap <F3> :call Uncomment()<CR>
+
+" CTRL-Z is Undo; not in cmdline though
+noremap <C-Z> u
+inoremap <C-Z> <C-O>u
+
+" CTRL-Y is Redo (although not repeat); not in cmdline though
+noremap <C-Y> <C-R>
+inoremap <C-Y> <C-O><C-R>
+" CTRL-A CTRL-I mapped to F8 (used to switch between screen shell and edited
+" files)
+noremap <F8> <C-A><C-I>
+" map for quick "change to current directory"
+map ,cd :cd %:p:h<CR>
+
+nnoremap <silent> <F5> :TagbarToggle<CR>
+
+" shortcut to open NERDTree
+nnoremap <F6> :NERDTreeToggle<CR>
+
+let g:ctrlp_map = '<c-p>'
+let g:ctrlp_cmd = 'CtrlP'
+
+" ca bdelete bd
+
+
+"----------------------------------------------------------------------------------------------------------------------"
+" Autocommands
+"----------------------------------------------------------------------------------------------------------------------"
+
+" In text files, always limit the width of text to 78 characters.
+"autocmd BufRead *.txt set textwidth=78
+
+au BufRead,BufNewFile *.stil    setfiletype stil
+au BufRead,BufNewFile *.tcl    setfiletype tcl
+au BufRead,BufNewFile *.pasm   setfiletype pasm
+au BufRead,BufNewFile *.pasm   set syntax=pasm
+
+" au BufRead,BufNewFile *.[ch]      set tabstop=2 
+" au BufRead,BufNewFile *.[ch]      set shiftwidth=2 
+au BufRead,BufNewFile *.c      set tabstop=2 
+au BufRead,BufNewFile *.c      set shiftwidth=2 
+au BufRead,BufNewFile *.cpp      set tabstop=4 
+au BufRead,BufNewFile *.cpp      set shiftwidth=4 
+
+" Force a syntax highlighting sync when you enter a buffer
+" Normally syntax is cached so this is useful when developing syntax files
+autocmd BufEnter * :syntax sync fromstart
+
+
+" Print Options "
+set popt=paper:letter
+
+"----------------------------------------------------------------------------------------------------------------------"
+" Plugins
+"----------------------------------------------------------------------------------------------------------------------"
+" MiniBufExplorer
+let g:miniBufExplMapWindowNavVim = 1
+let g:miniBufExplMapWindowNavArrows = 1
+let g:miniBufExplMapCTabSwitchBufs = 1
+let g:miniBufExplModSelTarget = 1
+
+" TagBar
+let tagbar_ctags_bin='/home/cant/.ctags/uctags_bin/bin/ctags'
+" autocmd vimenter * TagbarOpen
+autocmd VimEnter * nested :TagbarOpen
+
+" TagList
+let Tlist_Ctags_Cmd='/home/cant/.ctags/uctags_bin/bin/ctags'
+" show tag drop down menu in GVIM
+let Tlist_Show_Menu = 1 
+" default behavior is sort by name
+let Tlist_Sort_Type = 'name'
+
+" EasyTags
+let g:easytags_cmd = '/home/cant/.ctags/uctags_bin/bin/ctags'
+let g:easytags_file = '/home/cant/.ctags/tags'
+let g:easytags_auto_update = 0
+let g:easytags_always_enabled = 0
+let g:easytags_by_filetype = '/home/cant/.ctags/tags'
+let g:easytags_auto_highlight = 0
+
+" NERDTree
+" close vim if the only window left open is a NERDTree
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+" Open NERDTree when vim starts
+autocmd vimenter * NERDTree
+let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 1
+
+augroup NERD
+    au!
+    autocmd VimEnter * NERDTree
+    autocmd VimEnter * wincmd p
+augroup END
+" CtrlP
+set runtimepath^=/home/cant/.vim/bundle/ctrlp.vim
+set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/build/*,*/dist/*
+
+set nocompatible              " be iMproved, required
+filetype off                  " required
+
+" set the runtime path to include Vundle and initialize
+set rtp+=/home/cant/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'fholgado/minibufexpl.vim'
+Plugin 'Valloric/YouCompleteMe'
+Plugin 'airblade/vim-gitgutter'
+Plugin 'scrooloose/nerdtree'
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+
+call vundle#end()            " required
+filetype plugin indent on    " required
+
 "----------------------------------------------------------------------------------------------------------------------"
 " Custom Functions
 "----------------------------------------------------------------------------------------------------------------------"
@@ -114,117 +240,7 @@ function! s:RunShellCommand(cmdline)
   call setline(3,substitute(getline(2),'.','=','g'))
   execute '$read !'. expanded_cmdline
   setlocal nomodifiable
-  1
+  
 endfunction
 
-"----------------------------------------------------------------------------------------------------------------------"
-" Mappings
-"
-"" block commenting
-noremap <F2> :call Comment()<CR>
-noremap <F3> :call Uncomment()<CR>
 
-" CTRL-Z is Undo; not in cmdline though
-noremap <C-Z> u
-inoremap <C-Z> <C-O>u
-
-" CTRL-Y is Redo (although not repeat); not in cmdline though
-noremap <C-Y> <C-R>
-inoremap <C-Y> <C-O><C-R>
-" CTRL-A CTRL-I mapped to F8 (used to switch between screen shell and edited
-" files)
-noremap <F8> <C-A><C-I>
-" map for quick "change to current directory"
-map ,cd :cd %:p:h<CR>
-
-nnoremap <silent> <F9> :TagbarToggle<CR>
-
-" shortcut to open NERDTree
-nnoremap <F10> :NERDTreeToggle<CR>
-
-let g:ctrlp_map = '<c-p>'
-let g:ctrlp_cmd = 'CtrlP'
-
-" ca bdelete bd
-
-"----------------------------------------------------------------------------------------------------------------------"
-" Autocommands
-"----------------------------------------------------------------------------------------------------------------------"
-
-" In text files, always limit the width of text to 78 characters.
-"autocmd BufRead *.txt set textwidth=78
-
-au BufRead,BufNewFile *.stil    setfiletype stil
-au BufRead,BufNewFile *.tcl    setfiletype tcl
-au BufRead,BufNewFile *.pasm   setfiletype pasm
-au BufRead,BufNewFile *.pasm   set syntax=pasm
-
-" au BufRead,BufNewFile *.[ch]      set tabstop=2 
-" au BufRead,BufNewFile *.[ch]      set shiftwidth=2 
-au BufRead,BufNewFile *.c      set tabstop=2 
-au BufRead,BufNewFile *.c      set shiftwidth=2 
-au BufRead,BufNewFile *.cpp      set tabstop=4 
-au BufRead,BufNewFile *.cpp      set shiftwidth=4 
-
-" Force a syntax highlighting sync when you enter a buffer
-" Normally syntax is cached so this is useful when developing syntax files
-autocmd BufEnter * :syntax sync fromstart
-
-
-" Print Options "
-set popt=paper:letter
-
-"----------------------------------------------------------------------------------------------------------------------"
-" Plugins
-"----------------------------------------------------------------------------------------------------------------------"
-" MiniBufExplorer
-let g:miniBufExplMapWindowNavVim = 1
-let g:miniBufExplMapWindowNavArrows = 1
-let g:miniBufExplMapCTabSwitchBufs = 1
-let g:miniBufExplModSelTarget = 1
-
-" TagBar
-let tagbar_ctags_bin='/home/ctuksavul/.ctags/uctags_bin/bin/ctags'
-
-" TagList
-let Tlist_Ctags_Cmd='/home/ctuksavul/.ctags/uctags_bin/bin/ctags'
-" show tag drop down menu in GVIM
-let Tlist_Show_Menu = 1 
-" default behavior is sort by name
-let Tlist_Sort_Type = 'name'
-
-" TagBar
-let tagbar_ctags_bin='/home/ctuksavul/.ctags/uctags_bin/bin/ctags'
-
-" EasyTags
-let g:easytags_cmd = '/home/ctuksavul/.ctags/uctags_bin/bin/ctags'
-let g:easytags_file = '/home/ctuksavul/.ctags/tags'
-let g:easytags_auto_update = 0
-let g:easytags_always_enabled = 0
-let g:easytags_by_filetype = '/home/ctuksavul/.ctags/tags'
-let g:easytags_auto_highlight = 0
-
-" NERDTree
-" close vim if the only window left open is a NERDTree
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-
-" Open NERDTree when vim starts
-autocmd vimenter * NERDTree
-
-
-" CtrlP
-set runtimepath^=~/.vim/bundle/ctrlp.vim
-set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/build/*,*/dist/*
-
-set nocompatible              " be iMproved, required
-filetype off                  " required
-
-" set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-
-Plugin 'VundleVim/Vundle.vim'
-Plugin 'Valloric/YouCompleteMe'
-
-call vundle#end()            " required
-filetype plugin indent on    " required
