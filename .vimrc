@@ -21,7 +21,8 @@
     set directory=$HOME/tmp/.vimbk
   endif
 
-set encoding=utf-8
+" set encoding=utf-8
+" scriptencoding utf-8
 
 " [global] undodir           directory for persistent undo 
   if (&term == "win32" || "pcterm" || has("gui_win32"))
@@ -49,7 +50,7 @@ autocmd BufRead *.ipy set smartindent cinwords=if,elif,else,for,while,try,except
 " Appearance 
 "----------------------------------------------------------------------------------------------------------------------"
 " set color scheme to dark blue 
-colorscheme wombat256
+colorscheme gruvbox
 
 " start with ruler
 set ruler
@@ -60,6 +61,11 @@ set title
 " syntax on wax off
 syntax on
 
+set showcmd                     "Show incomplete cmds down the bottom
+set showmode                    "Show current mode down the bottom
+set number                      "Line numbers are good
+set backspace=indent,eol,start  "Allow backspace in insert mode
+set hlsearch
 "----------------------------------------------------------------------------------------------------------------------"
 " Mappings
 "
@@ -154,9 +160,11 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isT
 " Open NERDTree when vim starts
 " autocmd vimenter * NERDTree
 " let NERDTreeMinimalUI = 1
-let NERDTreeDirArrows = 0
-let NERDTreeAutoDeleteBuffer = 1
-let g:NERDTreeWinSize = 40 
+" let NERDTreeDirArrows = 0 
+" let NERDTreeAutoDeleteBuffer = 1
+" let g:NERDTreeWinSize = 40 
+let g:NERDTreeDirArrowExpandable = '+'
+let g:NERDTreeDirArrowCollapsible = '-'
 
 augroup NERD
     au!
@@ -177,10 +185,11 @@ call vundle#begin()
 
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'fholgado/minibufexpl.vim'
-Plugin 'Valloric/YouCompleteMe'
+" Plugin 'Valloric/YouCompleteMe'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'scrooloose/nerdtree'
-" Plugin 'Xuyuanp/nerdtree-git-plugin'
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+" Plugin 'yegappan/mru'
 
 call vundle#end()            " required
 filetype plugin indent on    " required
