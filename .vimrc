@@ -6,6 +6,9 @@
 " Global Settings
 "----------------------------------------------------------------------------------------------------------------------"
 
+set nocompatible              " be iMproved, required
+filetype off                  " required
+
 " [global] set nowrap        do not wrap lines (use set wrap! from inside vim to manually toggle this)
   set nowrap
 
@@ -175,9 +178,6 @@ augroup END
 " CtrlP
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/build/*,*/dist/*
-
-set nocompatible              " be iMproved, required
-filetype off                  " required
 
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
