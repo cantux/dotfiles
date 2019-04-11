@@ -97,8 +97,13 @@ nnoremap <F6> :NERDTreeToggle<CR>
 let g:ctrlp_map = '<c-p>'
 let g:ctrlp_cmd = 'CtrlP'
 
-" ca bdelete bd
+" nmap <C-H>   :MBEbf<CR>
+" nmap <C-L>   :MBEbb<CR>
 
+noremap <C-Down>  <C-W>j
+noremap <C-Up>    <C-W>k
+noremap <C-Left>  <C-W>h
+noremap <C-Right> <C-W>l
 
 "----------------------------------------------------------------------------------------------------------------------"
 " Autocommands
@@ -123,7 +128,6 @@ au BufRead,BufNewFile *.cpp      set shiftwidth=4
 " Normally syntax is cached so this is useful when developing syntax files
 autocmd BufEnter * :syntax sync fromstart
 
-
 " Print Options "
 set popt=paper:letter
 
@@ -131,10 +135,8 @@ set popt=paper:letter
 " Plugins
 "----------------------------------------------------------------------------------------------------------------------"
 " MiniBufExplorer
-let g:miniBufExplMapWindowNavVim = 1
-let g:miniBufExplMapWindowNavArrows = 1
-let g:miniBufExplMapCTabSwitchBufs = 1
 let g:miniBufExplModSelTarget = 1
+let g:miniBufExplBuffersNeeded = 1
 
 " TagBar
 let tagbar_ctags_bin='~/.ctags/uctags_bin/bin/ctags'
@@ -190,6 +192,11 @@ Plugin 'airblade/vim-gitgutter'
 Plugin 'scrooloose/nerdtree'
 Plugin 'Xuyuanp/nerdtree-git-plugin'
 " Plugin 'yegappan/mru'
+Plugin 'xolox/vim-misc'
+Plugin 'xolox/vim-session'
+Plugin 'xolox/vim-easytags'
+Plugin 'ervandew/screen'
+Plugin 'majutsushi/tagbar'
 
 call vundle#end()            " required
 filetype plugin indent on    " required
