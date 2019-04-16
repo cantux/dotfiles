@@ -49,6 +49,13 @@ filetype off                  " required
 autocmd BufRead *.py set smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class 
 autocmd BufRead *.ipy set smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class 
 
+set tags=~/.ctags/tags/mst_tags
+
+set ignorecase
+set smartcase
+
+" set foldmethod=indent
+" set foldnestmax=2
 "----------------------------------------------------------------------------------------------------------------------"
 " Appearance 
 "----------------------------------------------------------------------------------------------------------------------"
@@ -197,6 +204,7 @@ Plugin 'xolox/vim-session'
 Plugin 'xolox/vim-easytags'
 Plugin 'ervandew/screen'
 Plugin 'majutsushi/tagbar'
+Plugin 'tmhedberg/SimpylFold'
 
 call vundle#end()            " required
 filetype plugin indent on    " required
