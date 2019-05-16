@@ -51,6 +51,8 @@ autocmd BufRead *.ipy set smartindent cinwords=if,elif,else,for,while,try,except
 
 set tags=~/.ctags/tags/mst_tags
 
+set autoindent 
+
 set ignorecase
 set smartcase
 
