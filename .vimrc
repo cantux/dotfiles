@@ -49,7 +49,7 @@ filetype off                  " required
 autocmd BufRead *.py set smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class 
 autocmd BufRead *.ipy set smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class 
 
-set tags=~/.ctags/tags/mst_tags
+" set tags=~/.ctags/tags/mst_tags
 
 set autoindent 
 
@@ -62,7 +62,7 @@ set smartcase
 " Appearance 
 "----------------------------------------------------------------------------------------------------------------------"
 " set color scheme to dark blue 
-colorscheme gruvbox
+colorscheme molokai
 
 " start with ruler
 set ruler
@@ -114,6 +114,16 @@ noremap <C-Up>    <C-W>k
 noremap <C-Left>  <C-W>h
 noremap <C-Right> <C-W>l
 
+let py_template = [
+            \"#!/usr/bin/env python",
+            \"def test():",
+            \"  assert 1 == 1",
+            \"",
+            \"if __name__ == \"__main__\":",
+            \"  test()",
+            \""
+            \]
+inoremap <C-T> <C-o>:set paste<CR><C-o>:call append(line('$'), py_template)<CR><C-o>:set nopaste<CR>
 "----------------------------------------------------------------------------------------------------------------------"
 " Autocommands
 "----------------------------------------------------------------------------------------------------------------------"
@@ -137,8 +147,7 @@ au BufRead,BufNewFile *.cpp      set shiftwidth=4
 " Normally syntax is cached so this is useful when developing syntax files
 autocmd BufEnter * :syntax sync fromstart
 
-" Print Options "
-set popt=paper:letter
+
 
 "----------------------------------------------------------------------------------------------------------------------"
 " Plugins
@@ -166,6 +175,7 @@ let g:easytags_auto_update = 0
 let g:easytags_always_enabled = 0
 let g:easytags_by_filetype = '~/.ctags/tags'
 let g:easytags_auto_highlight = 0
+let g:easytags_suppress_ctags_warning = 1
 
 " NERDTree
 " close vim if the only window left open is a NERDTree
@@ -196,11 +206,11 @@ call vundle#begin()
 
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'fholgado/minibufexpl.vim'
-" Plugin 'Valloric/YouCompleteMe'
+Plugin 'Valloric/YouCompleteMe'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'scrooloose/nerdtree'
 Plugin 'Xuyuanp/nerdtree-git-plugin'
-" Plugin 'yegappan/mru'
+Plugin 'yegappan/mru'
 Plugin 'xolox/vim-misc'
 Plugin 'xolox/vim-session'
 Plugin 'xolox/vim-easytags'
