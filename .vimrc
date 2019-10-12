@@ -51,8 +51,6 @@ autocmd BufRead *.ipy set smartindent cinwords=if,elif,else,for,while,try,except
 
 " set tags=~/.ctags/tags/mst_tags
 
-set autoindent 
-
 set ignorecase
 set smartcase
 
@@ -62,7 +60,9 @@ set smartcase
 " Appearance 
 "----------------------------------------------------------------------------------------------------------------------"
 " set color scheme to dark blue 
-colorscheme molokai
+" colorscheme molokai
+colorscheme dichromatic
+
 
 " start with ruler
 set ruler
@@ -116,11 +116,14 @@ noremap <C-Right> <C-W>l
 
 let py_template = [
             \"#!/usr/bin/env python",
+            \"def fnc():",
+            \"    return None",
+            \"",
             \"def test():",
-            \"  assert 1 == 1",
+            \"    assert fnc() == None",
             \"",
             \"if __name__ == \"__main__\":",
-            \"  test()",
+            \"    test()",
             \""
             \]
 inoremap <C-T> <C-o>:set paste<CR><C-o>:call append(line('$'), py_template)<CR><C-o>:set nopaste<CR>
@@ -217,6 +220,7 @@ Plugin 'xolox/vim-easytags'
 Plugin 'ervandew/screen'
 Plugin 'majutsushi/tagbar'
 Plugin 'tmhedberg/SimpylFold'
+Plugin 'romainl/vim-dichromatic'
 
 call vundle#end()            " required
 filetype plugin indent on    " required
