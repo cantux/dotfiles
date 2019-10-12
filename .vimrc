@@ -20,8 +20,8 @@ filetype off                  " required
     set bdir=$VIM\backup
     set directory=$VIM\backup
   else
-    set bdir=$HOME/tmp/.vimbk
-    set directory=$HOME/tmp/.vimbk
+    set bdir=$HOME/.vimbk
+    set directory=$HOME/.vimbk
   endif
 
 " set encoding=utf-8
