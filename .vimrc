@@ -166,6 +166,12 @@ let g:ctrlp_working_path_mode = 'ra'
 
 " YCM
 let g:ycm_collect_identifiers_from_tags_files=1
+let mapleader = ","
+
+nnoremap <leader>g :YcmCompleter GoTo<CR>
+nnoremap <leader>r :YcmCompleter GoToReferences<CR>
+nnoremap <leader>d :YcmCompleter GoToDefinition<CR>
+nnoremap <leader>i :YcmCompleter GoToImplementationElseDeclaration<CR>
 
 
 " VimPlug
