@@ -1,7 +1,3 @@
-" set nocompatible
-" source $VIMRUNTIME/vimrc_example.vim
-"source $VIMRUNTIME/mswin.vim
-
 "----------------------------------------------------------------------------------------------------------------------"
 " Global Settings
 "----------------------------------------------------------------------------------------------------------------------"
@@ -10,59 +6,40 @@ set nocompatible              " be iMproved, required
 filetype off                  " required
 
 " [global] set nowrap        do not wrap lines (use set wrap! from inside vim to manually toggle this)
-  set nowrap
+set nowrap
 
 " [global] writebackup       make a backup before overwriting a file
-  set wb
-
+" set wb
 " [global] backupdir         list of directories for the backup file and swap file
-  if (&term == "win32" || "pcterm" || has("gui_win32"))
-    set bdir=$VIM\backup
-    set directory=$VIM\backup
-  else
-    set bdir=$HOME/.vimbk
-    set directory=$HOME/.vimbk
-  endif
-
-" set encoding=utf-8
-" scriptencoding utf-8
+" set bdir=$HOME/.vimbk
+" set directory=$HOME/.vimbk
 
 " [global] undodir           directory for persistent undo 
-  if (&term == "win32" || "pcterm" || has("gui_win32"))
-    set undodir=$VIM\undo
-  else
-    set undodir=$HOME/tmp/.vimundo
-  endif
- 
+set undodir=$HOME/.vim/vimundo
+set undofile
+
 " insert space characters whenever the tab key is pressed
-    set expandtab
-			
+set expandtab
 " set number of spaces that <Tab> uses while editing
-    set tabstop=4
-
+set tabstop=4
 " set number of space characters inserted for indentation
-    set shiftwidth=4
+set shiftwidth=4
 
-" set gui font
-    " set guifont=Lucida_Console:h9:cANSI
-    set guifont=Bitstream\ Vera\ Sans\ Mono\ 9
-autocmd BufRead *.py set smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class 
-autocmd BufRead *.ipy set smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class 
+set smartindent
 
 " set tags=~/.ctags/tags/mst_tags
 
 set ignorecase
 set smartcase
 
-" set foldmethod=indent
-" set foldnestmax=2
+
 "----------------------------------------------------------------------------------------------------------------------"
 " Appearance 
 "----------------------------------------------------------------------------------------------------------------------"
 " set color scheme to dark blue 
-" colorscheme molokai
 colorscheme dichromatic
-
+" colorscheme gruvbox
+set background=dark
 
 " start with ruler
 set ruler
@@ -78,6 +55,10 @@ set showmode                    "Show current mode down the bottom
 set number                      "Line numbers are good
 set backspace=indent,eol,start  "Allow backspace in insert mode
 set hlsearch
+set incsearch
+
+set colorcolumn=80
+
 "----------------------------------------------------------------------------------------------------------------------"
 " Mappings
 "
@@ -92,9 +73,7 @@ inoremap <C-Z> <C-O>u
 " CTRL-Y is Redo (although not repeat); not in cmdline though
 noremap <C-Y> <C-R>
 inoremap <C-Y> <C-O><C-R>
-" CTRL-A CTRL-I mapped to F8 (used to switch between screen shell and edited
-" files)
-noremap <F8> <C-A><C-I>
+
 " map for quick "change to current directory"
 map ,cd :cd %:p:h<CR>
 
@@ -103,7 +82,7 @@ nnoremap <silent> <F5> :TagbarToggle<CR>
 " shortcut to open NERDTree
 nnoremap <F6> :NERDTreeToggle<CR>
 
-let g:ctrlp_map = '<c-p>'
+let g:ctrlp_map = '<C-p>'
 let g:ctrlp_cmd = 'CtrlP'
 
 " nmap <C-H>   :MBEbf<CR>
@@ -116,6 +95,7 @@ noremap <C-Right> <C-W>l
 
 let py_template = [
             \"#!/usr/bin/env python",
+            \"",
             \"def fnc():",
             \"    return None",
             \"",
@@ -127,6 +107,8 @@ let py_template = [
             \""
             \]
 inoremap <C-T> <C-o>:set paste<CR><C-o>:call append(line('$'), py_template)<CR><C-o>:set nopaste<CR>
+
+
 "----------------------------------------------------------------------------------------------------------------------"
 " Autocommands
 "----------------------------------------------------------------------------------------------------------------------"
@@ -185,11 +167,6 @@ let g:easytags_suppress_ctags_warning = 1
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 " Open NERDTree when vim starts
-" autocmd vimenter * NERDTree
-" let NERDTreeMinimalUI = 1
-" let NERDTreeDirArrows = 0 
-" let NERDTreeAutoDeleteBuffer = 1
-" let g:NERDTreeWinSize = 40 
 let g:NERDTreeDirArrowExpandable = '+'
 let g:NERDTreeDirArrowCollapsible = '-'
 
@@ -203,27 +180,79 @@ augroup END
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/build/*,*/dist/*
 
+" Taglist
+
+" Vundle
 " set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
+" set rtp+=~/.vim/bundle/Vundle.vim
+" call vundle#begin()
+" 
+" Plugin 'VundleVim/Vundle.vim'
+" 
+" Plugin 'xolox/vim-misc'
+" 
+" Plugin 'fholgado/minibufexpl.vim'
+" 
+" Plugin 'Valloric/YouCompleteMe'
+" 
+" Plugin 'airblade/vim-gitgutter'
+" Plugin 'scrooloose/nerdtree'
+" Plugin 'Xuyuanp/nerdtree-git-plugin'
+" 
+" Plugin 'xolox/vim-easytags'
+" Plugin 'majutsushi/tagbar'
+" 
+" Plugin 'tmhedberg/SimpylFold'
+" 
+" Plugin 'romainl/vim-dichromatic'
+" Plugin 'morhetz/gruvbox'
+" 
+" Plugin 'kien/ctrlp.vim' 
+" 
+" call vundle#end()            " required
+" filetype plugin indent on    " required
+" 
 
-Plugin 'VundleVim/Vundle.vim'
-Plugin 'fholgado/minibufexpl.vim'
-Plugin 'Valloric/YouCompleteMe'
-Plugin 'airblade/vim-gitgutter'
-Plugin 'scrooloose/nerdtree'
-Plugin 'Xuyuanp/nerdtree-git-plugin'
-Plugin 'yegappan/mru'
-Plugin 'xolox/vim-misc'
-Plugin 'xolox/vim-session'
-Plugin 'xolox/vim-easytags'
-Plugin 'ervandew/screen'
-Plugin 'majutsushi/tagbar'
-Plugin 'tmhedberg/SimpylFold'
-Plugin 'romainl/vim-dichromatic'
+" VimPlug
+"
+" Install vim-plug if not found
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+      \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+endif
+"
+" Run PlugInstall if there are missing plugins
+autocmd VimEnter * if len(filter(values(g:plugs), '!isdirectory(v:val.dir)'))
+    \| PlugInstall --sync | source $MYVIMRC
+    \| endif
 
-call vundle#end()            " required
-filetype plugin indent on    " required
+
+call plug#begin('~/.vim/plugged')
+
+Plug 'VundleVim/Vundle.vim'
+
+Plug 'xolox/vim-misc'
+
+Plug 'fholgado/minibufexpl.vim'
+
+Plug 'ycm-core/YouCompleteMe', { 'commit':'d98f896' }
+
+Plug 'airblade/vim-gitgutter'
+Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+
+Plug 'xolox/vim-easytags'
+Plug 'majutsushi/tagbar'
+
+Plug 'tmhedberg/SimpylFold'
+
+Plug 'romainl/vim-dichromatic'
+Plug 'morhetz/gruvbox'
+
+Plug 'kien/ctrlp.vim' 
+
+call plug#end()
+"
 
 "----------------------------------------------------------------------------------------------------------------------"
 " Custom Functions
