@@ -26,12 +26,10 @@ set tabstop=4
 set shiftwidth=4
 
 set smartindent
-
-" set tags=~/.ctags/tags/mst_tags
-
 set ignorecase
 set smartcase
 
+set hidden
 
 "----------------------------------------------------------------------------------------------------------------------"
 " Appearance 
@@ -40,6 +38,7 @@ set smartcase
 colorscheme dichromatic
 " colorscheme gruvbox
 set background=dark
+
 if &term =~ '256color'
   " disable Background Color Erase (BCE) so that color schemes
   " render properly when inside 256-color tmux and GNU screen.
@@ -60,10 +59,12 @@ set showcmd                     "Show incomplete cmds down the bottom
 set showmode                    "Show current mode down the bottom
 set number                      "Line numbers are good
 set backspace=indent,eol,start  "Allow backspace in insert mode
-set hlsearch
 set incsearch
 
+set scrolloff=8
+
 set colorcolumn=80
+highlight ColorColumn ctermbg=0 guibg=lightgrey
 
 "----------------------------------------------------------------------------------------------------------------------"
 " Mappings
@@ -91,9 +92,6 @@ nnoremap <F6> :NERDTreeToggle<CR>
 let g:ctrlp_map = '<C-p>'
 let g:ctrlp_cmd = 'CtrlP'
 
-" nmap <C-H>   :MBEbf<CR>
-" nmap <C-L>   :MBEbb<CR>
-
 noremap <C-Down>  <C-W>j
 noremap <C-Up>    <C-W>k
 noremap <C-Left>  <C-W>h
@@ -118,26 +116,6 @@ inoremap <C-T> <C-o>:set paste<CR><C-o>:call append(line('$'), py_template)<CR><
 "----------------------------------------------------------------------------------------------------------------------"
 " Autocommands
 "----------------------------------------------------------------------------------------------------------------------"
-
-" In text files, always limit the width of text to 78 characters.
-"autocmd BufRead *.txt set textwidth=78
-
-au BufRead,BufNewFile *.stil    setfiletype stil
-au BufRead,BufNewFile *.tcl    setfiletype tcl
-au BufRead,BufNewFile *.pasm   setfiletype pasm
-au BufRead,BufNewFile *.pasm   set syntax=pasm
-
-" au BufRead,BufNewFile *.[ch]      set tabstop=2 
-" au BufRead,BufNewFile *.[ch]      set shiftwidth=2 
-au BufRead,BufNewFile *.c      set tabstop=2 
-au BufRead,BufNewFile *.c      set shiftwidth=2 
-au BufRead,BufNewFile *.cpp      set tabstop=4 
-au BufRead,BufNewFile *.cpp      set shiftwidth=4 
-
-" Force a syntax highlighting sync when you enter a buffer
-" Normally syntax is cached so this is useful when developing syntax files
-autocmd BufEnter * :syntax sync fromstart
-
 
 
 "----------------------------------------------------------------------------------------------------------------------"
@@ -183,8 +161,11 @@ augroup NERD
 augroup END
 
 " CtrlP
-set runtimepath^=~/.vim/bundle/ctrlp.vim
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/build/*,*/dist/*
+let g:ctrlp_working_path_mode = 'ra'
+
+" YCM
+let g:ycm_collect_identifiers_from_tags_files=1
 
 
 " VimPlug
@@ -211,7 +192,6 @@ Plug 'fholgado/minibufexpl.vim'
 
 Plug 'ycm-core/YouCompleteMe', { 'commit':'d98f896' }
 
-Plug 'airblade/vim-gitgutter'
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 
