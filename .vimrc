@@ -40,6 +40,12 @@ set smartcase
 colorscheme dichromatic
 " colorscheme gruvbox
 set background=dark
+if &term =~ '256color'
+  " disable Background Color Erase (BCE) so that color schemes
+  " render properly when inside 256-color tmux and GNU screen.
+  " see also http://snk.tuxfamily.org/log/vim-256color-bce.html
+    set t_ut=
+endif
 
 " start with ruler
 set ruler
@@ -180,38 +186,6 @@ augroup END
 set runtimepath^=~/.vim/bundle/ctrlp.vim
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/build/*,*/dist/*
 
-" Taglist
-
-" Vundle
-" set the runtime path to include Vundle and initialize
-" set rtp+=~/.vim/bundle/Vundle.vim
-" call vundle#begin()
-" 
-" Plugin 'VundleVim/Vundle.vim'
-" 
-" Plugin 'xolox/vim-misc'
-" 
-" Plugin 'fholgado/minibufexpl.vim'
-" 
-" Plugin 'Valloric/YouCompleteMe'
-" 
-" Plugin 'airblade/vim-gitgutter'
-" Plugin 'scrooloose/nerdtree'
-" Plugin 'Xuyuanp/nerdtree-git-plugin'
-" 
-" Plugin 'xolox/vim-easytags'
-" Plugin 'majutsushi/tagbar'
-" 
-" Plugin 'tmhedberg/SimpylFold'
-" 
-" Plugin 'romainl/vim-dichromatic'
-" Plugin 'morhetz/gruvbox'
-" 
-" Plugin 'kien/ctrlp.vim' 
-" 
-" call vundle#end()            " required
-" filetype plugin indent on    " required
-" 
 
 " VimPlug
 "
@@ -250,6 +224,7 @@ Plug 'romainl/vim-dichromatic'
 Plug 'morhetz/gruvbox'
 
 Plug 'kien/ctrlp.vim' 
+Plug 'mbbill/undotree'
 
 call plug#end()
 "
