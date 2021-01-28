@@ -1,0 +1,26 @@
+[user]
+	email = can.tuksavul@gmail.com
+	name = cantux
+
+[difftool "meld"]
+    cmd = meld "$LOCAL" "$REMOTE"
+
+[mergetool "meld"]
+    cmd = meld "$LOCAL" "$MERGED" "$REMOTE" --output "$MERGED"
+
+[core]
+    editor = vim
+
+[alias]
+    undo-commit = reset --soft HEAD^
+    mylog = log --decorate --oneline --graph --pretty=format:\"%h %Cred%d%Creset %Cblue%an%Creset -- %s\"
+    newlog = log --decorate --oneline --graph --date=short --pretty=format:\"%h %C(green)%d %C(red)%ad %C(blue)%an%C(reset) -- %s\"
+    rlog = log --reverse --decorate --oneline --pretty=format:\"%h %Cred%d%Creset %Cblue%an%Creset -- %s\"  # combine with | tail when using it
+    recommit = commit --amend -C HEAD
+    l5 = log --decorate --oneline --graph --pretty=format:\"%h %Cred%d%Creset %Cblue%an%Creset -- %s\" -5
+    l10 = log --decorate --oneline --graph --pretty=format:\"%h %Cred%d%Creset %Cblue%an%Creset -- %s\" -10
+    l20 = log --decorate --oneline --graph --pretty=format:\"%h %Cred%d%Creset %Cblue%an%Creset -- %s\" -20
+    curbranch = "!git branch | grep \"*\""
+    aliases = "!git config -l | grep alias | cut -c 7-"
+    accept-ours = "!f() { git checkout --ours -- \"${@:-.}\"; git add -u \"${@:-.}\"; }; f"
+    accept-theirs = "!f() { git checkout --theirs -- \"${@:-.}\"; git add -u \"${@:-.}\"; }; f"
