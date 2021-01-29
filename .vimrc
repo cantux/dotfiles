@@ -170,8 +170,8 @@ let mapleader = ","
 
 nnoremap <leader>g :YcmCompleter GoTo<CR>
 nnoremap <leader>r :YcmCompleter GoToReferences<CR>
-nnoremap <leader>d :YcmCompleter GoToDefinition<CR>
-nnoremap <leader>i :YcmCompleter GoToImplementationElseDeclaration<CR>
+nnoremap <leader>def :YcmCompleter GoToDefinition<CR>
+nnoremap <leader>dec :YcmCompleter GoToDeclaration<CR>
 
 
 " VimPlug
