@@ -130,19 +130,11 @@ let tagbar_ctags_bin='~/.ctags/uctags_bin/bin/ctags'
 " autocmd vimenter * TagbarOpen
 autocmd VimEnter * nested :TagbarOpen
 
-" TagList
-let Tlist_Ctags_Cmd='~/.ctags/uctags_bin/bin/ctags'
-" show tag drop down menu in GVIM
-let Tlist_Show_Menu = 1 
-" default behavior is sort by name
-let Tlist_Sort_Type = 'name'
-
+set tags=./tags
 " EasyTags
 let g:easytags_cmd = '~/.ctags/uctags_bin/bin/ctags'
-let g:easytags_file = '~/.ctags/tags'
 let g:easytags_auto_update = 0
 let g:easytags_always_enabled = 0
-let g:easytags_by_filetype = '~/.ctags/tags'
 let g:easytags_auto_highlight = 0
 let g:easytags_suppress_ctags_warning = 1
 
