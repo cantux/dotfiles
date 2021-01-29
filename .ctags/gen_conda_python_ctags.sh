@@ -2,10 +2,10 @@
 
 echo "Building ctags under this directory: ${PWD}"
 ctags \
+    --languages=python
     -R \
-#     --python-kinds=-i \
-    --exclude=*/build/* \
-    --exclude=*/dist/* \
+    --python-kinds=-i \
     --exclude=*.pyc \
     -o tags \
-    $PWD
+    $PWD \
+    $CONDA_PREFIX/lib/python*/*
