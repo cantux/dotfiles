@@ -7,8 +7,7 @@ def Settings( **kwargs ):
   return {
     'sys_path': [
       '${external_modules}'
-      ],
-    'interpreter_path': '${CONDA_PYTHON_EXE}'
+      ]
   }
 EOL
 
