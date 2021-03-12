@@ -130,7 +130,7 @@ let tagbar_ctags_bin='~/.ctags/uctags_bin/bin/ctags'
 " autocmd vimenter * TagbarOpen
 autocmd VimEnter * nested :TagbarOpen
 
-set tags=./tags
+set tags=tags,./tags
 " EasyTags
 let g:easytags_cmd = '~/.ctags/uctags_bin/bin/ctags'
 let g:easytags_auto_update = 0
