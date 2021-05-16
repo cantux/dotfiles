@@ -1,7 +1,7 @@
-!#/bin/bash
+#!/bin/bash
 
 cp plugged/**/colors/* colors/.
 
 pushd plugged/YouCompleteMe
-python install.py
+python install.py --all
 popd
