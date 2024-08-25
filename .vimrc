@@ -1,3 +1,44 @@
+" VimPlug
+"
+" Install vim-plug if not found
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+      \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+endif
+"
+" Run PlugInstall if there are missing plugins
+autocmd VimEnter * if len(filter(values(g:plugs), '!isdirectory(v:val.dir)'))
+    \| PlugInstall --sync | source $MYVIMRC
+    \| endif
+
+
+call plug#begin('~/.vim/plugged')
+
+Plug 'VundleVim/Vundle.vim'
+
+Plug 'xolox/vim-misc'
+
+Plug 'fholgado/minibufexpl.vim'
+
+Plug 'ycm-core/YouCompleteMe', { 'commit':'d98f896' }
+
+Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
+
+Plug 'xolox/vim-easytags'
+Plug 'majutsushi/tagbar'
+
+Plug 'tmhedberg/SimpylFold'
+
+Plug 'romainl/vim-dichromatic'
+Plug 'morhetz/gruvbox'
+
+Plug 'kien/ctrlp.vim' 
+Plug 'mbbill/undotree'
+
+call plug#end()
+
+
 "----------------------------------------------------------------------------------------------------------------------"
 " Global Settings
 "----------------------------------------------------------------------------------------------------------------------"
@@ -167,45 +208,6 @@ nnoremap <leader>def :YcmCompleter GoToDefinition<CR>
 nnoremap <leader>dec :YcmCompleter GoToDeclaration<CR>
 
 
-" VimPlug
-"
-" Install vim-plug if not found
-if empty(glob('~/.vim/autoload/plug.vim'))
-  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-      \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-endif
-"
-" Run PlugInstall if there are missing plugins
-autocmd VimEnter * if len(filter(values(g:plugs), '!isdirectory(v:val.dir)'))
-    \| PlugInstall --sync | source $MYVIMRC
-    \| endif
-
-
-call plug#begin('~/.vim/plugged')
-
-Plug 'VundleVim/Vundle.vim'
-
-Plug 'xolox/vim-misc'
-
-Plug 'fholgado/minibufexpl.vim'
-
-Plug 'ycm-core/YouCompleteMe', { 'commit':'d98f896' }
-
-Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
-
-Plug 'xolox/vim-easytags'
-Plug 'majutsushi/tagbar'
-
-Plug 'tmhedberg/SimpylFold'
-
-Plug 'romainl/vim-dichromatic'
-Plug 'morhetz/gruvbox'
-
-Plug 'kien/ctrlp.vim' 
-Plug 'mbbill/undotree'
-
-call plug#end()
 "
 
 "----------------------------------------------------------------------------------------------------------------------"
