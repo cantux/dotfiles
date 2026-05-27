@@ -2,11 +2,11 @@
 	email = can.tuksavul@gmail.com
 	name = cantux
 
-[difftool "meld"]
-    cmd = meld "$LOCAL" "$REMOTE"
+[diff]
+    tool = opendiff
 
-[mergetool "meld"]
-    cmd = meld "$LOCAL" "$MERGED" "$REMOTE" --output "$MERGED"
+[merge]
+    tool = opendiff
 
 [core]
     editor = vim

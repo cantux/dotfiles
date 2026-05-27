@@ -153,7 +153,7 @@ let py_template = [
             \]
 inoremap <C-T> <C-o>:set paste<CR><C-o>:call append(line('$'), py_template)<CR><C-o>:set nopaste<CR>
 
-command FormatJson %!python -m json.tool
+command FormatJson %!python3 -m json.tool
 
 "----------------------------------------------------------------------------------------------------------------------"
 " Autocommands

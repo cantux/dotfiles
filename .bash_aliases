@@ -1,9 +1,10 @@
-alias pbcopy="xclip -selection c"
-alias pbpaste="xclip -selection clipboard -o"
-
-alias gen_conda_python_ctags="~/.ctags/gen_conda_python_ctags.sh"
-alias gen_ycm_conf_for_conda="~/.vim/ycm_conf_from_conda_gen.sh"
-
 alias cdp="cd ~/Projects"
 alias c="clear"
 alias cd..="cd .."
+
+# Copy this repo's dotfiles into $HOME.
+alias dotsync='~/Projects/dotfiles/sync.sh'
+
+# Open Claude in a new git worktree with an iTerm2/tmux session.
+# Usage: ccw <worktree-name> [extra claude flags]
+ccw() { claude --tmux=classic --worktree "$@"; }
