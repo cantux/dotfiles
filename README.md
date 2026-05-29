@@ -7,7 +7,76 @@ cp .* dotfile_bak/.
 ```
 
 ## Vim
-YouCompleteMe hard requires Vim 8.2+. 
+
+### macOS (Apple Silicon) setup
+
+The system vim (`/usr/bin/vim`) is built with `-python3` — no Python. YCM is a
+Python plugin, so it can't load there. You'll see:
+
+```
+YouCompleteMe unavailable: requires Vim compiled with Python (3.12.0+) support.
+```
+
+Fix: install a vim with Python.
+
+```
+brew install vim                 # bottle is built +python3/dyn (loads brew python3 at runtime)
+vim --version | grep python3     # expect +python3/dyn  (system vim shows -python3)
+```
+
+`/opt/homebrew/bin` is already ahead of `/usr/bin` on PATH, so the brew vim
+shadows the system one. Just open a new shell.
+
+#### Build YCM (one time)
+
+vim-plug only clones plugins; it does NOT fetch YCM's git submodules or compile
+`ycm_core`. The auto-installer in `.vimrc` only checks if the top-level plugin
+dir exists, so it can't tell that YCM is unbuilt — that's why it looked like it
+kept "reinstalling." Two fixes:
+
+1. Build deps + servers:
+
+```
+brew install cmake node rust-analyzer       # cmake builds ycm_core; node runs the TS server
+npm install -g typescript-language-server typescript
+```
+
+2. Fetch submodules + compile (do this with NO vim open on the YCM repo — a
+   second git process corrupts it):
+
+```
+cd ~/.vim/plugged/YouCompleteMe
+git submodule update --init --recursive      # big download (clang + jedi deps)
+python3 install.py --clangd-completer        # builds ycm_core; clangd = C/C++, jedi (bundled) = Python
+```
+
+Make it self-healing: add a build hook to the YCM line in `.vimrc` so
+`:PlugInstall`/`:PlugUpdate` compiles it automatically:
+
+```vim
+Plug 'ycm-core/YouCompleteMe', { 'do': './install.py --clangd-completer' }
+```
+
+#### LSP servers (through YCM, not beside it)
+
+YCM **is** an LSP client. Don't run a second client (vim-lsp/coc) next to it —
+that causes duplicate popups/diagnostics. Feed servers into YCM instead. clangd
+(C/C++), jedi (Python), gopls (Go), Java are handled by YCM directly. Add the
+rest in `.vimrc`:
+
+```vim
+let g:ycm_language_server = [
+  \ { 'name': 'rust', 'cmdline': ['rust-analyzer'], 'filetypes': ['rust'] },
+  \ { 'name': 'typescript', 'cmdline': ['typescript-language-server', '--stdio'],
+  \   'filetypes': ['typescript','javascript'] },
+  \ ]
+```
+
+Useful YCM maps already in `.vimrc`: `,g` GoTo, `,r` GoToReferences,
+`,def` GoToDefinition, `,dec` GoToDeclaration.
+
+### Linux / Debian
+YouCompleteMe hard requires Vim 8.2+.
 
 First solution was to keep YCM version at a certain commit. I am keeping the line that does it.
 

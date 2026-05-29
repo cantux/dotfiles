@@ -20,7 +20,7 @@ Plug 'xolox/vim-misc'
 
 Plug 'fholgado/minibufexpl.vim'
 
-Plug 'ycm-core/YouCompleteMe', { 'commit':'d98f896' }
+Plug 'ycm-core/YouCompleteMe'
 
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
@@ -137,6 +137,17 @@ noremap <C-Down>  <C-W>j
 noremap <C-Up>    <C-W>k
 noremap <C-Left>  <C-W>h
 noremap <C-Right> <C-W>l
+
+" Insert-mode word editing
+" keep <Esc> snappy since the Option-key codes start with ESC
+set ttimeout ttimeoutlen=30
+" Option+Backspace: delete the word before the cursor.
+" Terminal must send Option as Meta -> Option+BS arrives as ESC + DEL.
+execute "set <M-BS>=\e\x7f"
+inoremap <M-BS> <C-w>
+" Ctrl+Left / Ctrl+Right: skip back/forward one word (xterm-keys passes these via tmux)
+inoremap <C-Left>  <C-o>b
+inoremap <C-Right> <C-o>w
 
 let py_template = [
             \"#!/usr/bin/env python",
