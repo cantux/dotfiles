@@ -20,7 +20,7 @@ Plug 'xolox/vim-misc'
 
 Plug 'fholgado/minibufexpl.vim'
 
-Plug 'ycm-core/YouCompleteMe'
+Plug 'ycm-core/YouCompleteMe', { 'do': './install.py --clangd-completer' }
 
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
@@ -62,9 +62,11 @@ set undofile
 " insert space characters whenever the tab key is pressed
 set expandtab
 " set number of spaces that <Tab> uses while editing
-set tabstop=4
+set tabstop=2
+" backspace over an indent removes 2 spaces as one unit
+set softtabstop=2
 " set number of space characters inserted for indentation
-set shiftwidth=4
+set shiftwidth=2
 
 set smartindent
 set ignorecase
@@ -118,9 +120,10 @@ noremap <F3> :call Uncomment()<CR>
 noremap <C-Z> u
 inoremap <C-Z> <C-O>u
 
-" CTRL-Y is Redo (although not repeat); not in cmdline though
+" CTRL-Y is Redo in normal mode (native <C-R> also works).
+" Insert-mode <C-Y> intentionally left unmapped: lets YCM accept a completion
+" with <C-y>, and restores native <C-Y> (copy char from the line above).
 noremap <C-Y> <C-R>
-inoremap <C-Y> <C-O><C-R>
 
 " map for quick "change to current directory"
 map ,cd :cd %:p:h<CR>
@@ -139,12 +142,13 @@ noremap <C-Left>  <C-W>h
 noremap <C-Right> <C-W>l
 
 " Insert-mode word editing
-" keep <Esc> snappy since the Option-key codes start with ESC
+" keep <Esc> snappy since the Option-key sequence starts with ESC
 set ttimeout ttimeoutlen=30
 " Option+Backspace: delete the word before the cursor.
-" Terminal must send Option as Meta -> Option+BS arrives as ESC + DEL.
-execute "set <M-BS>=\e\x7f"
+" Needs terminal 'Option as Meta'; it then sends ESC + DEL. Map both the
+" <M-BS> notation and the raw ESC+DEL bytes so it works either way.
 inoremap <M-BS> <C-w>
+execute "inoremap \<Esc>\<Char-0x7f> \<C-w>"
 " Ctrl+Left / Ctrl+Right: skip back/forward one word (xterm-keys passes these via tmux)
 inoremap <C-Left>  <C-o>b
 inoremap <C-Right> <C-o>w
@@ -170,6 +174,13 @@ command FormatJson %!python3 -m json.tool
 " Autocommands
 "----------------------------------------------------------------------------------------------------------------------"
 
+augroup vimrc_autocmds
+  autocmd!
+  " Convert any literal tabs to spaces on save (expandtab only affects new
+  " input). Skip filetypes that REQUIRE real tabs.
+  autocmd BufWritePre * if &expandtab && index(['make','go'], &filetype) < 0 | retab | endif
+augroup END
+
 
 "----------------------------------------------------------------------------------------------------------------------"
 " Plugins
@@ -179,13 +190,13 @@ let g:miniBufExplModSelTarget = 1
 let g:miniBufExplBuffersNeeded = 1
 
 " TagBar
-let tagbar_ctags_bin='~/.ctags/uctags_bin/bin/ctags'
+let tagbar_ctags_bin='/opt/homebrew/bin/ctags'
 " autocmd vimenter * TagbarOpen
 autocmd VimEnter * nested :TagbarOpen
 
 set tags=tags,./tags
 " EasyTags
-let g:easytags_cmd = '~/.ctags/uctags_bin/bin/ctags'
+let g:easytags_cmd = '/opt/homebrew/bin/ctags'
 let g:easytags_auto_update = 0
 let g:easytags_always_enabled = 0
 let g:easytags_auto_highlight = 0
@@ -217,6 +228,31 @@ nnoremap <leader>g :YcmCompleter GoTo<CR>
 nnoremap <leader>r :YcmCompleter GoToReferences<CR>
 nnoremap <leader>def :YcmCompleter GoToDefinition<CR>
 nnoremap <leader>dec :YcmCompleter GoToDeclaration<CR>
+
+" clangd / YCM power maps (keys picked to not extend ,g or ,r)
+nnoremap <leader>i  :YcmCompleter GoToImplementation<CR>
+nnoremap <leader>a  :YcmCompleter GoToAlternateFile<CR>
+nnoremap <leader>t  :YcmCompleter GetType<CR>
+nnoremap <leader>T  :YcmCompleter GoToType<CR>
+nnoremap <leader>o  :YcmCompleter GoToDocumentOutline<CR>
+nnoremap <leader>D  :YcmCompleter GetDoc<CR>
+nnoremap <leader>F  :YcmCompleter Format<CR>
+nnoremap <leader>R  :YcmCompleter RefactorRename<Space>
+nnoremap <leader>fx :YcmCompleter FixIt<CR>
+nnoremap <leader>ca :YcmCompleter GoToCallers<CR>
+nnoremap <leader>ce :YcmCompleter GoToCallees<CR>
+nnoremap <leader># :YcmCompleter GoToInclude<CR>
+nmap     <leader>h  <plug>(YCMHover)
+
+" Diagnostics: move detailed-message off ,d (clashed with ,def/,dec) to ,dd,
+" send diagnostics to the location list, jump with ]d / [d.
+let g:ycm_key_detailed_diagnostics = '<leader>dd'
+let g:ycm_always_populate_location_list = 1
+nnoremap ]d :lnext<CR>
+nnoremap [d :lprev<CR>
+
+" Insert the C++ Makefile skeleton at the top of the file (real tabs preserved).
+nnoremap <leader>mk :0read ~/.vim/templates/Makefile<CR>
 
 
 "

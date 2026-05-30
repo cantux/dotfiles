@@ -37,7 +37,8 @@ kept "reinstalling." Two fixes:
 1. Build deps + servers:
 
 ```
-brew install cmake node rust-analyzer       # cmake builds ycm_core; node runs the TS server
+brew install cmake node rust-analyzer universal-ctags
+# cmake builds ycm_core; node runs the TS server; universal-ctags for tags/Tagbar
 npm install -g typescript-language-server typescript
 ```
 
@@ -73,7 +74,45 @@ let g:ycm_language_server = [
 ```
 
 Useful YCM maps already in `.vimrc`: `,g` GoTo, `,r` GoToReferences,
-`,def` GoToDefinition, `,dec` GoToDeclaration.
+`,def` GoToDefinition, `,dec` GoToDeclaration. Completion: auto as-you-type,
+`<C-Space>` to force it, `<C-n>`/`<C-p>` to pick, `<CR>` to accept.
+
+#### ctags
+
+Apple's `/usr/bin/ctags` is a useless stub. Install Universal Ctags and the
+`.vimrc` points Tagbar/easytags at it:
+
+```
+brew install universal-ctags        # lands at /opt/homebrew/bin/ctags, shadows the stub
+```
+
+Build a project index from its root, then jump with tags:
+
+```
+ctags -R .          # writes ./tags  (.vimrc has: set tags=tags,./tags)
+```
+
+`<C-]>` jump to definition under cursor, `<C-t>` jump back, `g]` list matches.
+For C/C++/Python prefer YCM's `,g` (semantic) — tags are the fallback and also
+feed YCM's identifier completion. F5 toggles the Tagbar outline.
+
+#### Editor tweaks in .vimrc
+
+- **Indent**: 2 spaces (`tabstop`/`shiftwidth`/`softtabstop=2`, `expandtab`).
+- **Tabs→spaces on save**: `BufWritePre` runs `retab` (skips `make`/`go` which
+  need real tabs).
+- **Insert-mode word edits**: Option+Backspace deletes the previous word
+  (needs terminal "Option as Meta"); Ctrl+Left / Ctrl+Right skip a word.
+- **Makefile skeleton**: `,mk` in normal mode reads `~/.vim/templates/Makefile`
+  (a plain C++ all/clean Makefile). On-demand, like `<C-T>` for the Python
+  template.
+
+#### sync.sh note
+
+`sync.sh` uses `rsync` and **excludes** `plugged/`, `undodir`, `vimundo`,
+`.netrwhist` so syncing never wipes installed plugins or undo history. Run it
+with the absolute path so it can't execute from the wrong dir:
+`bash ~/Projects/dotfiles/sync.sh`.
 
 ### Linux / Debian
 YouCompleteMe hard requires Vim 8.2+.

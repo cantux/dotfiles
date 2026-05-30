@@ -12,6 +12,17 @@ items=(
   .gitconfig
   .vimrc
   .vim
+  .claude/keybindings.json
+)
+
+# Runtime data that lives under synced dirs (e.g. ~/.vim) but is NOT in the
+# repo. Never delete these or we'd wipe installed plugins / undo history.
+excludes=(
+  --exclude 'plugged'      # vim-plug installed plugins (incl. built YCM)
+  --exclude 'undodir'
+  --exclude 'vimundo'
+  --exclude '.netrwhist'
+  --exclude '.DS_Store'
 )
 
 echo "Syncing dotfiles: $REPO -> $HOME"
@@ -22,8 +33,13 @@ for item in "${items[@]}"; do
     echo "  skip   $item (not in repo)"
     continue
   fi
-  rm -rf "$dst"
-  cp -R "$src" "$dst"
-  echo "  copied $item"
+  if [[ -d "$src" ]]; then
+    mkdir -p "$dst"
+    rsync -a --delete "${excludes[@]}" "$src/" "$dst/"
+  else
+    mkdir -p "$(dirname "$dst")"
+    cp "$src" "$dst"
+  fi
+  echo "  synced $item"
 done
 echo "Done. Open a new shell or 'source ~/.bashrc' to pick up changes."
