@@ -13,6 +13,7 @@ items=(
   .vimrc
   .vim
   .claude/keybindings.json
+  .config/yapf/style
 )
 
 # Runtime data that lives under synced dirs (e.g. ~/.vim) but is NOT in the

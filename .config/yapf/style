@@ -1,0 +1,6 @@
+[style]
+# yapf global default. PEP8 base, but 2-space indent to match the C++
+# (clang-format Google) style used everywhere else. codefmt calls bare `yapf`,
+# which reads this when no per-project config exists.
+based_on_style = pep8
+indent_width = 2
