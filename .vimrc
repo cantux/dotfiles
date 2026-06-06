@@ -207,6 +207,21 @@ let tagbar_ctags_bin='/opt/homebrew/bin/ctags'
 autocmd VimEnter * nested :TagbarOpen
 
 set tags=tags,./tags
+
+" External source trees (glibc, kernel) for tag + cscope navigation.
+" Build indexes with: (kernel) gmake ARCH=x86_64 tags cscope ; (glibc) ctags -R . && cscope -Rbq
+set tags+=~/src/glibc/tags,~/src/linux/tags
+if has('cscope')
+  set cscopetag           " :tag and <C-]> also consult cscope
+  set csto=1              " try ctags first, then cscope
+  silent! cs add ~/src/glibc/cscope.out ~/src/glibc
+  silent! cs add ~/src/linux/cscope.out ~/src/linux
+  " cscope queries on the word under the cursor:
+  nnoremap <leader>fg :cs find g <C-r><C-w><CR>   " global definition
+  nnoremap <leader>fs :cs find s <C-r><C-w><CR>   " all symbol occurrences
+  nnoremap <leader>fc :cs find c <C-r><C-w><CR>   " callers of this function
+  nnoremap <leader>fd :cs find d <C-r><C-w><CR>   " functions this one calls
+endif
 " EasyTags
 let g:easytags_cmd = '/opt/homebrew/bin/ctags'
 let g:easytags_auto_update = 0
