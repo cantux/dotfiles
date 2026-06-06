@@ -14,6 +14,7 @@ items=(
   .vim
   .claude/keybindings.json
   .config/yapf/style
+  .config/clangd/config.yaml
 )
 
 # Runtime data that lives under synced dirs (e.g. ~/.vim) but is NOT in the
