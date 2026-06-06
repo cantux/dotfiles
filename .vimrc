@@ -80,6 +80,13 @@ set softtabstop=2
 " set number of space characters inserted for indentation
 set shiftwidth=2
 
+" enable mouse in all modes so scroll events reach vim (e.g. inside tmux)
+set mouse=a
+" use SGR mouse protocol: reliable scrolling inside tmux / wide terminals
+if has('mouse_sgr')
+  set ttymouse=sgr
+endif
+
 set smartindent
 set ignorecase
 set smartcase
