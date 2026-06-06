@@ -36,6 +36,9 @@ Plug 'morhetz/gruvbox'
 Plug 'kien/ctrlp.vim'
 Plug 'mbbill/undotree'
 
+" Async lint engine (cpplint + cppcheck for C/C++; clang-tidy comes via clangd)
+Plug 'dense-analysis/ale'
+
 " Google formatter stack (vim-codefmt wraps clang-format, gofmt, etc.)
 Plug 'google/vim-maktaba'
 Plug 'google/vim-codefmt'
@@ -49,6 +52,26 @@ if exists('*glaive#Install')
   call glaive#Install()
   Glaive codefmt clang_format_style=Google
 endif
+
+" ALE — async C/C++ linting. clang-tidy + compiler diagnostics already come
+" from clangd (via YCM, see g:ycm_clangd_args below), so ALE only adds the
+" linters clangd lacks: cpplint (Google style) + cppcheck. Let YCM own
+" completion/LSP and the location list; ALE shows signs only.
+let g:ale_disable_lsp = 1
+let g:ale_completion_enabled = 0
+let g:ale_set_loclist = 0
+let g:ale_set_signs = 1
+let g:ale_sign_column_always = 1
+let g:ale_lint_on_text_changed = 'never'
+let g:ale_lint_on_insert_leave = 1
+let g:ale_lint_on_save = 1
+let g:ale_linters = {'cpp': ['cpplint', 'cppcheck'], 'c': ['cppcheck']}
+let g:ale_cpp_cpplint_options = '--filter=-legal/copyright,-build/include_subdir'
+let g:ale_cpp_cppcheck_options = '--enable=warning,style,performance,portability --std=c++20 --inline-suppr'
+let g:ale_c_cppcheck_options = '--enable=warning,style,performance,portability --inline-suppr'
+" jump ALE results with ]a / [a  (]d / [d stay YCM's, see below)
+nnoremap ]a :ALENextWrap<CR>
+nnoremap [a :ALEPreviousWrap<CR>
 
 
 "----------------------------------------------------------------------------------------------------------------------"
@@ -256,6 +279,9 @@ let g:ctrlp_working_path_mode = 'ra'
 
 " YCM
 let g:ycm_collect_identifiers_from_tags_files=1
+" Run clang-tidy inside clangd (checks configured in ~/.config/clangd/config.yaml);
+" don't auto-insert #includes on completion.
+let g:ycm_clangd_args = ['--clang-tidy', '--header-insertion=never']
 let mapleader = ","
 
 nnoremap <leader>g :YcmCompleter GoTo<CR>

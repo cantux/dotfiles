@@ -1,0 +1,18 @@
+# User-global clangd config (synced via dotfiles). Applies when a project has
+# no compile_commands.json -- gives standalone prep files a sane C++ standard
+# and turns on a useful clang-tidy set. clangd runs clang-tidy in-process, so
+# this drives the inline ,F/diagnostics in vim; the external clang-tidy binary
+# is only needed for CLI/batch runs.
+CompileFlags:
+  Add: [-std=c++20, -Wall, -Wextra]
+Diagnostics:
+  ClangTidy:
+    Add:
+      - bugprone-*
+      - performance-*
+      - modernize-*
+      - google-*
+      - cppcoreguidelines-*
+    Remove:
+      - modernize-use-trailing-return-type
+      - google-readability-todo
