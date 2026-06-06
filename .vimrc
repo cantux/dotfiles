@@ -33,10 +33,22 @@ Plug 'tmhedberg/SimpylFold'
 Plug 'romainl/vim-dichromatic'
 Plug 'morhetz/gruvbox'
 
-Plug 'kien/ctrlp.vim' 
+Plug 'kien/ctrlp.vim'
 Plug 'mbbill/undotree'
 
+" Google formatter stack (vim-codefmt wraps clang-format, gofmt, etc.)
+Plug 'google/vim-maktaba'
+Plug 'google/vim-codefmt'
+Plug 'google/vim-glaive'
+
 call plug#end()
+
+" Init glaive and set clang-format to Google style (2-space indent, 80-col wrap)
+" Guard: skip until plugins are installed (avoids errors on first launch)
+if exists('*glaive#Install')
+  call glaive#Install()
+  Glaive codefmt clang_format_style=Google
+endif
 
 
 "----------------------------------------------------------------------------------------------------------------------"
@@ -236,7 +248,8 @@ nnoremap <leader>t  :YcmCompleter GetType<CR>
 nnoremap <leader>T  :YcmCompleter GoToType<CR>
 nnoremap <leader>o  :YcmCompleter GoToDocumentOutline<CR>
 nnoremap <leader>D  :YcmCompleter GetDoc<CR>
-nnoremap <leader>F  :YcmCompleter Format<CR>
+nnoremap <leader>F  :FormatCode<CR>
+vnoremap <leader>F  :FormatLines<CR>
 nnoremap <leader>R  :YcmCompleter RefactorRename<Space>
 nnoremap <leader>fx :YcmCompleter FixIt<CR>
 nnoremap <leader>ca :YcmCompleter GoToCallers<CR>
