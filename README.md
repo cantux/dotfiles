@@ -1,170 +1,120 @@
-# unix_env_setup
+# dotfiles (macOS / Apple Silicon)
 
-Make backups of the default dotfiles at your home then copy this directory entirely and restart terminal.
-```
-mkdir dotfile_bak
-cp .* dotfile_bak/.
-```
+My Mac setup: shell, tmux, git, and a vim IDE (YCM + clangd, formatters,
+linters, sanitizers). Branch `mac` is the macOS port of the original Linux
+dotfiles. Tracked files are **copied** into `$HOME` by `sync.sh` — not symlinked.
 
-## Vim
+## Quick start
 
-### macOS (Apple Silicon) setup
-
-The system vim (`/usr/bin/vim`) is built with `-python3` — no Python. YCM is a
-Python plugin, so it can't load there. You'll see:
+Fresh machine — install everything and lay down the config:
 
 ```
-YouCompleteMe unavailable: requires Vim compiled with Python (3.12.0+) support.
+./init.sh        # Homebrew + formulae + pipx tools, then sync.sh + vim plugins
 ```
 
-Fix: install a vim with Python.
+Already set up — after editing any file in this repo:
 
 ```
-brew install vim                 # bottle is built +python3/dyn (loads brew python3 at runtime)
-vim --version | grep python3     # expect +python3/dyn  (system vim shows -python3)
+./sync.sh        # copy tracked files into $HOME
 ```
 
-`/opt/homebrew/bin` is already ahead of `/usr/bin` on PATH, so the brew vim
-shadows the system one. Just open a new shell.
+Reload without a new shell: `source ~/.bashrc` · `tmux source-file ~/.tmux.conf` ·
+`:source $MYVIMRC` in vim.
 
-#### Build YCM (one time)
+> **Cardinal rule:** edit the copy in this repo, then `./sync.sh`. Never edit the
+> `$HOME` copy directly — the next sync overwrites it. `sync.sh` does `cp`/`rsync`,
+> not symlinks.
 
-vim-plug only clones plugins; it does NOT fetch YCM's git submodules or compile
-`ycm_core`. The auto-installer in `.vimrc` only checks if the top-level plugin
-dir exists, so it can't tell that YCM is unbuilt — that's why it looked like it
-kept "reinstalling." Two fixes:
+## What's tracked
 
-1. Build deps + servers:
+`sync.sh` copies: `.bashrc`, `.bash_aliases`, `.tmux.conf`, `.gitconfig`,
+`.vimrc`, `.vim/`, `.claude/keybindings.json`, `.claude/settings.json`,
+`.config/yapf/style`, `.config/clangd/config.yaml`.
+
+It **excludes** `.vim/plugged`, `undodir`, `vimundo`, `.netrwhist` so a sync
+never wipes installed plugins or undo history.
+
+## Packages
+
+`init.sh` installs the Homebrew leaves (formulae installed on request, not
+deps) plus the pipx CLI tools. Regenerate the formula list any time with:
 
 ```
-brew install cmake node rust-analyzer universal-ctags
-# cmake builds ycm_core; node runs the TS server; universal-ctags for tags/Tagbar
-npm install -g typescript-language-server typescript
+brew leaves --installed-on-request
 ```
 
-2. Fetch submodules + compile (do this with NO vim open on the YCM repo — a
-   second git process corrupts it):
+pipx tools: `yapf` (Python formatter), `cpplint` (Google C++ linter).
 
-```
-cd ~/.vim/plugged/YouCompleteMe
-git submodule update --init --recursive      # big download (clang + jedi deps)
-python3 install.py --clangd-completer        # builds ycm_core; clangd = C/C++, jedi (bundled) = Python
-```
+## vim
 
-Make it self-healing: add a build hook to the YCM line in `.vimrc` so
-`:PlugInstall`/`:PlugUpdate` compiles it automatically:
+A single IDE around YCM. YCM **is** the LSP client — don't add a second one
+(coc/vim-lsp); feed servers into YCM instead.
+
+### Format — `,F`
+
+vim-codefmt (Google maktaba/codefmt/glaive). `,F` = `:FormatCode` (whole file),
+visual `,F` = `:FormatLines`.
+
+- **C/C++** → clang-format, Google style (2-space), set in `.vimrc`.
+- **Python** → yapf, 2-space to match (config: `~/.config/yapf/style`).
+
+### Lint / static analysis
+
+- **clang-tidy** runs inside **clangd** (`g:ycm_clangd_args = ['--clang-tidy']`);
+  checks + `-std=c++20` live in `~/.config/clangd/config.yaml`. Shows inline.
+- **ALE** adds what clangd doesn't: **cpplint** + **cppcheck** (signs only; it
+  leaves the location list to YCM). Jump ALE results with `]a` / `[a`.
+
+### Sanitizers / leaks (shell helpers in `.bash_aliases`)
+
+macOS supports ASan/UBSan/TSan; **MSan is not available** on macOS.
+
+- `asan foo.cpp` / `tsan foo.cpp` — build with the sanitizer and run `./a.out`.
+- `memcheck ./a.out` — leak check via Apple's `leaks` (no LeakSanitizer on mac).
+- `clang-tidy` / `scan-build` — aliases to keg-only Homebrew llvm.
+
+### Navigation
+
+- **YCM** (semantic): `,g` GoTo · `,r` references · `,def` / `,dec` def/decl ·
+  `,i` impl · `,t` type · `,o` outline · `,D` doc · `,h` hover · `,R` rename ·
+  `,fx` fixit · `,ca` / `,ce` callers/callees. Diagnostics: `,dd`, jump `]d`/`[d`.
+- **cscope + ctags** (for external trees like glibc/kernel): `,fg` global def ·
+  `,fs` symbol · `,fc` callers · `,fd` callees. `<C-]>` jump, `<C-t>` back, `g]`
+  list. Build an index from a project root: `ctags -R .` (writes `./tags`).
+- `,mk` reads the C++ Makefile skeleton (`~/.vim/templates/Makefile`).
+- F5 toggles the Tagbar outline.
+
+### Editor tweaks
+
+- Indent 2 spaces (`expandtab`, `tabstop`/`shiftwidth`/`softtabstop=2`).
+- Tabs→spaces on save (`retab` on `BufWritePre`; skips `make`/`go`).
+- SGR mouse on so the wheel scrolls inside tmux.
+
+## Appendix: vim / YCM build on a fresh Mac
+
+System vim (`/usr/bin/vim`) is built `-python3`, so YCM can't load there.
+`brew install vim` gives a `+python3/dyn` build, and `/opt/homebrew/bin` is ahead
+of `/usr/bin` on PATH, so it shadows the system vim. Check with
+`vim --version | grep python3`.
+
+vim-plug clones plugins but does **not** fetch YCM's submodules or compile
+`ycm_core`. The `.vimrc` YCM line carries a build hook so `:PlugInstall` /
+`:PlugUpdate` compiles it:
 
 ```vim
 Plug 'ycm-core/YouCompleteMe', { 'do': './install.py --clangd-completer' }
 ```
 
-#### LSP servers (through YCM, not beside it)
-
-YCM **is** an LSP client. Don't run a second client (vim-lsp/coc) next to it —
-that causes duplicate popups/diagnostics. Feed servers into YCM instead. clangd
-(C/C++), jedi (Python), gopls (Go), Java are handled by YCM directly. Add the
-rest in `.vimrc`:
-
-```vim
-let g:ycm_language_server = [
-  \ { 'name': 'rust', 'cmdline': ['rust-analyzer'], 'filetypes': ['rust'] },
-  \ { 'name': 'typescript', 'cmdline': ['typescript-language-server', '--stdio'],
-  \   'filetypes': ['typescript','javascript'] },
-  \ ]
-```
-
-Useful YCM maps already in `.vimrc`: `,g` GoTo, `,r` GoToReferences,
-`,def` GoToDefinition, `,dec` GoToDeclaration. Completion: auto as-you-type,
-`<C-Space>` to force it, `<C-n>`/`<C-p>` to pick, `<CR>` to accept.
-
-#### ctags
-
-Apple's `/usr/bin/ctags` is a useless stub. Install Universal Ctags and the
-`.vimrc` points Tagbar/easytags at it:
+One-time manual build (do it with no vim open on the YCM repo):
 
 ```
-brew install universal-ctags        # lands at /opt/homebrew/bin/ctags, shadows the stub
+cd ~/.vim/plugged/YouCompleteMe
+git submodule update --init --recursive
+python3 install.py --clangd-completer      # clangd = C/C++, bundled jedi = Python
 ```
 
-Build a project index from its root, then jump with tags:
+Extra language servers go **through** YCM via `g:ycm_language_server`
+(e.g. `rust-analyzer`, `typescript-language-server`).
 
-```
-ctags -R .          # writes ./tags  (.vimrc has: set tags=tags,./tags)
-```
-
-`<C-]>` jump to definition under cursor, `<C-t>` jump back, `g]` list matches.
-For C/C++/Python prefer YCM's `,g` (semantic) — tags are the fallback and also
-feed YCM's identifier completion. F5 toggles the Tagbar outline.
-
-#### Editor tweaks in .vimrc
-
-- **Indent**: 2 spaces (`tabstop`/`shiftwidth`/`softtabstop=2`, `expandtab`).
-- **Tabs→spaces on save**: `BufWritePre` runs `retab` (skips `make`/`go` which
-  need real tabs).
-- **Insert-mode word edits**: Option+Backspace deletes the previous word
-  (needs terminal "Option as Meta"); Ctrl+Left / Ctrl+Right skip a word.
-- **Makefile skeleton**: `,mk` in normal mode reads `~/.vim/templates/Makefile`
-  (a plain C++ all/clean Makefile). On-demand, like `<C-T>` for the Python
-  template.
-
-#### sync.sh note
-
-`sync.sh` uses `rsync` and **excludes** `plugged/`, `undodir`, `vimundo`,
-`.netrwhist` so syncing never wipes installed plugins or undo history. Run it
-with the absolute path so it can't execute from the wrong dir:
-`bash ~/Projects/dotfiles/sync.sh`.
-
-### Linux / Debian
-YouCompleteMe hard requires Vim 8.2+.
-
-First solution was to keep YCM version at a certain commit. I am keeping the line that does it.
-
-Other solution is to update the vim version which debian don't have a decent backport yet.
-
-```
-# remove prev
-sudo apt-get purge vim vim-common vim-gtk3
-
-cd $vim_source
-conda install gxx_linux-64              ## install latest gcc libs for python
-./$dotfiles/build_vim_with_python.sh    ## configure vim with python3.8
-```
-
-### YCM tags creator
-Creates tags with Conda env libraries included.
-
-```
-ycm_conf_from_conda_gen.sh
-gen_conda_python_ctags.sh
-```
-
-## Ctags
-### Install
-Clone and install ctags if system don't have it.
-```
-~/.ctags/build_ctags_source.sh
-
-```
-### Setup
-Run the following. It will install Plugged, then install all plugins
-
-```
-:PluggedInstall
-```
-
-Then in terminal run the following to copy colors and initialize YCM:
-
-```
-~/.vim/init.sh
-```
-
-## Aliases
-
-### Copy Pasta to middleclick
-Requires xclip:
-```
-cat anan | pbcopy
-pbpaste | cat
-```
-
-
+Apple's `/usr/bin/ctags` is a stub — `brew install universal-ctags` lands a real
+one at `/opt/homebrew/bin/ctags` and shadows it.
