@@ -315,6 +315,9 @@ nnoremap [d :lprev<CR>
 " Insert the C++ Makefile skeleton at the top of the file (real tabs preserved).
 nnoremap <leader>mk :0read ~/.vim/templates/Makefile<CR>
 
+" Run the current python file (its test()) in a shell.
+nnoremap <leader>pt :!python3 %<CR>
+
 
 "
 
