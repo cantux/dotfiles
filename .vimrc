@@ -318,6 +318,9 @@ nnoremap <leader>mk :0read ~/.vim/templates/Makefile<CR>
 " Run the current python file (its test()) in a shell.
 nnoremap <leader>pt :!python3 %<CR>
 
+" Insert the Google Test skeleton at the top of the file (unit test).
+nnoremap <leader>ut :0read ~/.vim/templates/gtest.cpp<CR>
+
 
 "
 
