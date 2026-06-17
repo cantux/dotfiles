@@ -13,6 +13,7 @@ items=(
   .vimrc
   .vim
   .claude/keybindings.json
+  .claude/settings.json
   .config/yapf/style
   .config/clangd/config.yaml
 )
