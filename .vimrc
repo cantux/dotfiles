@@ -53,6 +53,15 @@ if exists('*glaive#Install')
   Glaive codefmt clang_format_style=Google
 endif
 
+" Auto-format C/C++ on save so clang-format runs before cpplint lints. Without
+" this, edits get saved (and linted) but never formatted, so cpplint warns about
+" layout clang-format would have fixed. Guard keeps first launch quiet.
+augroup autoformat_settings
+  autocmd!
+  autocmd FileType c,cpp,proto,objc,objcpp
+        \ if exists(':AutoFormatBuffer') | AutoFormatBuffer clang-format | endif
+augroup END
+
 " ALE — async C/C++ linting. clang-tidy + compiler diagnostics already come
 " from clangd (via YCM, see g:ycm_clangd_args below), so ALE only adds the
 " linters clangd lacks: cpplint (Google style) + cppcheck. Let YCM own
@@ -66,7 +75,10 @@ let g:ale_lint_on_text_changed = 'never'
 let g:ale_lint_on_insert_leave = 1
 let g:ale_lint_on_save = 1
 let g:ale_linters = {'cpp': ['cpplint', 'cppcheck'], 'c': ['cppcheck']}
-let g:ale_cpp_cpplint_options = '--filter=-legal/copyright,-build/include_subdir'
+" clang-format owns layout, so drop cpplint's whitespace checks. Stops the two
+" tools from disagreeing (e.g. "two spaces before comment"); cpplint still flags
+" naming, include order, and the rest clang-format can't.
+let g:ale_cpp_cpplint_options = '--filter=-legal/copyright,-build/include_subdir,-whitespace'
 let g:ale_cpp_cppcheck_options = '--enable=warning,style,performance,portability --std=c++20 --inline-suppr'
 let g:ale_c_cppcheck_options = '--enable=warning,style,performance,portability --inline-suppr'
 " jump ALE results with ]a / [a  (]d / [d stay YCM's, see below)
@@ -235,6 +247,15 @@ let g:miniBufExplBuffersNeeded = 1
 let tagbar_ctags_bin='/opt/homebrew/bin/ctags'
 " autocmd vimenter * TagbarOpen
 autocmd VimEnter * nested :TagbarOpen
+
+" Drop Tagbar's WinEnter handler. It calls close() on quit, which Vim 9
+" forbids inside a WinEnter autocmd (E1312). Use :qa to quit instead.
+augroup TagbarFixE1312
+  autocmd!
+  autocmd BufWinEnter,WinEnter * if exists('#TagbarAutoCmds#WinEnter')
+        \ |   execute 'autocmd! TagbarAutoCmds WinEnter *'
+        \ | endif
+augroup END
 
 set tags=tags,./tags
 
