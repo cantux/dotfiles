@@ -4,5 +4,10 @@
   },
   "effortLevel": "xhigh",
   "theme": "dark-daltonized",
-  "skipWorkflowUsageWarning": true
+  "skipWorkflowUsageWarning": true,
+  "tui": "fullscreen",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
 }
