@@ -196,11 +196,12 @@ noremap <C-Left>  <C-W>h
 noremap <C-Right> <C-W>l
 
 " Insert-mode word editing
-" keep <Esc> snappy since the Option-key sequence starts with ESC
+" keep <Esc> snappy since the Alt/Meta sequence starts with ESC
 set ttimeout ttimeoutlen=30
-" Option+Backspace: delete the word before the cursor.
-" Needs terminal 'Option as Meta'; it then sends ESC + DEL. Map both the
-" <M-BS> notation and the raw ESC+DEL bytes so it works either way.
+" Alt+Backspace: delete the word before the cursor.
+" Needs the terminal to send Alt as Meta (ESC prefix) -- the default in
+" xterm/gnome-terminal and forwarded by tmux; it then sends ESC + DEL. Map both
+" the <M-BS> notation and the raw ESC+DEL bytes so it works either way.
 inoremap <M-BS> <C-w>
 execute "inoremap \<Esc>\<Char-0x7f> \<C-w>"
 " Ctrl+Left / Ctrl+Right: skip back/forward one word (xterm-keys passes these via tmux)
@@ -244,7 +245,7 @@ let g:miniBufExplModSelTarget = 1
 let g:miniBufExplBuffersNeeded = 1
 
 " TagBar
-let tagbar_ctags_bin='/opt/homebrew/bin/ctags'
+let tagbar_ctags_bin='/usr/bin/ctags'
 " autocmd vimenter * TagbarOpen
 autocmd VimEnter * nested :TagbarOpen
 
@@ -260,7 +261,7 @@ augroup END
 set tags=tags,./tags
 
 " External source trees (glibc, kernel) for tag + cscope navigation.
-" Build indexes with: (kernel) gmake ARCH=x86_64 tags cscope ; (glibc) ctags -R . && cscope -Rbq
+" Build indexes with: (kernel) make ARCH=x86_64 tags cscope ; (glibc) ctags -R . && cscope -Rbq
 set tags+=~/src/glibc/tags,~/src/linux/tags
 if has('cscope')
   set cscopetag           " :tag and <C-]> also consult cscope
@@ -274,7 +275,7 @@ if has('cscope')
   nnoremap <leader>fd :cs find d <C-r><C-w><CR>   " functions this one calls
 endif
 " EasyTags
-let g:easytags_cmd = '/opt/homebrew/bin/ctags'
+let g:easytags_cmd = '/usr/bin/ctags'
 let g:easytags_auto_update = 0
 let g:easytags_always_enabled = 0
 let g:easytags_auto_highlight = 0

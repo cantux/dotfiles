@@ -17,19 +17,20 @@ tt() { tmux attach || tmux new -s main; }
 # Run Claude with max effort on the latest Opus model.
 alias cmax="claude --model opus --effort max"
 
-# Open Claude in a new git worktree with an iTerm2/tmux session.
+# Open Claude in a new git worktree with a tmux session.
 # Usage: ccw <worktree-name> [extra claude flags]
 ccw() { claude --tmux=classic --worktree "$@"; }
 
-# C++ static analysis: Homebrew llvm is keg-only, so expose its tools without
-# shadowing system clang on PATH.
-alias clang-tidy="/opt/homebrew/opt/llvm/bin/clang-tidy"
-alias scan-build="/opt/homebrew/opt/llvm/bin/scan-build"
+# C++ static analysis. dnf's clang-tools-extra / clang-analyzer put clang-tidy
+# and scan-build on PATH, so no aliases are needed (unlike keg-only mac llvm).
 
-# C++ sanitizer build+run helpers. macOS supports ASan/UBSan/TSan; MSan does not.
+# C++ sanitizer build+run helpers. ASan/UBSan/TSan work out of the box.
+# (MSan is omitted: it needs the whole program -- incl. the C++ stdlib --
+# instrumented, and el10 ships no instrumented libc++, so it false-positives in
+# libstdc++. Use valgrind/memcheck below for uninitialized-read style bugs.)
 # usage: asan foo.cpp   (builds with ASan+UBSan, then runs ./a.out)
 asan() { clang++ -std=c++20 -g -fsanitize=address,undefined -fno-omit-frame-pointer "$@" && ./a.out; }
 tsan() { clang++ -std=c++20 -g -fsanitize=thread -fno-omit-frame-pointer "$@" && ./a.out; }
-# Leak check with Apple's tool (LeakSanitizer is unavailable on macOS).
+# Leak/error check via valgrind (replaces Apple's `leaks`).
 # usage: memcheck ./a.out [args]
-memcheck() { MallocStackLogging=1 leaks --atExit -- "$@"; }
+memcheck() { valgrind --leak-check=full --show-leak-kinds=all "$@"; }

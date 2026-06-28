@@ -67,10 +67,11 @@ xterm*|rxvt*)
     ;;
 esac
 
-# macOS color support for ls (BSD ls uses CLICOLOR/LSCOLORS, not dircolors)
-export CLICOLOR=1
-export LSCOLORS=GxFxCxDxBxegedabagaced
-alias ls='ls -G'
+# enable color support of ls (GNU coreutils uses dircolors, not LSCOLORS)
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+fi
 
 # colored GCC warnings and errors
 #export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
@@ -90,12 +91,12 @@ if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
-# Homebrew bash-completion@2
-[[ -r /opt/homebrew/etc/profile.d/bash_completion.sh ]] && \
-    source /opt/homebrew/etc/profile.d/bash_completion.sh
+# System bash-completion (dnf: bash-completion)
+[[ -r /usr/share/bash-completion/bash_completion ]] && \
+    source /usr/share/bash-completion/bash_completion
 
-# Homebrew shellenv (sets PATH, MANPATH, etc. for /opt/homebrew)
-[[ -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
-
-# User-installed binaries (claude lives here)
+# User-installed binaries (claude + pipx tools live here)
 export PATH="$HOME/.local/bin:$PATH"
+
+# Rust toolchain (rustup installs rust-analyzer here; see init.sh)
+[[ -r "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"

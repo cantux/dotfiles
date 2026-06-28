@@ -3,10 +3,10 @@
 	name = cantux
 
 [diff]
-    tool = opendiff
+    tool = vimdiff
 
 [merge]
-    tool = opendiff
+    tool = vimdiff
 
 [core]
     editor = vim

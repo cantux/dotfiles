@@ -25,7 +25,6 @@ excludes=(
   --exclude 'undodir'
   --exclude 'vimundo'
   --exclude '.netrwhist'
-  --exclude '.DS_Store'
 )
 
 echo "Syncing dotfiles: $REPO -> $HOME"

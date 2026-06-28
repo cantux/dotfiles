@@ -1,8 +1,7 @@
 // Google Test skeleton -- call a function and check its result.
 //
-// Build (gtest from `brew install googletest`; -lgtest_main gives you main()):
+// Build (gtest from `dnf install gtest-devel`; -lgtest_main gives you main()):
 //   g++ -std=c++20 -Wall -Wextra -g THIS_FILE.cpp \
-//       -I/opt/homebrew/include -L/opt/homebrew/lib \
 //       -lgtest -lgtest_main -pthread -o test && ./test
 
 #include <gtest/gtest.h>

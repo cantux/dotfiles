@@ -1,15 +1,15 @@
-# dotfiles (macOS / Apple Silicon)
+# dotfiles (CentOS Stream 10)
 
-My Mac setup: shell, tmux, git, and a vim IDE (YCM + clangd, formatters,
-linters, sanitizers). Branch `mac` is the macOS port of the original Linux
-dotfiles. Tracked files are **copied** into `$HOME` by `sync.sh` — not symlinked.
+My CentOS setup: shell, tmux, git, and a vim IDE (YCM + clangd, formatters,
+linters, sanitizers). Branch `centos` is the CentOS port of the `mac` branch.
+Tracked files are **copied** into `$HOME` by `sync.sh` — not symlinked.
 
 ## Quick start
 
-Fresh machine — install everything and lay down the config:
+Fresh machine — install everything and lay down the config (needs `sudo`):
 
 ```
-./init.sh        # Homebrew + formulae + pipx tools, then sync.sh + vim plugins
+./init.sh        # dnf packages (EPEL + CRB) + rustup + pipx tools, then sync.sh + vim plugins
 ```
 
 Already set up — after editing any file in this repo:
@@ -36,12 +36,36 @@ never wipes installed plugins or undo history.
 
 ## Packages
 
-`init.sh` installs the Homebrew leaves (formulae installed on request, not
-deps) plus the pipx CLI tools. Regenerate the formula list any time with:
+`init.sh` enables **EPEL + CRB**, installs the `"Development Tools"` group
+(gcc/g++/make/autoconf/git), then a single `dnf install` of the package set
+below, plus the pipx CLI tools. rust-analyzer isn't packaged, so it's installed
+via **rustup**.
 
-```
-brew leaves --installed-on-request
-```
+| tool | dnf package | repo |
+|---|---|---|
+| bash-completion | `bash-completion` | baseos |
+| borgbackup | `borgbackup` | EPEL |
+| clang / clang-format / clang-tidy / clangd | `clang clang-tools-extra` | appstream |
+| scan-build | `clang-analyzer` | appstream |
+| cmake | `cmake` | appstream |
+| cppcheck | `cppcheck` | EPEL |
+| cscope | `cscope` | appstream |
+| ctags (Universal Ctags 6.x) | `ctags` | EPEL |
+| googletest | `gtest-devel` | EPEL |
+| llvm | `llvm` | appstream |
+| node + npm | `nodejs nodejs-npm` | appstream |
+| poppler | `poppler-utils` | appstream |
+| python 3.12 | `python3 python3-devel python3-pip` | baseos/appstream |
+| pipx | `pipx` | EPEL |
+| qemu | `qemu-kvm qemu-img` | appstream |
+| rclone | `rclone` | EPEL |
+| tmux | `tmux` | baseos |
+| valgrind | `valgrind` | appstream |
+| vim (`+python3`) | `vim-enhanced` | appstream |
+| rust-analyzer | via `rustup component add rust-analyzer` | rustup |
+
+`init.sh` also installs `curl` and `rsync` (baseos, usually already present):
+`curl` bootstraps rustup, `rsync` powers `sync.sh`.
 
 pipx tools: `yapf` (Python formatter), `cpplint` (Google C++ linter).
 
@@ -67,11 +91,13 @@ visual `,F` = `:FormatLines`.
 
 ### Sanitizers / leaks (shell helpers in `.bash_aliases`)
 
-macOS supports ASan/UBSan/TSan; **MSan is not available** on macOS.
+ASan/UBSan/TSan work out of the box.
 
 - `asan foo.cpp` / `tsan foo.cpp` — build with the sanitizer and run `./a.out`.
-- `memcheck ./a.out` — leak check via Apple's `leaks` (no LeakSanitizer on mac).
-- `clang-tidy` / `scan-build` — aliases to keg-only Homebrew llvm.
+- `memcheck ./a.out` — leak/error check via **valgrind**. (Use this for
+  uninitialized-read bugs: MSan is omitted because el10 ships no instrumented
+  libc++, so it false-positives in the standard library.)
+- `clang-tidy` / `scan-build` — from dnf `clang-tools-extra` / `clang-analyzer` (on PATH).
 
 ### Navigation
 
@@ -90,16 +116,14 @@ macOS supports ASan/UBSan/TSan; **MSan is not available** on macOS.
 - Tabs→spaces on save (`retab` on `BufWritePre`; skips `make`/`go`).
 - SGR mouse on so the wheel scrolls inside tmux.
 
-## Appendix: vim / YCM build on a fresh Mac
+## Appendix: vim / YCM build on a fresh CentOS box
 
-System vim (`/usr/bin/vim`) is built `-python3`, so YCM can't load there.
-`brew install vim` gives a `+python3/dyn` build, and `/opt/homebrew/bin` is ahead
-of `/usr/bin` on PATH, so it shadows the system vim. Check with
+`dnf install vim-enhanced` gives a `+python3` build, so YCM can load. Check with
 `vim --version | grep python3`.
 
 vim-plug clones plugins but does **not** fetch YCM's submodules or compile
 `ycm_core`. The `.vimrc` YCM line carries a build hook so `:PlugInstall` /
-`:PlugUpdate` compiles it:
+`:PlugUpdate` compiles it (needs `cmake`, `clang`, `python3-devel`):
 
 ```vim
 Plug 'ycm-core/YouCompleteMe', { 'do': './install.py --clangd-completer' }
@@ -116,5 +140,5 @@ python3 install.py --clangd-completer      # clangd = C/C++, bundled jedi = Pyth
 Extra language servers go **through** YCM via `g:ycm_language_server`
 (e.g. `rust-analyzer`, `typescript-language-server`).
 
-Apple's `/usr/bin/ctags` is a stub — `brew install universal-ctags` lands a real
-one at `/opt/homebrew/bin/ctags` and shadows it.
+EPEL's `ctags` (`/usr/bin/ctags`) is Universal Ctags 6.x — the real one Tagbar
+and easytags expect (`.vimrc` points both at `/usr/bin/ctags`).

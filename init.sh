@@ -1,42 +1,76 @@
 #!/usr/bin/env bash
-# Bootstrap a fresh Mac to today's package set, then sync dotfiles.
-# Idempotent: safe to re-run. Restore order is: Homebrew -> formulae ->
-# pipx tools -> dotfiles + vim plugins.
+# Bootstrap a fresh CentOS Stream 10 box to today's package set, then sync
+# dotfiles. Idempotent: safe to re-run. Order is: repos (EPEL + CRB) ->
+# dnf packages -> rustup (rust-analyzer) -> pipx tools -> dotfiles + vim plugins.
 #
-# Regenerate the formula list with:  brew leaves --installed-on-request
-# (these are the packages installed on request, not pulled in as deps).
+# CentOS port of the macOS init.sh. The mac package set came from
+# `brew leaves --installed-on-request`; the dnf equivalents are below
+# (plus rustup for rust-analyzer, which dnf/EPEL doesn't package).
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# --- Homebrew ---------------------------------------------------------------
-if ! command -v brew >/dev/null 2>&1; then
-  echo "Installing Homebrew..."
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-fi
-eval "$(/opt/homebrew/bin/brew shellenv)"
-brew update
+# --- Repos: EPEL + CRB ------------------------------------------------------
+# borgbackup, cppcheck, rclone, ctags (universal-ctags), gtest-devel and pipx
+# live in EPEL; EPEL packages may pull build deps from CRB (CodeReady Builder),
+# so enable both. epel-release ships in CentOS Stream's extras-common repo.
+sudo dnf install -y dnf-plugins-core epel-release
+sudo dnf config-manager --set-enabled crb
+sudo dnf makecache
 
-# --- Formulae (brew leaves --installed-on-request) --------------------------
-brew install \
-  bash-completion@2 \
+# --- Toolchain + packages ---------------------------------------------------
+# "Development Tools" pulls in gcc, gcc-c++, make, autoconf, git, etc.
+sudo dnf groupinstall -y "Development Tools"
+
+# Single transaction across base/AppStream/CRB + EPEL. Trailing comment on each
+# line maps it back to the Homebrew formula it replaces.
+sudo dnf install -y \
+  bash-completion \
   borgbackup \
-  clang-format \
+  clang \
+  clang-analyzer \
+  clang-tools-extra \
   cmake \
   cppcheck \
   cscope \
+  ctags \
+  curl \
+  gtest-devel \
   llvm \
   make \
-  node \
+  nodejs \
+  nodejs-npm \
+  poppler-utils \
+  python3 \
+  python3-devel \
+  python3-pip \
   pipx \
-  poppler \
-  python@3.13 \
-  qemu \
+  qemu-img \
+  qemu-kvm \
   rclone \
-  rust-analyzer \
+  rsync \
   tmux \
-  universal-ctags \
-  vim
+  valgrind \
+  vim-enhanced
+# Mapping notes (mac formula -> CentOS):
+#   bash-completion@2  -> bash-completion
+#   clang-format,llvm  -> clang clang-tools-extra llvm (clang-format/clang-tidy/clangd)
+#   scan-build         -> clang-analyzer
+#   node               -> nodejs nodejs-npm
+#   poppler            -> poppler-utils
+#   python@3.13        -> python3 python3-devel (el10 default python3 is 3.12)
+#   qemu               -> qemu-kvm qemu-img
+#   universal-ctags    -> ctags (EPEL ships Universal Ctags 6.x as `ctags`)
+#   (Apple `leaks`)    -> valgrind
+#   googletest         -> gtest-devel (for the ~/.vim/templates/gtest.cpp build)
+
+# --- rust-analyzer (not packaged in dnf/EPEL; install via rustup) -----------
+if [ ! -x "$HOME/.cargo/bin/rust-analyzer" ]; then
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+  # shellcheck disable=SC1091
+  source "$HOME/.cargo/env"
+  rustup component add rust-analyzer
+fi
 
 # --- pipx CLI tools ---------------------------------------------------------
 pipx ensurepath
