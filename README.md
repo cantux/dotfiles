@@ -45,6 +45,29 @@ brew leaves --installed-on-request
 
 pipx tools: `yapf` (Python formatter), `cpplint` (Google C++ linter).
 
+Casks: `iterm2` (terminal). `init.sh` installs it and applies our key map.
+
+## iTerm2 key map
+
+We persist **only the divergence** from iTerm2's default global key map, not
+the whole plist — iTerm2 has no full default-prefs file to diff against, and the
+plist is mostly transient junk (window frames, updater state, `NoSync*` flags).
+
+The one change: `Ctrl+Enter` and `Shift+Enter` send distinct CSI u escape
+sequences (`ESC [13;5u` / `ESC [13;2u`) instead of a bare `\r`, so Claude Code
+can tell them apart from plain Enter. The pairing lives in `keybindings.json`
+(`ctrl+enter` = submit, `enter`/`shift+enter` = newline).
+
+- Data: `iterm2/keymap-divergence.plist` (single source of truth).
+- Apply: `iterm2/apply-keymap.sh` — merges it into the live prefs, idempotent,
+  leaves iTerm2's own defaults alone. **Quit iTerm2 first** (run from
+  Terminal.app); it overwrites prefs on quit, so it skips if iTerm2 is running.
+
+To change a binding: edit the plist, quit iTerm2, run the script.
+
+> Not for Linux. iTerm2 is macOS-only. On another terminal, make *it* emit the
+> same `ESC [13;5u` / `ESC [13;2u` (or enable CSI u / `modifyOtherKeys`).
+
 ## vim
 
 A single IDE around YCM. YCM **is** the LSP client — don't add a second one
