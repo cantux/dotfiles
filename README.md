@@ -25,11 +25,33 @@ Reload without a new shell: `source ~/.bashrc` · `tmux source-file ~/.tmux.conf
 > `$HOME` copy directly — the next sync overwrites it. `sync.sh` does `cp`/`rsync`,
 > not symlinks.
 
+### Ctrl+Enter to submit (terminal + tmux)
+
+Keybindings are `enter`→newline, `ctrl+enter`→submit (`.claude/keybindings.json`,
+identical to mac). For Ctrl+Enter to reach Claude as a *distinct* key, two pieces
+are needed:
+
+1. **A terminal that emits a distinct Ctrl+Enter — use `kitty`.** gnome-terminal
+   can't (it sends Ctrl+Enter as plain Enter). `.config/kitty/kitty.conf` maps
+   Ctrl+Enter to the CSI-u sequence `ESC[13;5u` — the same bytes iTerm2 sent on the
+   mac branch — so it's deterministic, not reliant on flaky protocol negotiation.
+2. **tmux ≥ 3.4 to relay it.** CentOS Stream 10 only packages tmux 3.3a, so build a
+   newer one:
+   ```
+   ./install_tmux.sh        # builds tmux >= 3.4 into /usr/local (needs sudo)
+   tmux kill-server         # then start a fresh tmux
+   ```
+   `.tmux.conf` carries `extended-keys-format csi-u` (guarded — a no-op on 3.3a).
+
+> Prefer **Ctrl+J**? It's a single byte (LF) that submits reliably in *any* terminal
+> with no setup. Bind `ctrl+j`→`chat:submit` and you need neither kitty nor the
+> newer tmux for submitting. Ctrl+Enter (via kitty) is purely to match mac muscle memory.
+
 ## What's tracked
 
 `sync.sh` copies: `.bashrc`, `.bash_aliases`, `.tmux.conf`, `.gitconfig`,
 `.vimrc`, `.vim/`, `.claude/keybindings.json`, `.claude/settings.json`,
-`.config/yapf/style`, `.config/clangd/config.yaml`.
+`.config/yapf/style`, `.config/clangd/config.yaml`, `.config/kitty/kitty.conf`.
 
 It **excludes** `.vim/plugged`, `undodir`, `vimundo`, `.netrwhist` so a sync
 never wipes installed plugins or undo history.
@@ -52,6 +74,7 @@ via **rustup**.
 | cscope | `cscope` | appstream |
 | ctags (Universal Ctags 6.x) | `ctags` | EPEL |
 | googletest | `gtest-devel` | EPEL |
+| kitty (terminal — distinct Ctrl+Enter) | `kitty` | EPEL |
 | llvm | `llvm` | appstream |
 | node + npm | `nodejs nodejs-npm` | appstream |
 | poppler | `poppler-utils` | appstream |

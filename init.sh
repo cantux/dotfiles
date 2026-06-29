@@ -36,6 +36,7 @@ sudo dnf install -y \
   ctags \
   curl \
   gtest-devel \
+  kitty \
   llvm \
   make \
   nodejs \
@@ -63,6 +64,8 @@ sudo dnf install -y \
 #   universal-ctags    -> ctags (EPEL ships Universal Ctags 6.x as `ctags`)
 #   (Apple `leaks`)    -> valgrind
 #   googletest         -> gtest-devel (for the ~/.vim/templates/gtest.cpp build)
+#   (iTerm2 on mac)    -> kitty (EPEL; needed for a distinct Ctrl+Enter via the
+#                         ESC[13;5u map in .config/kitty/kitty.conf)
 
 # --- rust-analyzer (not packaged in dnf/EPEL; install via rustup) -----------
 if [ ! -x "$HOME/.cargo/bin/rust-analyzer" ]; then

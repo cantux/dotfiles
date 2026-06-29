@@ -4,5 +4,6 @@
   },
   "effortLevel": "xhigh",
   "theme": "dark-daltonized",
-  "skipWorkflowUsageWarning": true
+  "skipWorkflowUsageWarning": true,
+  "tui": "default"
 }

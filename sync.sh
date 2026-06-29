@@ -16,6 +16,7 @@ items=(
   .claude/settings.json
   .config/yapf/style
   .config/clangd/config.yaml
+  .config/kitty/kitty.conf
 )
 
 # Runtime data that lives under synced dirs (e.g. ~/.vim) but is NOT in the
