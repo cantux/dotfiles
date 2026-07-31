@@ -67,6 +67,17 @@ sudo dnf install -y \
 #   (iTerm2 on mac)    -> kitty (EPEL; needed for a distinct Ctrl+Enter via the
 #                         ESC[13;5u map in .config/kitty/kitty.conf)
 
+# --- Hardware-specific packages (this machine; not part of the mac port) ---
+# Without this, the Intel SOF audio DSP (CometLake + rt711/rt715/rt1308
+# soundwire codecs) has no firmware to load, so it never registers an ALSA
+# card and PipeWire only ever shows "Dummy Output". If this is installed
+# after the DSP already failed to probe (i.e. not during a fresh init.sh
+# run), it won't take effect until the PCI device is rebound or the box is
+# rebooted:
+#   echo 0000:00:1f.3 | sudo tee /sys/bus/pci/drivers/sof-audio-pci-intel-cnl/unbind
+#   echo 0000:00:1f.3 | sudo tee /sys/bus/pci/drivers/sof-audio-pci-intel-cnl/bind
+sudo dnf install -y alsa-sof-firmware
+
 # --- rust-analyzer (not packaged in dnf/EPEL; install via rustup) -----------
 if [ ! -x "$HOME/.cargo/bin/rust-analyzer" ]; then
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
