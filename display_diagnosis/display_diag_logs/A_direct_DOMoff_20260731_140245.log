@@ -1,0 +1,51 @@
+## A_direct_DOMoff  (Fri Jul 31 02:02:45 PM EDT 2026)
+
+--- kernel / boot ---
+6.12.0-248.el10.x86_64
+2026-07-31 12:24:09
+
+--- dock present on USB? ---
+Bus 009 Device 002: ID 0bda:5487 Realtek Semiconductor Corp. Dell dock
+Bus 009 Device 003: ID 0bda:5413 Realtek Semiconductor Corp. Dell dock
+Bus 009 Device 004: ID 413c:b06e Dell Computer Corp. Dell Thunderbolt Dock WD19TB
+Bus 009 Device 007: ID 413c:b06f Dell Computer Corp. Dell dock
+Bus 010 Device 002: ID 0bda:0487 Realtek Semiconductor Corp. Dell dock
+Bus 010 Device 003: ID 0bda:0413 Realtek Semiconductor Corp. Dell dock
+
+--- GPU -> driver binding ---
+00:02.0 VGA compatible controller: Intel Corporation CometLake-H GT2 [UHD Graphics] (rev 05)
+	Subsystem: Dell Device 098f
+	Kernel driver in use: i915
+	Kernel modules: i915
+--
+01:00.0 VGA compatible controller: NVIDIA Corporation TU106M [GeForce RTX 2060 Max-Q] (rev a1)
+	Subsystem: Dell Device 098f
+	Kernel driver in use: nvidia
+	Kernel modules: nouveau, nvidia_drm, nvidia
+
+--- DRM connector status (which card/output has the external monitor) ---
+card0-DP-4       driver=nvidia   status=disconnected
+card0-DP-5       driver=nvidia   status=disconnected
+card0-DP-6       driver=nvidia   status=disconnected
+card0-DP-7       driver=nvidia   status=disconnected
+card1-DP-1       driver=i915     status=connected
+card1-DP-2       driver=i915     status=disconnected
+card1-DP-3       driver=i915     status=disconnected
+card1-eDP-1      driver=i915     status=connected
+
+--- nvidia-smi ---
+Fri Jul 31 14:02:45 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 610.43.02              KMD Version: 610.43.02     CUDA UMD Version: 13.3     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 2060 ...    Off |   00000000:01:00.0 Off |                  N/A |
+| N/A   49C    P8              4W /   65W |       4MiB /   6144MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
