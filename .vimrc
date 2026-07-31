@@ -20,7 +20,11 @@ Plug 'xolox/vim-misc'
 
 Plug 'fholgado/minibufexpl.vim'
 
-Plug 'ycm-core/YouCompleteMe', { 'do': './install.py --clangd-completer' }
+" Pinned to 'master' explicitly: without a branch key, vim-plug clones
+" whatever GitHub's default branch happens to be at install time. That's how
+" this silently landed on 'legacy-vim' (frozen since 2020) for 5+ years with
+" nobody noticing until Python 3.12 broke its vendored deps.
+Plug 'ycm-core/YouCompleteMe', { 'branch': 'master', 'do': './install.py --clangd-completer' }
 
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
