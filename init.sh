@@ -91,9 +91,17 @@ pipx ensurepath
 pipx install yapf
 pipx install cpplint
 
-# --- Dotfiles + vim plugins -------------------------------------------------
+# --- Dotfiles + vim / tmux plugins -----------------------------------------
 "$REPO/sync.sh"
 # vim-plug bootstraps itself on first launch; install plugins headless.
 vim -es -u "$HOME/.vimrc" -c 'PlugInstall --sync' -c 'qa!' </dev/null || true
 
+# TPM & tmux plugins
+if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+  git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+fi
+tmux start-server \; source-file "$HOME/.tmux.conf" 2>/dev/null || true
+"$HOME/.tmux/plugins/tpm/bin/install_plugins" || true
+
 echo "Done. Open a new shell (or 'source ~/.bashrc') to pick up PATH changes."
+

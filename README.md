@@ -47,6 +47,12 @@ are needed:
 > with no setup. Bind `ctrl+j`→`chat:submit` and you need neither kitty nor the
 > newer tmux for submitting. Ctrl+Enter (via kitty) is purely to match mac muscle memory.
 
+### Session persistence (tmux-resurrect)
+
+Sessions, window splits, working directories, and pane history can be persisted across machine reboots via `tmux-resurrect`:
+- **Save session**: `Ctrl+b` + `Ctrl+s` (saves to `~/.local/share/tmux/resurrect/`)
+- **Restore session**: `Ctrl+b` + `Ctrl+r`
+
 ## What's tracked
 
 `sync.sh` copies: `.bashrc`, `.bash_aliases`, `.tmux.conf`, `.gitconfig`,
