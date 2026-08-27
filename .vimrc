@@ -48,6 +48,13 @@ Plug 'google/vim-maktaba'
 Plug 'google/vim-codefmt'
 Plug 'google/vim-glaive'
 
+" OSC52 yank -> system clipboard. This vim build has -clipboard so registers
+" can't reach the OS clipboard directly; OSC52 hands yanked text to the
+" terminal instead, which works locally (kitty) AND over SSH, and tmux
+" forwards it (.tmux.conf: set-clipboard on) -- same mechanism as tmux
+" copy-mode yank. Branch pinned (see YCM note above).
+Plug 'ojroques/vim-oscyank', { 'branch': 'main' }
+
 call plug#end()
 
 " Init glaive and set clang-format to Google style (2-space indent, 80-col wrap)
@@ -238,6 +245,19 @@ augroup vimrc_autocmds
   " Convert any literal tabs to spaces on save (expandtab only affects new
   " input). Skip filetypes that REQUIRE real tabs.
   autocmd BufWritePre * if &expandtab && index(['make','go'], &filetype) < 0 | retab | endif
+augroup END
+
+" Mirror every plain yank (y into the unnamed register) to the system
+" clipboard via OSC52. Deletes/changes intentionally excluded so d/c don't
+" clobber the clipboard. Guard keeps first launch (plugin not yet installed)
+" quiet. Explicit registers ("ay etc.) stay vim-local.
+let g:oscyank_silent = 1        " no 'N chars copied' echo on every yank
+augroup osc52_yank
+  autocmd!
+  autocmd TextYankPost *
+        \ if exists(':OSCYankRegister') && v:event.operator is# 'y' && v:event.regname is# ''
+        \ |   execute 'OSCYankRegister "'
+        \ | endif
 augroup END
 
 
