@@ -23,6 +23,7 @@ items=(
 # repo. Never delete these or we'd wipe installed plugins / undo history.
 excludes=(
   --exclude 'plugged'      # vim-plug installed plugins (incl. built YCM)
+  --exclude 'autoload'     # vim-plug itself (~/.vim/autoload/plug.vim)
   --exclude 'undodir'
   --exclude 'vimundo'
   --exclude '.netrwhist'
