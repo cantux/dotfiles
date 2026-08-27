@@ -98,5 +98,8 @@ fi
 # User-installed binaries (claude + pipx tools live here)
 export PATH="$HOME/.local/bin:$PATH"
 
+# npm global installs (prefix set in ~/.npmrc to ~/.npm-global)
+export PATH="$HOME/.npm-global/bin:$PATH"
+
 # Rust toolchain (rustup installs rust-analyzer here; see init.sh)
 [[ -r "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
