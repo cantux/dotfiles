@@ -3,7 +3,8 @@
     "clangd-lsp@claude-plugins-official": true
   },
   "effortLevel": "xhigh",
-  "theme": "dark-daltonized",
+  "tui": "default",
   "skipWorkflowUsageWarning": true,
-  "tui": "default"
+  "theme": "dark-daltonized",
+  "agentPushNotifEnabled": true
 }
