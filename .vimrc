@@ -295,8 +295,17 @@ set tags+=~/src/glibc/tags,~/src/linux/tags
 if has('cscope')
   set cscopetag           " :tag and <C-]> also consult cscope
   set csto=1              " try ctags first, then cscope
-  silent! cs add ~/src/glibc/cscope.out ~/src/glibc
-  silent! cs add ~/src/linux/cscope.out ~/src/linux
+  " ':cs add' does not expand '~', so do it here. Guarding on filereadable()
+  " also means a tree that hasn't been indexed yet is skipped quietly instead
+  " of erroring behind a silent!.
+  for s:csdb in [expand('~/src/glibc/cscope.out'), expand('~/src/linux/cscope.out')]
+    if filereadable(s:csdb)
+      " 'silent' so the "Added cscope database" message does not trigger a
+      " hit-enter prompt at every startup. Not 'silent!' -- filereadable()
+      " already guards the missing-file case, so a real error should show.
+      execute 'silent cs add' fnameescape(s:csdb) fnameescape(fnamemodify(s:csdb, ':h'))
+    endif
+  endfor
   " cscope queries on the word under the cursor:
   nnoremap <leader>fg :cs find g <C-r><C-w><CR>   " global definition
   nnoremap <leader>fs :cs find s <C-r><C-w><CR>   " all symbol occurrences
@@ -340,7 +349,42 @@ let g:ycm_clangd_binary_path = '/usr/bin/clangd'
 let g:ycm_clangd_args = ['--clang-tidy', '--header-insertion=never']
 let mapleader = ","
 
-nnoremap <leader>g :YcmCompleter GoTo<CR>
+" ,g -- jump to definition, LSP first and tags second.
+"
+" ':YcmCompleter GoTo' alone is useless in a tree clangd cannot configure:
+" ~/src/linux has no compile_commands.json, so clangd resolves nothing there
+" and ,g just fails. Falling back to ':tjump' picks up the ctags index built
+" by 'make ARCH=x86_64 tags', and because 'cscopetag' is set that consults the
+" cscope database too. Net effect: ,g works on C++ projects via clangd and on
+" the kernel via tags, with the same keystroke.
+"
+" Success is detected by the cursor actually moving -- YCM reports a failed
+" GoTo as a message rather than a catchable exception.
+function! s:GoToDefinition() abort
+  let l:word = expand('<cword>')
+  let l:here = [bufnr('%'), line('.'), col('.')]
+
+  if exists(':YcmCompleter') == 2
+    silent! YcmCompleter GoTo
+    if [bufnr('%'), line('.'), col('.')] !=# l:here
+      return
+    endif
+  endif
+
+  if empty(l:word)
+    return
+  endif
+
+  try
+    execute 'tjump' l:word
+  catch
+    echohl WarningMsg
+    echomsg 'GoTo: no LSP result and no tag for "' . l:word . '"'
+    echohl None
+  endtry
+endfunction
+
+nnoremap <silent> <leader>g :call <SID>GoToDefinition()<CR>
 nnoremap <leader>r :YcmCompleter GoToReferences<CR>
 nnoremap <leader>def :YcmCompleter GoToDefinition<CR>
 nnoremap <leader>dec :YcmCompleter GoToDeclaration<CR>
