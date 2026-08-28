@@ -167,6 +167,11 @@ set showcmd                     "Show incomplete cmds down the bottom
 set showmode                    "Show current mode down the bottom
 set number                      "Line numbers are good
 set backspace=indent,eol,start  "Allow backspace in insert mode
+" Let the arrow keys move across line boundaries: <Left> at column 1 goes to the
+" end of the previous line, <Right> at EOL goes to the start of the next.
+" <,> are the normal/visual-mode arrows; [,] are the insert/replace-mode ones.
+" h and l are deliberately left out so they stay line-bounded.
+set whichwrap+=<,>,[,]
 set incsearch
 
 set scrolloff=8
