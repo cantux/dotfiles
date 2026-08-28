@@ -341,11 +341,6 @@ let g:ctrlp_working_path_mode = 'ra'
 let g:ycm_collect_identifiers_from_tags_files=1
 " Run clang-tidy inside clangd (checks configured in ~/.config/clangd/config.yaml);
 " don't auto-insert #includes on completion.
-" Use the system clangd, not the one YCM bundles. The bundled build ships
-" bin/clangd with no lib/ directory, so its -resource-dir points at nothing
-" and it cannot find the compiler builtin headers -- every file errors with
-" "'stddef.h' file not found", which poisons all downstream diagnostics.
-let g:ycm_clangd_binary_path = '/usr/bin/clangd'
 let g:ycm_clangd_args = ['--clang-tidy', '--header-insertion=never']
 let mapleader = ","
 
