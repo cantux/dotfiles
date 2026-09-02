@@ -1,0 +1,251 @@
+## baseline_2026-09-02  (Wed Sep  2 12:58:07 PM PDT 2026)
+
+--- kernel / firmware ---
+6.12.0-264.el10.x86_64
+XPS 17 9700
+1.39.0
+
+--- thunderbolt routers (ground truth: is it actually on TB?) ---
+0-0        XPS 17 7700                      nvm=56.0     auth=1
+           path: /pci0000:00/0000:00:1c.4/0000:04:00.0/0000:05:00.0/0000:06:00.0/domain0/0-0
+1-0        XPS 17 7700                      nvm=56.0     auth=1
+           path: /pci0000:00/0000:00:1d.0/0000:6e:00.0/0000:6f:00.0/0000:70:00.0/domain1/1-0
+1-1        WD19TB Thunderbolt Dock          nvm=60.0     auth=1
+           link: 20.0 Gb/s x 2 lanes rx / 20.0 Gb/s x 2 lanes tx
+           path: /pci0000:00/0000:00:1d.0/0000:6e:00.0/0000:6f:00.0/0000:70:00.0/domain1/1-0/1-1
+domain security: user user 
+
+--- boltctl ---
+ * Dell WD19TB Thunderbolt Dock
+   |- type:          peripheral
+   |- name:          WD19TB Thunderbolt Dock
+   |- vendor:        Dell
+   |- uuid:          0073a080-0ef4-d400-ffff-ffffffffffff
+   |- generation:    Thunderbolt 3
+   |- status:        authorized
+   |  |- domain:     c1010000-0082-8c1e-83d6-1b86acf12802
+   |  |- rx speed:   40 Gb/s = 2 lanes * 20 Gb/s
+   |  |- tx speed:   40 Gb/s = 2 lanes * 20 Gb/s
+   |  `- authflags:  none
+   |- authorized:    Wed 02 Sep 2026 06:28:47 PM UTC
+   |- connected:     Wed 02 Sep 2026 06:28:46 PM UTC
+   `- stored:        Sat 14 Feb 2026 12:38:05 AM UTC
+      |- policy:     auto
+      `- key:        no
+
+
+--- PCIe tunnel check (dock TB controller + its xHCI must be present) ---
+04:00.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 4C 2018] [8086:15ea] (rev 06)
+05:00.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 4C 2018] [8086:15ea] (rev 06)
+05:01.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 4C 2018] [8086:15ea] (rev 06)
+05:02.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 4C 2018] [8086:15ea] (rev 06)
+05:04.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 4C 2018] [8086:15ea] (rev 06)
+06:00.0 System peripheral [0880]: Intel Corporation JHL7540 Thunderbolt 3 NHI [Titan Ridge 4C 2018] [8086:15eb] (rev 06)
+3a:00.0 USB controller [0c03]: Intel Corporation JHL7540 Thunderbolt 3 USB Controller [Titan Ridge 4C 2018] [8086:15ec] (rev 06)
+6e:00.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 4C 2018] [8086:15ea] (rev 06)
+6f:00.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 4C 2018] [8086:15ea] (rev 06)
+6f:01.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 4C 2018] [8086:15ea] (rev 06)
+6f:02.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 4C 2018] [8086:15ea] (rev 06)
+6f:04.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 4C 2018] [8086:15ea] (rev 06)
+70:00.0 System peripheral [0880]: Intel Corporation JHL7540 Thunderbolt 3 NHI [Titan Ridge 4C 2018] [8086:15eb] (rev 06)
+71:00.0 PCI bridge [0604]: Intel Corporation JHL7440 Thunderbolt 3 Bridge [Titan Ridge DD 2018] [8086:15ef] (rev 06)
+72:02.0 PCI bridge [0604]: Intel Corporation JHL7440 Thunderbolt 3 Bridge [Titan Ridge DD 2018] [8086:15ef] (rev 06)
+72:04.0 PCI bridge [0604]: Intel Corporation JHL7440 Thunderbolt 3 Bridge [Titan Ridge DD 2018] [8086:15ef] (rev 06)
+73:00.0 USB controller [0c03]: Intel Corporation JHL7440 Thunderbolt 3 USB Controller [Titan Ridge DD 2018] [8086:15f0] (rev 06)
+a4:00.0 USB controller [0c03]: Intel Corporation JHL7540 Thunderbolt 3 USB Controller [Titan Ridge 4C 2018] [8086:15ec] (rev 06)
+
+--- typec ports / alt modes (NOTE: Thunderbolt3 active=no here is a known false negative) ---
+port0: partner=YES pwr=usb_power_delivery
+    port0-partner.0 svid=8087 active=no desc=Thunderbolt3
+    port0-partner.1 svid=8087 active=yes desc=
+port1: partner=YES pwr=usb_power_delivery
+port2: partner=no pwr=default
+port3: partner=no pwr=usb_power_delivery
+
+--- USB tree ---
+/:  Bus 001.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/16p, 480M
+    |__ Port 001: Dev 002, If 0, Class=Vendor Specific Class, Driver=[none], 12M
+    |__ Port 002: Dev 003, If 0, Class=Hub, Driver=hub/6p, 480M
+        |__ Port 006: Dev 005, If 0, Class=Human Interface Device, Driver=usbhid, 480M
+    |__ Port 005: Dev 004, If 0, Class=Video, Driver=uvcvideo, 480M
+    |__ Port 005: Dev 004, If 1, Class=Video, Driver=uvcvideo, 480M
+    |__ Port 005: Dev 004, If 2, Class=Video, Driver=uvcvideo, 480M
+    |__ Port 005: Dev 004, If 3, Class=Video, Driver=uvcvideo, 480M
+    |__ Port 014: Dev 007, If 0, Class=Wireless, Driver=btusb, 12M
+    |__ Port 014: Dev 007, If 1, Class=Wireless, Driver=btusb, 12M
+/:  Bus 002.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/10p, 10000M
+/:  Bus 003.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/2p, 480M
+/:  Bus 004.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/4p, 10000M
+/:  Bus 005.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/2p, 480M
+/:  Bus 006.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/2p, 10000M
+/:  Bus 007.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/2p, 480M
+/:  Bus 008.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/2p, 10000M
+/:  Bus 009.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/2p, 480M
+    |__ Port 002: Dev 002, If 0, Class=Hub, Driver=hub/5p, 480M
+        |__ Port 003: Dev 003, If 0, Class=Hub, Driver=hub/6p, 480M
+            |__ Port 002: Dev 005, If 0, Class=Human Interface Device, Driver=usbhid, 12M
+            |__ Port 002: Dev 005, If 1, Class=Human Interface Device, Driver=usbhid, 12M
+            |__ Port 002: Dev 005, If 2, Class=Human Interface Device, Driver=usbhid, 12M
+            |__ Port 004: Dev 006, If 0, Class=Audio, Driver=snd-usb-audio, 480M
+            |__ Port 004: Dev 006, If 1, Class=Audio, Driver=snd-usb-audio, 480M
+            |__ Port 004: Dev 006, If 2, Class=Audio, Driver=snd-usb-audio, 480M
+            |__ Port 004: Dev 006, If 3, Class=Audio, Driver=snd-usb-audio, 480M
+            |__ Port 005: Dev 007, If 0, Class=Human Interface Device, Driver=usbhid, 480M
+        |__ Port 005: Dev 004, If 0, Class=Human Interface Device, Driver=usbhid, 480M
+        |__ Port 005: Dev 004, If 1, Class=Billboard, Driver=[none], 480M
+/:  Bus 010.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/2p, 10000M
+    |__ Port 002: Dev 002, If 0, Class=Hub, Driver=hub/4p, 10000M
+        |__ Port 003: Dev 003, If 0, Class=Hub, Driver=hub/4p, 5000M
+        |__ Port 004: Dev 004, If 0, Class=Vendor Specific Class, Driver=r8152, 5000M
+
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 27c6:533c Shenzhen Goodix Technology Co.,Ltd. FingerPrint
+Bus 001 Device 003: ID 0bda:5409 Realtek Semiconductor Corp. USB2.1 Hub
+Bus 001 Device 004: ID 0c45:6d14 Microdia Integrated_Webcam_HD
+Bus 001 Device 005: ID 0bda:1101 Realtek Semiconductor Corp. HID Device
+Bus 001 Device 007: ID 8087:0026 Intel Corp. AX201 Bluetooth
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 005 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 006 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 007 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 008 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 009 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 009 Device 002: ID 0bda:5487 Realtek Semiconductor Corp. Dell dock
+Bus 009 Device 003: ID 0bda:5413 Realtek Semiconductor Corp. Dell dock
+Bus 009 Device 004: ID 413c:b06e Dell Computer Corp. Dell Thunderbolt Dock WD19TB
+Bus 009 Device 005: ID 1532:0067 Razer USA, Ltd Naga Trinity
+Bus 009 Device 006: ID 0bda:402e Realtek Semiconductor Corp. USB Audio
+Bus 009 Device 007: ID 413c:b06f Dell Computer Corp. Dell dock
+Bus 010 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 010 Device 002: ID 0bda:0487 Realtek Semiconductor Corp. Dell dock
+Bus 010 Device 003: ID 0bda:0413 Realtek Semiconductor Corp. Dell dock
+Bus 010 Device 004: ID 0bda:8153 Realtek Semiconductor Corp. RTL8153 Gigabit Ethernet Adapter
+
+--- DRM connectors ---
+card0-DP-4       driver=nvidia   status=disconnected
+card0-DP-5       driver=nvidia   status=disconnected
+card0-DP-6       driver=nvidia   status=disconnected
+card0-DP-7       driver=nvidia   status=disconnected
+card1-DP-10      driver=i915     status=connected mode=1920x1080 ddc=MST
+card1-DP-1       driver=i915     status=connected mode=3840x2160 ddc=native
+card1-DP-2       driver=i915     status=disconnected
+card1-DP-3       driver=i915     status=disconnected
+card1-DP-8       driver=i915     status=disconnected
+card1-DP-9       driver=i915     status=disconnected
+card1-eDP-1      driver=i915     status=connected mode=1920x1200 ddc=native
+
+--- dock net / audio ---
+wlp0s20f3        UP             [REDACTED] <BROADCAST,MULTICAST,UP,LOWER_UP>
+enp115s0u2u4     DOWN           [REDACTED] <NO-CARRIER,BROADCAST,MULTICAST,UP>
+ 0 [NVidia         ]: HDA-Intel - HDA NVidia
+                      HDA NVidia at 0x73000000 irq 17
+ 1 [sofsoundwire   ]: sof-soundwire - sof-soundwire
+                      DellInc.-XPS179700-0CXCCY
+ 2 [Dock           ]: USB-Audio - WD19 Dock
+                      Dell-WD15-Dock
+
+--- fwupd view (dell_dock plugin is expected to FAIL on the base EC) ---
+├─Thunderbolt controller in Dell dock:
+│     Device ID:          bc03fecf970be70d01eeefcbb3bf3fa20763ded1
+│     Summary:            Thunderbolt controller
+│     Current version:    60.00
+│     Vendor:             Dell (THUNDERBOLT:0x00D4, TBT:0x00D4)
+│     URL:                http://support.dell.com/
+│     Install Duration:   22 seconds
+│     GUIDs:              08a8c886-2818-544c-b1a3-588eb07ae487 ← THUNDERBOLT\VEN_00D4&DEV_B070
+│                         c94770ca-1773-592c-b20a-e87243bc7cd0 ← TBT-00d4b070
+│                         d9d01d94-4749-58f4-b318-87cb92251fdb ← TBT-00d4b070-controller1-1
+│     Device Flags:       • Updatable
+--
+├─Thunderbolt host controller:
+│     Device ID:          62289fb90f9164fdf00374f2acaf570bd2500a2b
+│     Summary:            Unmatched performance for high-speed I/O
+│     Current version:    56.00
+│     Vendor:             Dell (THUNDERBOLT:0x00D4, TBT:0x00D4)
+│     GUIDs:              19702a13-e2fc-56ed-9695-29f80dce9fae ← THUNDERBOLT\VEN_00D4&DEV_098F
+│                         dbdc5c1a-2739-5800-b5f8-c1cbc6217b16 ← TBT-00d4098f-native
+│                         239cf579-f140-5539-862d-853a8f7f0eaa ← TBT-00d4098f-native-controller0-0
+│     Device Flags:       • Internal device
+--
+├─Thunderbolt host controller:
+│     Device ID:          e2b6a07caadbd6025f1a9fa7f830e5b334eeb43d
+│     Summary:            Unmatched performance for high-speed I/O
+│     Current version:    56.00
+│     Vendor:             Dell (THUNDERBOLT:0x00D4, TBT:0x00D4)
+│     GUIDs:              19702a13-e2fc-56ed-9695-29f80dce9fae ← THUNDERBOLT\VEN_00D4&DEV_098F
+│                         dbdc5c1a-2739-5800-b5f8-c1cbc6217b16 ← TBT-00d4098f-native
+│                         7dad8379-fd2d-5126-8fd7-2ea990dc8776 ← TBT-00d4098f-native-controller1-0
+│     Device Flags:       • Internal device
+Sep 02 11:21:13 desktop-cvtv42r fwupd[15335]: 18:21:13.701 FuEngine             failed to add device /sys/devices/pci0000:00/0000:00:1d.0/0000:6e:00.0/0000:6f:01.0/0000:71:00.0/0000:72:02.0/0000:73:00.0/usb9/9-2/9-2.3/9-2.3.5: failed to add device using on dell_dock: can't read base dock type from EC
+Sep 02 11:24:13 desktop-cvtv42r fwupd[15335]: 18:24:13.910 FuEngine             failed to add device /sys/devices/pci0000:00/0000:00:1c.4/0000:04:00.0/0000:05:04.0/0000:3b:00.0/0000:3c:02.0/0000:3d:00.0/usb9/9-2/9-2.3/9-2.3.5: failed to add device using on dell_dock: can't read base dock type from EC
+Sep 02 11:28:50 desktop-cvtv42r fwupd[15335]: 18:28:50.353 FuEngine             failed to add device /sys/devices/pci0000:00/0000:00:1d.0/0000:6e:00.0/0000:6f:01.0/0000:71:00.0/0000:72:02.0/0000:73:00.0/usb9/9-2/9-2.3/9-2.3.5: failed to add device using on dell_dock: can't read base dock type from EC
+
+--- journal: thunderbolt / xhci / typec / drm ---
+Sep 02 11:24:10 desktop-cvtv42r kernel: usb 10-2: new SuperSpeed Plus Gen 2x1 USB device number 2 using xhci_hcd
+Sep 02 11:24:11 desktop-cvtv42r kernel: usb 9-2.3: new high-speed USB device number 3 using xhci_hcd
+Sep 02 11:24:11 desktop-cvtv42r kernel: usb 10-2.3: new SuperSpeed USB device number 3 using xhci_hcd
+Sep 02 11:24:11 desktop-cvtv42r kernel: usb 9-2.5: new high-speed USB device number 4 using xhci_hcd
+Sep 02 11:24:11 desktop-cvtv42r kernel: usb 9-2.5: Product: Dell Thunderbolt Dock WD19TB
+Sep 02 11:24:11 desktop-cvtv42r kernel: hid-generic 0003:413C:B06E.0016: hiddev97,hidraw4: USB HID v1.11 Device [Dell Thunderbolt Dock WD19TB] on usb-0000:3d:00.0-2.5/input0
+Sep 02 11:24:11 desktop-cvtv42r kernel: hid-generic 0003:413C:B06E.0017: hiddev97,hidraw4: USB HID v1.11 Device [Dell Thunderbolt Dock WD19TB] on usb-0000:3d:00.0-2.5/input0
+Sep 02 11:24:11 desktop-cvtv42r kernel: usb 10-2.4: new SuperSpeed USB device number 4 using xhci_hcd
+Sep 02 11:24:11 desktop-cvtv42r kernel: usb 9-2.3.2: new full-speed USB device number 5 using xhci_hcd
+Sep 02 11:24:11 desktop-cvtv42r kernel: hid-generic 0003:413C:B06E.0018: hiddev97,hidraw4: USB HID v1.11 Device [Dell Thunderbolt Dock WD19TB] on usb-0000:3d:00.0-2.5/input0
+Sep 02 11:24:11 desktop-cvtv42r kernel: r8152-cfgselector 10-2.4: reset SuperSpeed USB device number 4 using xhci_hcd
+Sep 02 11:24:11 desktop-cvtv42r kernel: r8152 10-2.4:1.0 (unnamed net_device) (uninitialized): Using pass-thru MAC addr [REDACTED]
+Sep 02 11:24:11 desktop-cvtv42r kernel: r8152 10-2.4:1.0 enp61s0u2u4: renamed from eth0
+Sep 02 11:24:11 desktop-cvtv42r kernel: usb 9-2.3.4: new high-speed USB device number 6 using xhci_hcd
+Sep 02 11:24:13 desktop-cvtv42r kernel: usb 9-2.3.5: new high-speed USB device number 7 using xhci_hcd
+Sep 02 11:28:40 desktop-cvtv42r kernel: xhci_hcd 0000:3d:00.0: remove, state 1
+Sep 02 11:28:40 desktop-cvtv42r kernel: r8152-cfgselector 10-2.4: USB disconnect, device number 4
+Sep 02 11:28:40 desktop-cvtv42r kernel: xhci_hcd 0000:3d:00.0: USB bus 10 deregistered
+Sep 02 11:28:40 desktop-cvtv42r kernel: xhci_hcd 0000:3d:00.0: remove, state 1
+Sep 02 11:28:40 desktop-cvtv42r kernel: xhci_hcd 0000:3d:00.0: USB bus 9 deregistered
+Sep 02 11:28:40 desktop-cvtv42r kernel: thunderbolt 0-3: device disconnected
+Sep 02 11:28:45 desktop-cvtv42r kernel: xhci_hcd 0000:a4:00.0: xHC error in resume, USBSTS 0x401, Reinit
+Sep 02 11:28:45 desktop-cvtv42r kernel: usb 1-8: new high-speed USB device number 10 using xhci_hcd
+Sep 02 11:28:46 desktop-cvtv42r kernel: thunderbolt 1-1: new device found, vendor=0xd4 device=0xb070
+Sep 02 11:28:46 desktop-cvtv42r kernel: thunderbolt 1-1: Dell WD19TB Thunderbolt Dock
+Sep 02 11:28:47 desktop-cvtv42r kernel: sysfs: cannot create duplicate filename '/devices/platform/USBC000:00/typec/port0/port0.0/partner'
+Sep 02 11:28:47 desktop-cvtv42r kernel:  typec_probe+0x77/0xf0
+Sep 02 11:28:47 desktop-cvtv42r kernel:  typec_register_altmode+0x223/0x300
+Sep 02 11:28:47 desktop-cvtv42r kernel: typec-thunderbolt port0-partner.1: failed to create symlinks
+Sep 02 11:28:47 desktop-cvtv42r kernel: typec-thunderbolt port0-partner.1: probe with driver typec-thunderbolt failed with error -17
+Sep 02 11:28:47 desktop-cvtv42r kernel: xhci_hcd 0000:73:00.0: xHCI Host Controller
+Sep 02 11:28:47 desktop-cvtv42r kernel: xhci_hcd 0000:73:00.0: new USB bus registered, assigned bus number 9
+Sep 02 11:28:47 desktop-cvtv42r kernel: xhci_hcd 0000:73:00.0: hcc params 0x200077c1 hci version 0x110 quirks 0x0000000200009810
+Sep 02 11:28:47 desktop-cvtv42r kernel: xhci_hcd 0000:73:00.0: xHCI Host Controller
+Sep 02 11:28:47 desktop-cvtv42r kernel: xhci_hcd 0000:73:00.0: new USB bus registered, assigned bus number 10
+Sep 02 11:28:47 desktop-cvtv42r kernel: xhci_hcd 0000:73:00.0: Host supports USB 3.1 Enhanced SuperSpeed
+Sep 02 11:28:47 desktop-cvtv42r kernel: usb usb9: Product: xHCI Host Controller
+Sep 02 11:28:47 desktop-cvtv42r kernel: usb usb9: Manufacturer: Linux 6.12.0-264.el10.x86_64 xhci-hcd
+Sep 02 11:28:47 desktop-cvtv42r kernel: usb usb10: Product: xHCI Host Controller
+Sep 02 11:28:47 desktop-cvtv42r kernel: usb usb10: Manufacturer: Linux 6.12.0-264.el10.x86_64 xhci-hcd
+Sep 02 11:28:47 desktop-cvtv42r kernel: usb 9-2: new high-speed USB device number 2 using xhci_hcd
+Sep 02 11:28:47 desktop-cvtv42r kernel: usb 10-2: new SuperSpeed Plus Gen 2x1 USB device number 2 using xhci_hcd
+Sep 02 11:28:47 desktop-cvtv42r kernel: usb 9-2.3: new high-speed USB device number 3 using xhci_hcd
+Sep 02 11:28:48 desktop-cvtv42r kernel: usb 10-2.3: new SuperSpeed USB device number 3 using xhci_hcd
+Sep 02 11:28:48 desktop-cvtv42r kernel: usb 9-2.5: new high-speed USB device number 4 using xhci_hcd
+Sep 02 11:28:48 desktop-cvtv42r kernel: usb 9-2.5: Product: Dell Thunderbolt Dock WD19TB
+Sep 02 11:28:48 desktop-cvtv42r kernel: hid-generic 0003:413C:B06E.001E: hiddev97,hidraw4: USB HID v1.11 Device [Dell Thunderbolt Dock WD19TB] on usb-0000:73:00.0-2.5/input0
+Sep 02 11:28:48 desktop-cvtv42r kernel: hid-generic 0003:413C:B06E.001F: hiddev97,hidraw4: USB HID v1.11 Device [Dell Thunderbolt Dock WD19TB] on usb-0000:73:00.0-2.5/input0
+Sep 02 11:28:48 desktop-cvtv42r kernel: usb 10-2.4: new SuperSpeed USB device number 4 using xhci_hcd
+Sep 02 11:28:48 desktop-cvtv42r kernel: hid-generic 0003:413C:B06E.0020: hiddev97,hidraw4: USB HID v1.11 Device [Dell Thunderbolt Dock WD19TB] on usb-0000:73:00.0-2.5/input0
+Sep 02 11:28:48 desktop-cvtv42r kernel: usb 9-2.3.2: new full-speed USB device number 5 using xhci_hcd
+Sep 02 11:28:48 desktop-cvtv42r kernel: r8152-cfgselector 10-2.4: reset SuperSpeed USB device number 4 using xhci_hcd
+Sep 02 11:28:48 desktop-cvtv42r kernel: r8152 10-2.4:1.0 (unnamed net_device) (uninitialized): Using pass-thru MAC addr [REDACTED]
+Sep 02 11:28:48 desktop-cvtv42r kernel: r8152 10-2.4:1.0 enp115s0u2u4: renamed from eth0
+Sep 02 11:28:48 desktop-cvtv42r kernel: usb 9-2.3.4: new high-speed USB device number 6 using xhci_hcd
+Sep 02 11:28:49 desktop-cvtv42r kernel: usb 9-2.3.5: new high-speed USB device number 7 using xhci_hcd
+Sep 02 12:45:24 desktop-cvtv42r kernel: hid-generic 0003:413C:B06E.0027: hiddev97,hidraw4: USB HID v1.11 Device [Dell Thunderbolt Dock WD19TB] on usb-0000:73:00.0-2.5/input0
+Sep 02 12:45:24 desktop-cvtv42r kernel: hid-generic 0003:413C:B06E.0028: hiddev97,hidraw4: USB HID v1.11 Device [Dell Thunderbolt Dock WD19TB] on usb-0000:73:00.0-2.5/input0
+Sep 02 12:58:09 desktop-cvtv42r kernel: hid-generic 0003:413C:B06E.002A: hiddev97,hidraw4: USB HID v1.11 Device [Dell Thunderbolt Dock WD19TB] on usb-0000:73:00.0-2.5/input0
+Sep 02 12:58:09 desktop-cvtv42r kernel: hid-generic 0003:413C:B06E.002B: hiddev97,hidraw4: USB HID v1.11 Device [Dell Thunderbolt Dock WD19TB] on usb-0000:73:00.0-2.5/input0
+
+--- MANUAL CHECK (fill in by hand) ---
+Physical port used (NW/NE/SW/SE):
+Dock enumerated as a TB router (see section above)? [Y/N]:
+Displays / ethernet / audio all up? [Y/N]:
+Notes:
