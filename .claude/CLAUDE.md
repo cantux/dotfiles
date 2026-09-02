@@ -11,6 +11,8 @@
 1. Never write comments in code.
 2. Never change existing variable names unless you are changing the logic.
 3. Never change the existing order of the code unless it is absolutely necessary.
+4. C++: never use std::ranges or std::views in solutions or examples — classic STL algorithms and explicit loops only.
+5. C++: no exceptions — never throw or write try/catch; report failure through return values and error codes (std::from_chars-style, std::optional, sentinel returns).
 
 ## Environment updates
 
