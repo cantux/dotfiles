@@ -56,7 +56,7 @@ Sessions, window splits, working directories, and pane history can be persisted 
 ## What's tracked
 
 `sync.sh` copies: `.bashrc`, `.bash_aliases`, `.tmux.conf`, `.gitconfig`,
-`.vimrc`, `.vim/`, `.claude/keybindings.json`, `.claude/settings.json`,
+`.vimrc`, `.vim/`, `.claude/keybindings.json`, `.claude/settings.json`, `.claude/CLAUDE.md`,
 `.config/yapf/style`, `.config/clangd/config.yaml`, `.config/kitty/kitty.conf`.
 
 It **excludes** `.vim/plugged`, `undodir`, `vimundo`, `.netrwhist` so a sync

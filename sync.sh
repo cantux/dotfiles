@@ -14,6 +14,7 @@ items=(
   .vim
   .claude/keybindings.json
   .claude/settings.json
+  .claude/CLAUDE.md
   .config/yapf/style
   .config/clangd/config.yaml
   .config/kitty/kitty.conf
