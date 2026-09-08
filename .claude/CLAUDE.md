@@ -14,6 +14,10 @@
 4. C++: never use std::ranges or std::views in solutions or examples — classic STL algorithms and explicit loops only.
 5. C++: no exceptions — never throw or write try/catch; report failure through return values and error codes (std::from_chars-style, std::optional, sentinel returns).
 
+## Writing style
+
+- Direct, active voice only — never passive. Prefer procedural language: numbered steps, lists, named components. Explain by decomposing a whole into parts and composing parts back into the whole. Do not invent formalisms ("the contract", "the mechanism") unless the source material uses them.
+
 ## Environment updates
 
 - Every environment/config change on this machine — anything `sync.sh` tracks, including this file — is made in `~/Projects/dotfiles` on the platform branch (this box: `centos`), then applied with `./sync.sh`. Never edit tracked files directly under `$HOME`; sync.sh rsyncs over them.
