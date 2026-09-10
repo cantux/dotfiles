@@ -13,6 +13,7 @@
 3. Never change the existing order of the code unless it is absolutely necessary.
 4. C++: never use std::ranges or std::views in solutions or examples — classic STL algorithms and explicit loops only.
 5. C++: no exceptions — never throw or write try/catch; report failure through return values and error codes (std::from_chars-style, std::optional, sentinel returns).
+6. Name by single meaning: for every variable, function, and term, pick the word with exactly one interpretation over any colorful, idiomatic, or metaphorical synonym (bookkeeping_ptr, not stash_ptr; remainder, not leftover). Test before using a name: if two readers could picture two different things, the name is wrong — find the one-meaning word.
 
 ## Writing style
 
