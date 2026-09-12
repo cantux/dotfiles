@@ -57,7 +57,16 @@ Sessions, window splits, working directories, and pane history can be persisted 
 
 `sync.sh` copies: `.bashrc`, `.bash_aliases`, `.tmux.conf`, `.gitconfig`,
 `.vimrc`, `.vim/`, `.claude/keybindings.json`, `.claude/settings.json`, `.claude/CLAUDE.md`,
-`.config/yapf/style`, `.config/clangd/config.yaml`, `.config/kitty/kitty.conf`.
+`.config/yapf/style`, `.config/clangd/config.yaml`, `.config/kitty/kitty.conf`,
+and `CLAUDE.md`.
+
+`sync.sh` also deploys renamed copies so Claude, Codex, and Antigravity read
+the same instructions at both layers:
+
+- Global prompt, from `.claude/CLAUDE.md`: `~/.claude/CLAUDE.md` (Claude),
+  `~/.codex/AGENTS.md` (Codex), `~/.gemini/config/rules/GEMINI.md` (Antigravity).
+- `$HOME`-level note, from `CLAUDE.md`: `~/CLAUDE.md` (Claude),
+  `~/AGENTS.md` (Codex and Antigravity).
 
 It **excludes** `.vim/plugged`, `undodir`, `vimundo`, `.netrwhist` so a sync
 never wipes installed plugins or undo history.

@@ -1,13 +1,14 @@
-# Environment defaults
+# System config changes
 
-- OS: CentOS Stream 10 (`el10`, x86_64), package manager `dnf` with EPEL + CRB enabled
-- Shell: system bash (`/bin/bash`)
-- Access: headless server over SSH (no local GUI)
-- Multiplexer: tmux (sessions); clipboard yank uses OSC52 so copy works over SSH
-- This repo: tracked dotfiles copied into `$HOME` by `sync.sh` (`.bashrc`, `.vimrc`, `.vim`, the `.claude/` and `.config/` files, etc. — see README "What's tracked" for the full list)
-- Working branch: `centos` (CentOS port of the `mac` branch)
+Dotfiles for this machine are tracked in `~/Projects/dotfiles`, on the branch
+matching this machine's platform (this box: CentOS Stream 10 -> branch `centos`).
 
-# Workflow
+Any file that repo's `sync.sh` tracks (check its `items` list for the exact
+set — currently things like `.bashrc`, `.tmux.conf`, `.vimrc`, `.gitconfig`,
+`.config/kitty/kitty.conf`, `.claude/keybindings.json`, `.claude/settings.json`)
+must be edited there first, then applied with `./sync.sh` — never edited
+directly under `$HOME`. A direct edit under `$HOME` will be silently
+overwritten the next time `sync.sh` runs (it does `rsync --delete`, not a merge).
 
-- After editing any tracked dotfile in this repo, run `./sync.sh` to copy it into `$HOME`. Edits here do not take effect until synced — `sync.sh` does `cp`/`rsync`, not symlinks.
-- For live-reloading after sync: `source ~/.bashrc` for shell changes, `tmux source-file ~/.tmux.conf` for tmux, `:source $MYVIMRC` inside vim.
+See `~/Projects/dotfiles/README.md` for the full workflow (reload commands,
+etc).

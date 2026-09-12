@@ -12,6 +12,7 @@ items=(
   .gitconfig
   .vimrc
   .vim
+  CLAUDE.md
   .claude/keybindings.json
   .claude/settings.json
   .claude/CLAUDE.md
@@ -47,4 +48,18 @@ for item in "${items[@]}"; do
   fi
   echo "  synced $item"
 done
+
+claude_md_copies=(
+  .codex/AGENTS.md
+  .gemini/config/rules/GEMINI.md
+)
+for copy in "${claude_md_copies[@]}"; do
+  dst="$HOME/$copy"
+  mkdir -p "$(dirname "$dst")"
+  cp "$REPO/.claude/CLAUDE.md" "$dst"
+  echo "  synced $copy (copy of .claude/CLAUDE.md)"
+done
+
+cp "$REPO/CLAUDE.md" "$HOME/AGENTS.md"
+echo "  synced AGENTS.md (copy of CLAUDE.md)"
 echo "Done. Open a new shell or 'source ~/.bashrc' to pick up changes."
