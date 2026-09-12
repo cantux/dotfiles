@@ -19,6 +19,8 @@ items=(
   .config/yapf/style
   .config/clangd/config.yaml
   .config/kitty/kitty.conf
+  .gemini/antigravity-cli/keybindings.json
+  .codex/config.toml
 )
 
 # Runtime data that lives under synced dirs (e.g. ~/.vim) but is NOT in the
