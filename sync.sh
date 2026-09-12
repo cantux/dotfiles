@@ -19,7 +19,6 @@ items=(
   .config/yapf/style
   .config/clangd/config.yaml
   .config/kitty/kitty.conf
-  .gemini/antigravity-cli/keybindings.json
   .codex/config.toml
 )
 
