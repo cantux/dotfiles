@@ -19,6 +19,23 @@ Effort is valuable. Adversarially run your answers to completion.
 5. C++: no exceptions — never throw or write try/catch; report failure through return values and error codes (std::from_chars-style, std::optional, sentinel returns).
 6. Name by single meaning: for every variable, function, and term, pick the word with exactly one interpretation over any colorful, idiomatic, or metaphorical synonym (bookkeeping_ptr, not stash_ptr; remainder, not leftover). Test before using a name: if two readers could picture two different things, the name is wrong — find the one-meaning word.
 
+## Formatting and linting
+
+Run the same tools vim runs on save, on every file you changed, before you call
+work done. Format first, then lint: clang-format owns layout, which is why
+cpplint's whitespace checks are filtered off.
+
+- C/C++ format: `clang-format -i --style=Google <files>` (vim `,F` / `:FormatCode`; if the project ships its own `.clang-format`, use `--style=file`).
+- C/C++ lint: `cpplint --filter=-legal/copyright,-build/include_subdir,-whitespace <files>`
+- C/C++ lint: `cppcheck --enable=warning,style,performance,portability --std=c++20 --inline-suppr <files>` (drop `--std=c++20` for C).
+- C/C++ tidy: `clang-tidy -quiet -checks='-*,bugprone-*,performance-*,modernize-*,google-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,-google-readability-todo' <files> -- -std=c++20 -Wall -Wextra`
+  `~/.config/clangd/config.yaml` carries that check set for vim's in-editor clangd, but the clang-tidy binary never reads it, so pass `-checks` explicitly. Drop everything after `--` when the project has `compile_commands.json`.
+- Python format: `yapf -i <files>` — 2-space indent comes from `~/.config/yapf/style`.
+- Rust: `cargo fmt` and `cargo clippy`.
+
+Fix every warning your own change introduces. Leave pre-existing warnings alone
+unless I ask for them.
+
 ## Writing style
 
 - Direct, active voice only — never passive. Prefer procedural language: numbered steps, lists, named components. Explain by decomposing a whole into parts and composing parts back into the whole. Do not invent formalisms ("the contract", "the mechanism") unless the source material uses them.
@@ -26,6 +43,7 @@ Effort is valuable. Adversarially run your answers to completion.
 ## Environment updates
 
 - Every environment/config change on this machine — anything `sync.sh` tracks, including this file — is made in `~/Projects/dotfiles` on the platform branch (this box: `centos`), then applied with `./sync.sh`. Never edit tracked files directly under `$HOME`; sync.sh rsyncs over them.
+- One prompt feeds every agent. `sync.sh` copies `.claude/CLAUDE.md` to `~/.claude/CLAUDE.md` (Claude, `claude`), `~/.codex/AGENTS.md` (Codex, `codex`), and `~/.gemini/config/rules/GEMINI.md` (Antigravity, `agy`); it copies the repo-root `CLAUDE.md` to `~/CLAUDE.md` and `~/AGENTS.md`. So edit the dotfiles copy, run `./sync.sh`, and keep the wording agent-neutral — all three read this same text.
 
 ## Plan mode
 
