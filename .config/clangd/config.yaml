@@ -16,3 +16,8 @@ Diagnostics:
     Remove:
       - modernize-use-trailing-return-type
       - google-readability-todo
+      # Unsatisfiable under the CLAUDE.md code rules: use-ranges wants
+      # std::ranges (rule 4 forbids it), unchecked-container-access wants
+      # .at() (rule 5 forbids exceptions).
+      - modernize-use-ranges
+      - cppcoreguidelines-pro-bounds-avoid-unchecked-container-access
