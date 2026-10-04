@@ -96,7 +96,8 @@ fi
 [[ -r /usr/share/bash-completion/bash_completion ]] && \
     source /usr/share/bash-completion/bash_completion
 
-# User-installed binaries (claude + pipx tools live here)
+# On PATH for user programs: self-installing tools (pipx, claude, agy) land here;
+# downloaded programs live in ~/Applications and are symlinked here (see ~/CLAUDE.md)
 export PATH="$HOME/.local/bin:$PATH"
 
 # npm global installs (prefix set in ~/.npmrc to ~/.npm-global)

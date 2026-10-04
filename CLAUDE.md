@@ -17,3 +17,19 @@ plus `~/AGENTS.md`. Those generated copies get overwritten too — edit the repo
 
 See `~/Projects/dotfiles/README.md` for the full workflow (reload commands,
 etc).
+
+# Where programs live
+
+- `~/Downloads` receives the download itself: tarball, AppImage, installer
+  script, archive.
+- `~/Applications` receives what a download unpacks or installs into: the
+  extracted directory, the standalone binary, the integrated AppImage. Give
+  installers that accept a target directory `~/Applications`. AppImageLauncher
+  already integrates into it and its daemon watches it; non-AppImage files
+  there are ignored.
+- `~/.local/bin` is on PATH (`.bashrc`). Self-installing tools (pipx, claude,
+  codex, agy) put themselves there; leave them. Expose a program from
+  `~/Applications` with a symlink: `ln -s ~/Applications/foo/foo
+  ~/.local/bin/foo`. Keep `~/Applications` off PATH.
+- Manager-owned installs stay where their manager put them: dnf (`/usr`),
+  rustup (`~/.cargo/bin`), npm (`~/.npm-global/bin`).

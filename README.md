@@ -107,6 +107,25 @@ via **rustup**.
 
 pipx tools: `yapf` (Python formatter), `cpplint` (Google C++ linter).
 
+## Where programs live
+
+- `~/Downloads`: the download itself (tarball, AppImage, installer script).
+- `~/Applications`: what it unpacks or installs into (extracted directory,
+  standalone binary, integrated AppImage). Installers that take a target
+  directory get `~/Applications`. AppImageLauncher integrates into it and its
+  daemon watches it, ignoring non-AppImage files. `init.sh` creates it.
+- `~/.local/bin`: on PATH via `.bashrc`. Self-installing tools (pipx, claude,
+  codex, agy) land here and stay. Programs in `~/Applications` get a symlink
+  here (`ln -s ~/Applications/foo/foo ~/.local/bin/foo`); `~/Applications`
+  itself stays off PATH.
+- Manager-owned installs stay put: dnf (`/usr`), rustup (`~/.cargo/bin`),
+  npm (`~/.npm-global/bin`).
+- Example, calibre: save the installer to `~/Downloads`, then
+  `TMPDIR=~/Downloads sh ~/Downloads/linux-installer.sh install_dir=~/Applications bin_dir=~/.local/bin share_dir=~/.local/share`.
+  Tarball cache under `~/Downloads/calibre-installer-cache`, program in
+  `~/Applications/calibre`, symlinks in `~/.local/bin`, desktop entries in
+  `~/.local/share`.
+
 ## vim
 
 A single IDE around YCM. YCM **is** the LSP client — don't add a second one

@@ -61,3 +61,60 @@ workflow described in Andrii Nakryiko, "BPF Portability and CO-RE"
 (nakryiko.com, 2020) and in `libbpf`'s documentation. The generated
 `vmlinux.h` is the realistic large single-header case being optimised for.
 
+## 2026-10-04 — `~/Applications` for hand-installed programs
+
+### Primary sources (checked on this box)
+
+- Config template embedded in
+  `/opt/appimagelauncher.AppDir/usr/bin/{AppImageLauncher,AppImageLauncherSettings,appimagelauncherd}`
+  (`strings <bin> | grep -A12 '^\[AppImageLauncher\]'`): `# destination =
+  ~/Applications`, `# additional_directories_to_watch = ...`,
+  `# ask_to_move = true`, `# enable_daemon = true`. Same keys as the upstream
+  wiki: https://github.com/TheAssassin/AppImageLauncher/wiki (Configuration).
+- `~/.local/share/applications/appimagekit_*.desktop`: `Exec=` and `TryExec=`
+  under `~/Applications`, `X-AppImageLauncher-Version=3.0.0-beta-2`.
+- `/proc/<pid>/fdinfo/*` of `appimagelauncherd`: one `inotify wd` line,
+  `ino:111` (hex) = 273 = `stat -c %i ~/Applications`.
+- `/proc/sys/fs/binfmt_misc/appimage-type2` and
+  `/opt/appimagelauncher.AppDir/usr/lib/binfmt.d/appimagelauncher.conf`:
+  interpreter path under `/opt`, flag `F`.
+- `/usr/bin/appimagelauncherd`: shell wrapper ending in
+  `exec /opt/appimagelauncher.AppDir/usr/bin/appimagelauncherd`.
+- `rpm -qi appimagelauncher`: Vendor TheAssassin, repo `@commandline`,
+  installed 2026-08-13.
+- `~/.bash_profile` and `~/.profile`: "# Added by Antigravity CLI installer"
+  above the `~/.local/bin` PATH export.
+
+### Prior art the convention follows
+
+- XDG Base Directory Specification 0.8 (2021), "Basics": `$HOME/.local/bin`
+  is the user-specific executables directory and should be on PATH. Also
+  systemd `file-hierarchy(7)`, "Home Directory".
+- macOS per-user `~/Applications` (Apple, *File System Programming Guide*,
+  "macOS Standard Directories"). AppImageLauncher borrowed the name; this
+  convention extends it to non-AppImage programs.
+- Homebrew `Cellar` + `brew link`, and GNU Stow: install each program into
+  its own directory, then expose it through a symlink farm in one `bin`. Here
+  the farm is `~/.local/bin` and the cellar is `~/Applications`.
+- FHS 3.0, `/opt`: the system-level analogue for self-contained add-on
+  packages, which is where the AppImageLauncher RPM itself lands.
+
+### Method
+
+- Ground truth from the running process (`/proc/<pid>/fdinfo` inotify inode)
+  rather than from documentation of what the daemon should watch.
+- A reversible probe (copy a non-AppImage ELF into the watched directory,
+  wait, inspect, remove) to confirm the daemon ignores plain binaries.
+
+### Added the same day
+
+- calibre installer: https://calibre-ebook.com/download_linux documents
+  `install_dir`, `isolated`, `version`;
+  https://raw.githubusercontent.com/kovidgoyal/calibre/master/setup/linux-installer.py
+  (`main()`) also takes `bin_dir`, `share_dir`, `ignore_umask`, caches the
+  tarball in `tempfile.gettempdir()/calibre-installer-cache`, installs into
+  `<install_dir>/calibre`, and skips `calibre_postinstall` under `isolated=y`.
+- Python `tempfile.gettempdir()` honours `TMPDIR` (Python Library Reference,
+  `tempfile`), which routes the installer's download cache into `~/Downloads`.
+- GitHub REST API `GET /repos/cantux/dotfiles` returned 200 without
+  authentication: the repository is public.

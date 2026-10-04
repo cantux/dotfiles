@@ -91,6 +91,14 @@ pipx ensurepath
 pipx install yapf
 pipx install cpplint
 
+# --- Hand-installed programs -----------------------------------------------
+# Downloads land in ~/Downloads; whatever they unpack or install into lands in
+# ~/Applications (AppImageLauncher integrates there too). ~/.local/bin is on
+# PATH and symlinks into it. See CLAUDE.md, "Where programs live".
+# AppImageLauncher itself is not part of this baseline: it is the upstream
+# release RPM, installed by hand.
+mkdir -p "$HOME/Applications"
+
 # --- Dotfiles + vim / tmux plugins -----------------------------------------
 "$REPO/sync.sh"
 # vim-plug bootstraps itself on first launch; install plugins headless.
