@@ -92,6 +92,17 @@ let g:ale_linters = {'cpp': ['cpplint', 'cppcheck'], 'c': ['cppcheck']}
 let g:ale_cpp_cpplint_options = '--filter=-legal/copyright,-build/include_subdir,-whitespace'
 let g:ale_cpp_cppcheck_options = '--enable=warning,style,performance,portability --std=c++20 --inline-suppr'
 let g:ale_c_cppcheck_options = '--enable=warning,style,performance,portability --inline-suppr'
+
+" Don't lint buffers over 1 MB. cpplint is pure Python and cppcheck does whole
+" translation-unit analysis; on bpftool's generated vmlinux.h (3 MB) they cost
+" 23 s and >900 s. ALE re-lints on every BufWinEnter, so each buffer switch
+" restarts that burn. :ALEToggleBuffer lints such a buffer on demand.
+augroup ale_skip_huge_files
+  autocmd!
+  autocmd BufReadPre * if getfsize(expand('<afile>')) > 1024 * 1024
+        \ | let b:ale_enabled = 0
+        \ | endif
+augroup END
 " jump ALE results with ]a / [a  (]d / [d stay YCM's, see below)
 nnoremap ]a :ALENextWrap<CR>
 nnoremap [a :ALEPreviousWrap<CR>
@@ -275,6 +286,11 @@ let g:miniBufExplBuffersNeeded = 1
 
 " TagBar
 let tagbar_ctags_bin='/usr/bin/ctags'
+" Don't build a tag tree for files over 1 MB. Tagbar renders one vimscript
+" function call per tag: a 3 MB vmlinux.h yields 103k tags, costing ~100 s on
+" open and ~20 s again on every buffer switch, because it re-prints the whole
+" tree each time the current buffer changes. :TagbarForceUpdate builds it anyway.
+let g:tagbar_file_size_limit = 1024 * 1024
 " autocmd vimenter * TagbarOpen
 autocmd VimEnter * nested :TagbarOpen
 
