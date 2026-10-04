@@ -57,12 +57,9 @@ Plug 'ojroques/vim-oscyank', { 'branch': 'main' }
 
 call plug#end()
 
-" Init glaive and set clang-format to Google style (2-space indent, 80-col wrap)
-" Guard: skip until plugins are installed (avoids errors on first launch)
-if exists('*glaive#Install')
-  call glaive#Install()
-  Glaive codefmt clang_format_style=Google
-endif
+" clang-format style is NOT set here. codefmt's default is -style=file, which
+" resolves to ~/.clang-format (synced from this repo) for anything under $HOME,
+" so vim, the clang-format CLI, clangd and the agents all read one source.
 
 " Auto-format C/C++ on save so clang-format runs before cpplint lints. Without
 " this, edits get saved (and linted) but never formatted, so cpplint warns about

@@ -12,6 +12,7 @@ items=(
   .gitconfig
   .vimrc
   .vim
+  .clang-format
   CLAUDE.md
   .claude/keybindings.json
   .claude/settings.json

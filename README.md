@@ -56,7 +56,7 @@ Sessions, window splits, working directories, and pane history can be persisted 
 ## What's tracked
 
 `sync.sh` copies: `.bashrc`, `.bash_aliases`, `.tmux.conf`, `.gitconfig`,
-`.vimrc`, `.vim/`, `.claude/keybindings.json`, `.claude/settings.json`, `.claude/CLAUDE.md`,
+`.vimrc`, `.vim/`, `.clang-format`, `.claude/keybindings.json`, `.claude/settings.json`, `.claude/CLAUDE.md`,
 `.config/yapf/style`, `.config/clangd/config.yaml`, `.config/kitty/kitty.conf`,
 and `CLAUDE.md`.
 
@@ -117,7 +117,7 @@ A single IDE around YCM. YCM **is** the LSP client — don't add a second one
 vim-codefmt (Google maktaba/codefmt/glaive). `,F` = `:FormatCode` (whole file),
 visual `,F` = `:FormatLines`.
 
-- **C/C++** → clang-format, Google style (2-space), set in `.vimrc`.
+- **C/C++** → clang-format, Google style (2-space), from `~/.clang-format` (synced; one source for vim, CLI, clangd, agents).
 - **Python** → yapf, 2-space to match (config: `~/.config/yapf/style`).
 
 ### Lint / static analysis
