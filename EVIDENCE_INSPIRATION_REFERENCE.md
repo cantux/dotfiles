@@ -118,3 +118,57 @@ workflow described in Andrii Nakryiko, "BPF Portability and CO-RE"
   `tempfile`), which routes the installer's download cache into `~/Downloads`.
 - GitHub REST API `GET /repos/cantux/dotfiles` returned 200 without
   authentication: the repository is public.
+
+## 2026-10-08 — helm, kind, kubectl provenance
+
+### Primary sources (checked on this box)
+
+- `dnf history info 17`: begin 2026-04-27 17:44:02, command line
+  `-y install --disableexcludes=kubernetes kubelet-1.31.0 kubeadm-1.31.0
+  kubectl-1.31.0`, packages from `@kubernetes`; transaction 20 (2026-04-28)
+  upgraded them to 1.31.14.
+- `/etc/yum.repos.d/kubernetes.repo`:
+  `baseurl=https://pkgs.k8s.io/core:/stable:/v1.31/rpm/`.
+- `rpm -qf /usr/bin/kubectl` → `kubectl-1.31.14-150500.1.1`;
+  `rpm -qf /usr/local/bin/helm` → not owned by any package.
+- `~/Projects/TokenBase/infra/scripts/10-os/laptop-prep.sh` lines 47-75:
+  repository file generation, the dnf line, the helm tarball step and its
+  comment on sudo `secure_path`.
+- `stat` mtimes of `~/bin/*` and `/usr/local/bin/helm`; `helm version
+  --short`, `kubectl version --client`, `kind version` on each copy.
+- `dnf --showduplicates list --available helm` and `dnf repoquery --qf
+  '%{buildtime}' helm`: `helm-4.1.1-1.el10_2`, EPEL, built 2026-02-11.
+- `dnf provides '*/bin/kind'`: no match. `snap find kind`: no kind package.
+- `grep -rn` over `~/Projects` for `~/bin`, `$HOME/bin`, `/home/ctuk/bin`,
+  `kind.sigs.k8s.io/dl`, `dl.k8s.io`, `get.helm.sh`: only this worklog and
+  the TokenBase and prep helm-installer lines.
+
+### External sources
+
+- Helm project, "Helm 4 Released" (helm.sh/blog/helm-4-released,
+  2025-11-17): v4.0.0 released 2025-11-12; Helm 3 bug fixes until
+  2026-07-08, security fixes until 2026-11-11.
+- Helm v4.0.0 release notes (github.com/helm/helm/releases/tag/v4.0.0):
+  "a major version with backward incompatible changes including to the flags
+  and output of the Helm CLI"; chart apiVersion v2 "will continue to be
+  supported"; "the majority of workflows remain compatible between Helm v3
+  and v4"; kstatus-based waiting, WebAssembly plugin system, post-renderers
+  as plugins, server-side apply.
+- kind documentation, "Quick Start", Installation: release binaries from
+  `kind.sigs.k8s.io/dl/<version>/kind-linux-amd64`, `go install
+  sigs.k8s.io/kind@<version>`; community packages for Homebrew, MacPorts,
+  Chocolatey, Scoop, Winget and Arch pacman; no RPM source.
+- Kubernetes documentation, "Install and Set Up kubectl on Linux": the
+  `dl.k8s.io/release/stable.txt` download path yields the newest release
+  (1.36.0 on 2026-04-27); kubectl is supported within one minor version of
+  the API server.
+- GNU tar manual, "Attributes": extraction restores the archived
+  modification time.
+
+### Method
+
+- Timeline reconstruction from independent records: file mtimes, the dnf
+  history database, and the script whose lines generated the recorded dnf
+  command line.
+- Package-first check order: `rpm -qf` (owned?), `dnf provides`
+  (available?), `snap find` (fallback?), then download.

@@ -162,3 +162,56 @@ wrote the PATH lines in `~/.bash_profile` and `~/.profile`).
   `bin_dir`, `share_dir`, caches the tarball under
   `$TMPDIR/calibre-installer-cache`, and creates `<install_dir>/calibre`.
   Command recorded in README.
+
+## 2026-10-08 — helm, kind, kubectl: provenance and package audit
+
+### Question
+
+Why were `~/bin/{helm,kind,kubectl}` installed as loose binaries, do the
+trials under `~/Projects/prep` reference them, and can a package manager
+replace them?
+
+### Findings
+
+1. Provenance. `~/bin/kubectl` (v1.36.0) and `~/bin/kind` (v0.24.0) carry
+   mtimes 2026-04-27 16:52:41 and 16:52:43: one manual download step. One
+   hour later, dnf transaction 17 (begin 2026-04-27 17:44:02, command line
+   `-y install --disableexcludes=kubernetes kubelet-1.31.0 kubeadm-1.31.0
+   kubectl-1.31.0`) matches `TokenBase/infra/scripts/10-os/laptop-prep.sh`
+   lines 56-60, and `/usr/local/bin/helm` (v3.20.2, mtime 17:44:12) matches
+   its lines 67-75. `~/bin/helm` (v3.16.3) carries a 2024-11-13 mtime, which
+   tar restores from the archive, so it is the archive's build time, not the
+   installation time; v3.16.3 is the script's default `HELM_VERSION`. No
+   PATH export on this host names `~/bin`, so the three copies never ran.
+2. References. No file under `~/Projects` names `~/bin`, `$HOME/bin` or
+   `/home/ctuk/bin`. The trials in `~/Projects/prep/dist/kubernetes` call
+   `kubectl` and `helm` through PATH, mostly against Lima VMs
+   (`--kube-context lima-spark`); none invokes `kind`, and neither does
+   `~/Projects/TokenBase`.
+3. Packages. kubectl: installed from the pkgs.k8s.io v1.31 repository
+   (`kubectl-1.31.14-150500.1.1`), matching kubeadm/kubelet 1.31.14 on the
+   laptop and the Pi workers' pinned `KUBERNETES_VERSION`. helm: EPEL 10
+   ships `helm-4.1.1-1.el10_2` (built 2026-02-11); snap ships helm 4.3.0.
+   The tarball step in `laptop-prep.sh` cites a sudo `secure_path` problem
+   with the `get-helm-3` script, not package absence; its Helm 3 pin sits on
+   a line whose bug-fix support ended 2026-07-08 and whose security support
+   ends 2026-11-11. kind: no package in dnf (`dnf provides '*/bin/kind'`
+   returns nothing), EPEL or snap; upstream lists pacman as the only Linux
+   distribution package.
+
+### Change
+
+- Removed `~/bin/helm`, `~/bin/kind`, `~/bin/kubectl` and the empty `~/bin`.
+  `helm` resolves to `/usr/local/bin/helm` (3.20.2), `kubectl` to
+  `/usr/bin/kubectl` (1.31.14), `kind` to nothing.
+- `CLAUDE.md` and `README.md`: "Where programs live" opens with the
+  package-first rule and its two checks (`dnf provides`, `snap find`).
+
+### Left for a decision
+
+- Replace `/usr/local/bin/helm` with EPEL's Helm 4 (needs sudo; PATH puts
+  `/usr/local/bin` before `/usr/bin`, so the tarball copy must go first) and
+  switch `laptop-prep.sh` lines 64-75 to `dnf -y install helm`. Helm 4
+  declares backward-incompatible CLI flags and output, kstatus-based
+  waiting, a redesigned plugin system and post-renderers as plugins; the
+  TokenBase helm scripts need one test run under it.

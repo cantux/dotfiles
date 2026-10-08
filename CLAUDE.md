@@ -20,6 +20,11 @@ etc).
 
 # Where programs live
 
+- Prefer a package over a download. Check `rpm -qf <path>`, then
+  `dnf provides '*/bin/<name>'` across BaseOS, AppStream, CRB, EPEL and the
+  configured vendor repositories (pkgs.k8s.io, Docker CE), then
+  `snap find <name>`. Download only when no package exists (kind) or when a
+  project pins a version no package provides.
 - `~/Downloads` receives the download itself: tarball, AppImage, installer
   script, archive.
 - `~/Applications` receives what a download unpacks or installs into: the

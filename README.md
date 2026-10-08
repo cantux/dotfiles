@@ -109,6 +109,9 @@ pipx tools: `yapf` (Python formatter), `cpplint` (Google C++ linter).
 
 ## Where programs live
 
+- Package first: `dnf provides '*/bin/<name>'` (BaseOS, AppStream, CRB, EPEL,
+  vendor repos), then `snap find <name>`. Download only when no package
+  exists or a project pins a version no package provides.
 - `~/Downloads`: the download itself (tarball, AppImage, installer script).
 - `~/Applications`: what it unpacks or installs into (extracted directory,
   standalone binary, integrated AppImage). Installers that take a target
