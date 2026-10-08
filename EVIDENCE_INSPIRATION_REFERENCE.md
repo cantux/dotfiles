@@ -172,3 +172,31 @@ workflow described in Andrii Nakryiko, "BPF Portability and CO-RE"
   command line.
 - Package-first check order: `rpm -qf` (owned?), `dnf provides`
   (available?), `snap find` (fallback?), then download.
+
+### Verification sources, same day
+
+- `journalctl -u kubelet --since -30min`: CrashLoopBackOff lines for
+  `container=etcd` (151) and `container=kube-apiserver` (137);
+  `systemctl show kubelet -p ActiveEnterTimestamp` → 2026-10-02 11:00:16.
+- `ip -4 -br addr` (192.168.1.155/24), `ip route get 192.168.1.130`
+  (on-link via wlp0s20f3), `ip neigh show 192.168.1.130` (INCOMPLETE),
+  `ss -ltn` (no 6443 listener), `pgrep -a -f kube-` (controller-manager and
+  scheduler only).
+- `~/.kube/config` `server:` line; `/etc/hosts` line 8;
+  `ls -la /etc/kubernetes /etc/kubernetes/manifests` (dated 2026-04-27 21:43).
+- `TokenBase/infra/scripts/20-k8s/control-plane-up.sh` lines 11-24, 42, 52;
+  `TokenBase/infra/scripts/lib/common.sh` lines 86-90 (`require_cmd`);
+  `TokenBase/infra/scripts/10-os/verify-hosts.sh` line 16.
+- `grep -rhoE -- '--kube-context ...'` over `prep/dist` (56 lima-spark,
+  4 lima-dev); `command -v` for each companion tool; `bash -n` over every
+  script that invokes kubectl or helm.
+- kubeadm documentation, "Creating a cluster with kubeadm" and
+  "Considerations about apiserver-advertise-address and
+  ControlPlaneEndpoint": both values are fixed at init time and written into
+  certificates, kubeconfigs and static pod manifests; a stable endpoint is
+  the recommended guard against address change.
+- kubeadm documentation, "Implementation details": the generated `etcd.yaml`
+  lists the advertise address in `--listen-client-urls` and
+  `--listen-peer-urls`. etcd documentation, "Configuration flags": listen
+  URLs must name addresses the host holds. The observed etcd crash loop is
+  consistent with the address 192.168.1.130 no longer being assigned.

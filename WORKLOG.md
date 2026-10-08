@@ -215,3 +215,42 @@ replace them?
   declares backward-incompatible CLI flags and output, kstatus-based
   waiting, a redesigned plugin system and post-renderers as plugins; the
   TokenBase helm scripts need one test run under it.
+
+### Verification of the references, same day
+
+1. Resolution. Every script under `~/Projects` reaches the tools through
+   PATH: `helm` → `/usr/local/bin/helm` (3.20.2), `kubectl` →
+   `/usr/bin/kubectl` (1.31.14), `kubeadm` 1.31.14. TokenBase's
+   `require_cmd` (`lib/common.sh:86-90`) uses `command -v`, so its 23
+   `require_cmd` lines are satisfied for helm, kubectl and kubeadm. `bash -n`
+   passes on every script invoking kubectl or helm under TokenBase and
+   prep/dist (0 failures). The two hard-coded paths, `laptop-prep.sh:67,75`
+   and `verify-hosts.sh:16`, name `/usr/local/bin/helm`, which exists;
+   `verify-hosts.sh` also falls back to `command -v`.
+2. TokenBase target. `~/.kube/config` and the kubelet point at
+   `https://192.168.1.130:6443`. The laptop now holds 192.168.1.155/24 on
+   `wlp0s20f3`; `ip neigh` reports 192.168.1.130 INCOMPLETE, so no host
+   answers for that address. `control-plane-up.sh` lines 11-24 derive the
+   advertise address and `controlPlaneEndpoint` (lines 42, 52) from the
+   laptop's primary IPv4 at init time; `/etc/kubernetes` (admin.conf,
+   manifests, pki) is dated 2026-04-27 21:43. Since kubelet started on
+   2026-10-02 11:00, `etcd` has failed 151 times and `kube-apiserver` 137
+   times (CrashLoopBackOff, 5 m back-off); nothing listens on 6443;
+   `kube-controller-manager` and `kube-scheduler` run but cannot connect.
+   Every `kubectl` and `helm` call against the farm fails with "no route to
+   host" until the laptop regains 192.168.1.130 (DHCP reservation on the
+   192.168.1.0/24 router) or the control plane is re-initialised on a stable
+   endpoint; `cp.farm` resolves to 127.0.0.1 only (`/etc/hosts:8`).
+3. prep/dist targets. 56 references use `--kube-context lima-spark`, 4 use
+   `lima-dev`, and `distsys_sims/_infra/lib.sh:3` hard-codes `kubectl
+   --context lima-dev`; neither context exists in `~/.kube/config`, and
+   `limactl` is absent (27 scripts need it). Also absent: `aws` and `eksctl`
+   (3 scripts each), `cilium` (14), `docker` (10), `hubble` (6), `yq` (3),
+   `tinkerbell` (4). `distsys_sims/HANDOFF.md` lists the Linux migration
+   options (kind, k3s, kubeadm) and is the only mention of `kind` as a
+   command.
+4. Helm 4 impact on the references. `laptop-prep.sh:67` re-downloads the
+   tarball whenever `/usr/local/bin/helm` is missing, so a dnf Helm must be
+   accompanied by editing lines 64-75; otherwise the next run restores the
+   shadowing copy. The scripts use `--wait --timeout` (three places) and
+   `--wait=false` (teardown), no plugins and no post-renderers.
