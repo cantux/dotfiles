@@ -1,0 +1,832 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.10.4",
+    "migrations": {
+      "modelPolicyAllowlist": true,
+      "utilityModelSeparation": true,
+      "webhookListeners": true
+    }
+  },
+  "auth": {
+    "profiles": {
+      "google:manual": {
+        "provider": "google",
+        "mode": "token"
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "openai/gpt-6-luna"
+      },
+      "models": {
+        "openai/gpt-6-luna": {
+          "params": {
+            "thinking": "max"
+          }
+        },
+        "anthropic/claude-opus-4-7": {
+          "params": {
+            "thinking": "max"
+          },
+          "agentRuntime": {
+            "id": "claude-cli"
+          }
+        },
+        "google/gemini-2.5-pro": {
+          "params": {
+            "thinking": "ultra"
+          }
+        },
+        "google/gemini-3.1-pro-preview": {
+          "params": {
+            "thinking": "ultra"
+          }
+        },
+        "google/gemini-3.8-flash": {
+          "agentRuntime": {
+            "id": "google-gemini-cli"
+          },
+          "params": {
+            "thinking": "high"
+          }
+        },
+        "antigravity/*": {
+          "agentRuntime": {
+            "id": "antigravity"
+          }
+        }
+      },
+      "thinkingDefault": "max",
+      "workspace": "/home/ctuk/.openclaw/workspace",
+      "subagents": {
+        "maxSpawnDepth": 2,
+        "maxChildrenPerAgent": 5,
+        "maxConcurrent": 8,
+        "runTimeoutSeconds": 2400,
+        "requireAgentId": true
+      },
+      "modelPolicy": {
+        "allow": [
+          "openai/gpt-6-luna",
+          "anthropic/claude-opus-4-7",
+          "google/gemini-2.5-pro",
+          "google/gemini-3.1-pro-preview",
+          "google/gemini-3.8-flash"
+        ]
+      },
+      "systemAgent": {
+        "agentId": "main"
+      },
+      "heartbeat": {
+        "agentId": "main"
+      }
+    },
+    "ownership": "explicit",
+    "entries": {
+      "main": {
+        "workspace": "/home/ctuk/.openclaw/workspace",
+        "subagents": {
+          "allowAgents": [
+            "orchestrator"
+          ],
+          "requireAgentId": true
+        }
+      },
+      "orchestrator": {
+        "workspace": "/home/ctuk/.openclaw/workspaces/orchestrator",
+        "model": {
+          "primary": "openai/gpt-6-luna"
+        },
+        "name": "Manager",
+        "description": "Coordinates independent engineers and a reviewer.",
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-luna",
+            "anthropic/claude-opus-4-7",
+            "google/gemini-2.5-pro",
+            "google/gemini-3.8-flash"
+          ]
+        },
+        "thinkingDefault": "max",
+        "cwd": "/home/ctuk/Projects/llm_serving",
+        "subagents": {
+          "allowAgents": [
+            "engineer_gemini",
+            "engineer_claude",
+            "reviewer_openai"
+          ],
+          "requireAgentId": true,
+          "delegationMode": "prefer"
+        }
+      },
+      "questioner": {
+        "workspace": "/home/ctuk/.openclaw/workspaces/questioner",
+        "model": {
+          "primary": "anthropic/claude-opus-4-7"
+        }
+      },
+      "coolguy": {
+        "workspace": "/home/ctuk/.openclaw/workspaces/coolguy",
+        "model": {
+          "primary": "openai/gpt-6-luna"
+        }
+      },
+      "ceo": {
+        "workspace": "/home/ctuk/.openclaw/workspaces/ceo",
+        "model": {
+          "primary": "anthropic/claude-opus-4-7"
+        }
+      },
+      "datasci": {
+        "workspace": "/home/ctuk/.openclaw/workspaces/datasci",
+        "model": {
+          "primary": "anthropic/claude-opus-4-7"
+        }
+      },
+      "architect": {
+        "workspace": "/home/ctuk/.openclaw/workspaces/architect",
+        "model": {
+          "primary": "anthropic/claude-opus-4-7"
+        }
+      },
+      "mouse": {
+        "workspace": "/home/ctuk/.openclaw/workspaces/mouse",
+        "model": {
+          "primary": "openai/gpt-6-luna"
+        }
+      },
+      "snake": {
+        "workspace": "/home/ctuk/.openclaw/workspaces/snake",
+        "model": {
+          "primary": "google/gemini-2.5-pro"
+        }
+      },
+      "hoddard": {
+        "workspace": "/home/ctuk/.openclaw/workspaces/hoddard",
+        "model": {
+          "primary": "openai/gpt-6-luna"
+        }
+      },
+      "engineer_gemini": {
+        "name": "Gemini Engineer",
+        "description": "Independent implementation engineer using the Gemini provider.",
+        "workspace": "/home/ctuk/.openclaw/workspaces/engineer_gemini",
+        "cwd": "/home/ctuk/Projects/llm_serving",
+        "model": {
+          "primary": "google/gemini-3.8-flash"
+        },
+        "modelPolicy": {
+          "allow": [
+            "google/gemini-3.8-flash"
+          ]
+        },
+        "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "engineer_claude": {
+        "name": "Claude Engineer",
+        "description": "Independent implementation engineer using the Anthropic provider.",
+        "workspace": "/home/ctuk/.openclaw/workspaces/engineer_claude",
+        "cwd": "/home/ctuk/Projects/llm_serving",
+        "model": {
+          "primary": "anthropic/claude-opus-4-7"
+        },
+        "modelPolicy": {
+          "allow": [
+            "anthropic/claude-opus-4-7"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "reviewer_openai": {
+        "name": "OpenAI Reviewer",
+        "description": "Independently reviews engineer reports and proposes a decision.",
+        "workspace": "/home/ctuk/.openclaw/workspaces/reviewer_openai",
+        "cwd": "/home/ctuk/Projects/llm_serving",
+        "model": {
+          "primary": "openai/gpt-6-luna"
+        },
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "researcher_gemini": {
+        "name": "researcher_gemini",
+        "description": "Independent web researcher",
+        "workspace": "/home/ctuk/.openclaw/workspaces/researcher_gemini",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "antigravity/gemini-3.8-flash-high"
+        },
+        "modelPolicy": {
+          "allow": [
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash"
+          ]
+        },
+        "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "researcher_claude": {
+        "name": "researcher_claude",
+        "description": "Independent web researcher",
+        "workspace": "/home/ctuk/.openclaw/workspaces/researcher_claude",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "anthropic/claude-opus-4-7"
+        },
+        "modelPolicy": {
+          "allow": [
+            "anthropic/claude-opus-4-7"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "researcher_codex": {
+        "name": "researcher_codex",
+        "description": "Independent web researcher",
+        "workspace": "/home/ctuk/.openclaw/workspaces/researcher_codex",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "openai/gpt-6-luna"
+        },
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "research_merger_codex": {
+        "name": "research_merger_codex",
+        "description": "Mechanical research merger",
+        "workspace": "/home/ctuk/.openclaw/workspaces/research_merger_codex",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "openai/gpt-6-luna"
+        },
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "designer_gemini": {
+        "name": "designer_gemini",
+        "description": "Independent solution designer",
+        "workspace": "/home/ctuk/.openclaw/workspaces/designer_gemini",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "antigravity/gemini-3.8-flash-high"
+        },
+        "modelPolicy": {
+          "allow": [
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash"
+          ]
+        },
+        "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "designer_claude": {
+        "name": "designer_claude",
+        "description": "Independent solution designer",
+        "workspace": "/home/ctuk/.openclaw/workspaces/designer_claude",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "anthropic/claude-opus-4-7"
+        },
+        "modelPolicy": {
+          "allow": [
+            "anthropic/claude-opus-4-7"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "designer_codex": {
+        "name": "designer_codex",
+        "description": "Independent solution designer",
+        "workspace": "/home/ctuk/.openclaw/workspaces/designer_codex",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "openai/gpt-6-luna"
+        },
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "design_experimenter_evaluator_gemini": {
+        "name": "design_experimenter_evaluator_gemini",
+        "description": "Design peer reviewer who runs experiments",
+        "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_gemini",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "antigravity/gemini-3.8-flash-high"
+        },
+        "modelPolicy": {
+          "allow": [
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash"
+          ]
+        },
+        "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "design_experimenter_evaluator_claude": {
+        "name": "design_experimenter_evaluator_claude",
+        "description": "Design peer reviewer who runs experiments",
+        "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_claude",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "anthropic/claude-opus-4-7"
+        },
+        "modelPolicy": {
+          "allow": [
+            "anthropic/claude-opus-4-7"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "design_experimenter_evaluator_codex": {
+        "name": "design_experimenter_evaluator_codex",
+        "description": "Design peer reviewer who runs experiments",
+        "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_codex",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "openai/gpt-6-luna"
+        },
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "implementor_reviewer_gemini": {
+        "name": "implementor_reviewer_gemini",
+        "description": "Independent implementor and peer reviewer",
+        "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_gemini",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "antigravity/gemini-3.8-flash-high"
+        },
+        "modelPolicy": {
+          "allow": [
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash"
+          ]
+        },
+        "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "implementor_reviewer_claude": {
+        "name": "implementor_reviewer_claude",
+        "description": "Independent implementor and peer reviewer",
+        "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_claude",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "anthropic/claude-opus-4-7"
+        },
+        "modelPolicy": {
+          "allow": [
+            "anthropic/claude-opus-4-7"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "implementor_reviewer_codex": {
+        "name": "implementor_reviewer_codex",
+        "description": "Independent implementor and peer reviewer",
+        "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_codex",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "openai/gpt-6-luna"
+        },
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "implementation_merger_claude": {
+        "name": "implementation_merger_claude",
+        "description": "Merger of the best implementation parts",
+        "workspace": "/home/ctuk/.openclaw/workspaces/implementation_merger_claude",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "anthropic/claude-opus-4-7"
+        },
+        "modelPolicy": {
+          "allow": [
+            "anthropic/claude-opus-4-7"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "pipeline_manager": {
+        "name": "pipeline_manager",
+        "description": "Runs the six-phase research, design, and implementation pipeline",
+        "workspace": "/home/ctuk/.openclaw/workspaces/pipeline_manager",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "claude-cli/claude-fable-5-1"
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1",
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash",
+            "anthropic/claude-opus-4-7",
+            "openai/gpt-6-luna",
+            "claude-cli/claude-fable-5"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [
+            "researcher_gemini",
+            "researcher_fable_5_1",
+            "researcher_codex",
+            "research_merger_codex",
+            "research_merger_gemini",
+            "designer_gemini",
+            "designer_fable_5_1",
+            "designer_codex",
+            "design_experimenter_evaluator_gemini",
+            "design_experimenter_evaluator_fable_5_1",
+            "design_experimenter_evaluator_codex",
+            "implementor_reviewer_gemini",
+            "implementor_reviewer_fable_5_1",
+            "implementor_reviewer_codex",
+            "implementation_merger_fable_5_1"
+          ],
+          "requireAgentId": true,
+          "delegationMode": "prefer"
+        }
+      },
+      "engineer_fable": {
+        "name": "Fable Engineer",
+        "description": "Independent implementation engineer using the Anthropic Fable provider.",
+        "workspace": "/home/ctuk/.openclaw/workspaces/engineer_fable",
+        "cwd": "/home/ctuk/Projects/llm_serving/llm_serving_fable",
+        "model": {
+          "primary": "claude-cli/claude-fable-5"
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "researcher_fable_5_1": {
+        "name": "researcher_fable_5_1",
+        "description": "Independent web researcher",
+        "workspace": "/home/ctuk/.openclaw/workspaces/researcher_fable_5_1",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "claude-cli/claude-fable-5-1"
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "designer_fable_5_1": {
+        "name": "designer_fable_5_1",
+        "description": "Independent solution designer",
+        "workspace": "/home/ctuk/.openclaw/workspaces/designer_fable_5_1",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "claude-cli/claude-fable-5-1"
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "design_experimenter_evaluator_fable_5_1": {
+        "name": "design_experimenter_evaluator_fable_5_1",
+        "description": "Design peer reviewer who runs experiments",
+        "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_fable_5_1",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "claude-cli/claude-fable-5-1"
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "implementor_reviewer_fable_5_1": {
+        "name": "implementor_reviewer_fable_5_1",
+        "description": "Independent implementor and peer reviewer",
+        "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_fable_5_1",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "claude-cli/claude-fable-5-1"
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "implementation_merger_fable_5_1": {
+        "name": "implementation_merger_fable_5_1",
+        "description": "Merger of the best implementation parts",
+        "workspace": "/home/ctuk/.openclaw/workspaces/implementation_merger_fable_5_1",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "claude-cli/claude-fable-5-1"
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "engineer_claude_sonnet_5_5_1": {
+        "name": "Sonnet 5.5 Engineer 1",
+        "description": "Independent implementation engineer using Anthropic Claude Sonnet 5.5.",
+        "workspace": "/home/ctuk/.openclaw/workspaces/engineer_claude_sonnet_5_5_1",
+        "cwd": "/home/ctuk/Projects/llm_serving/llm_serving_sonnet_5_5",
+        "model": {
+          "primary": "claude-cli/claude-sonnet-5-5"
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-sonnet-5-5"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "research_merger_gemini": {
+        "name": "research_merger_gemini",
+        "description": "Mechanical research merger",
+        "workspace": "/home/ctuk/.openclaw/workspaces/research_merger_gemini",
+        "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
+        "model": {
+          "primary": "antigravity/gemini-3.8-flash-high"
+        },
+        "modelPolicy": {
+          "allow": [
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash"
+          ]
+        },
+        "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      }
+    }
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true
+  },
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "token": "REDACTED"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "google": {
+        "enabled": true
+      },
+      "anthropic": {
+        "enabled": true
+      },
+      "antigravity": {
+        "enabled": true,
+        "config": {
+          "command": "/home/ctuk/.local/bin/agy",
+          "project": "default-cli-project"
+        }
+      }
+    }
+  },
+  "wizard": {
+    "lastRunAt": "2026-10-16T20:10:41.107Z",
+    "lastRunVersion": "2026.10.4",
+    "lastRunCommand": "doctor",
+    "lastRunMode": "local"
+  },
+  "skills": {
+    "entries": {
+      "1password": {
+        "enabled": false
+      },
+      "blogwatcher": {
+        "enabled": false
+      },
+      "blucli": {
+        "enabled": false
+      },
+      "camsnap": {
+        "enabled": false
+      },
+      "coding-agent": {
+        "enabled": false
+      },
+      "eightctl": {
+        "enabled": false
+      },
+      "gemini": {
+        "enabled": false
+      },
+      "gifgrep": {
+        "enabled": false
+      },
+      "gog": {
+        "enabled": false
+      },
+      "goplaces": {
+        "enabled": false
+      },
+      "himalaya": {
+        "enabled": false
+      },
+      "mcporter": {
+        "enabled": false
+      },
+      "model-usage": {
+        "enabled": false
+      },
+      "nano-pdf": {
+        "enabled": false
+      },
+      "obsidian": {
+        "enabled": false
+      },
+      "openai-whisper": {
+        "enabled": false
+      },
+      "openai-whisper-api": {
+        "enabled": false
+      },
+      "openhue": {
+        "enabled": false
+      },
+      "oracle": {
+        "enabled": false
+      },
+      "ordercli": {
+        "enabled": false
+      },
+      "sag": {
+        "enabled": false
+      },
+      "sherpa-onnx-tts": {
+        "enabled": false
+      },
+      "songsee": {
+        "enabled": false
+      },
+      "sonoscli": {
+        "enabled": false
+      },
+      "spotify-player": {
+        "enabled": false
+      },
+      "summarize": {
+        "enabled": false
+      },
+      "trello": {
+        "enabled": false
+      },
+      "xurl": {
+        "enabled": false
+      }
+    }
+  },
+  "tools": {
+    "agentToAgent": {
+      "enabled": true,
+      "allow": [
+        "main",
+        "orchestrator",
+        "engineer_gemini",
+        "engineer_claude",
+        "reviewer_openai"
+      ]
+    },
+    "sessions": {
+      "visibility": "all"
+    }
+  }
+}

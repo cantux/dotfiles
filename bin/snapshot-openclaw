@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SRC="$HOME/.openclaw/openclaw.json"
+OUT_DIR="$REPO/openclaw"
+OUT="$OUT_DIR/openclaw.json"
+
+[[ -f "$SRC" ]] || { echo "snapshot-openclaw: missing $SRC" >&2; exit 1; }
+mkdir -p "$OUT_DIR"
+
+python3 -I - "$SRC" "$OUT" <<'PY'
+import json
+import re
+import sys
+
+source_path, output_path = sys.argv[1], sys.argv[2]
+data = json.load(open(source_path))
+redacted = []
+
+gateway_auth = data.get("gateway", {}).get("auth", {})
+if "token" in gateway_auth:
+  gateway_auth["token"] = "REDACTED"
+  redacted.append("gateway.auth.token")
+
+SECRET_KEYS = {"apikey", "api_key", "token", "secret", "password", "authorization"}
+VALUE_PATTERN = re.compile(
+    r"(AIza[A-Za-z0-9_-]{30,}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{30,}"
+    r"|gho_[A-Za-z0-9]{30,}|xox[baprs]-|eyJ[A-Za-z0-9_-]{20,})")
+
+
+def scrub(node, path):
+  if isinstance(node, dict):
+    for key, value in node.items():
+      child = f"{path}.{key}"
+      if isinstance(value, str) and value != "REDACTED" and (
+          key.lower() in SECRET_KEYS or VALUE_PATTERN.search(value)):
+        node[key] = "REDACTED"
+        redacted.append(child)
+      else:
+        scrub(value, child)
+  elif isinstance(node, list):
+    for index, value in enumerate(node):
+      scrub(value, f"{path}[{index}]")
+
+
+scrub(data, "$")
+text = json.dumps(data, indent=2, sort_keys=False) + "\n"
+if VALUE_PATTERN.search(text):
+  print("snapshot-openclaw: secret pattern survived redaction; refusing to write",
+        file=sys.stderr)
+  sys.exit(1)
+open(output_path, "w").write(text)
+print(f"snapshot-openclaw: wrote {output_path}; redacted: {', '.join(redacted) or 'nothing'}")
+PY
