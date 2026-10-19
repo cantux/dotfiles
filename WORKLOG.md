@@ -254,3 +254,26 @@ replace them?
    accompanied by editing lines 64-75; otherwise the next run restores the
    shadowing copy. The scripts use `--wait --timeout` (three places) and
    `--wait=false` (teardown), no plugins and no post-renderers.
+
+## 2026-10-17 — agy: directory-confined autonomous execution wrapper (agy-project)
+
+### Need
+
+Enable autonomous Antigravity CLI execution with `--dangerously-skip-permissions --mode accept-edits` for project repositories while isolating the filesystem blast radius strictly to the working directory.
+
+### Implementation
+
+1. Created `containers/Containerfile.agy-dev` based on Red Hat Universal Base Image 9, installing developer toolchains (`git`, `python3`, `python3-pip`, `gcc`, `gcc-c++`, `make`, `which`, `findutils`). Built and verified `localhost/agy-dev:latest` under rootless Podman.
+2. Added `agy-project()` shell function to `.bash_aliases`:
+   - Executes `localhost/agy-dev:latest` with `--userns=keep-id` and `--net=host`.
+   - Mounts `$PWD` read-write (`-v "$PWD:$PWD:Z" -w "$PWD"`).
+   - Mounts `~/.gemini` read-write (`-v "$HOME/.gemini:$HOME/.gemini:Z"`) to preserve session state and authentication.
+   - Mounts `~/.gitconfig` and host `/home/ctuk/.local/bin/agy` read-only.
+   - Invokes `agy --dangerously-skip-permissions --mode accept-edits "$@"`.
+3. Executed `./sync.sh` to synchronize `.bash_aliases` to `$HOME/.bash_aliases`.
+
+## 2026-10-18, OpenClaw awareness and security audit
+
+1. Added `bin/sync-openclaw-baseline` and a `sync.sh` hook: embeds `.claude/CLAUDE.md` into every `~/.openclaw/workspaces/*/AGENTS.md` between `baseline:begin`/`baseline:end` markers, idempotently; executed against 35 workspaces.
+2. Added `bin/snapshot-openclaw` and `openclaw/NOTES.md`: reverse-direction redacted snapshot of `~/.openclaw/openclaw.json` into `openclaw/openclaw.json` (gateway auth token and any credential-shaped value replaced by REDACTED; the script refuses to write if a secret pattern survives). Forward `sync.sh` deliberately never writes the live OpenClaw config. First snapshot taken: 36 agent entries, one redaction (`gateway.auth.token`).
+3. Security audit of this repository: working tree and full git history scanned for credential patterns (AIza, sk-, ghp_, gho_, xox, private-key blocks) — zero hits in any ref; word-level matches resolve to vim plugin documentation and this worklog; `.claude/settings.json` contains security-posture descriptions, no values. The repository is public (`cantux/dotfiles`); recommendation recorded in the session log to make it private.
