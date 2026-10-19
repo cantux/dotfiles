@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SRC="$HOME/.claude/CLAUDE.md"
+WS_ROOT="$HOME/.openclaw/workspaces"
+BEGIN='<!-- baseline:begin -->'
+END='<!-- baseline:end -->'
+
+[[ -f "$SRC" ]] || { echo "sync-openclaw-baseline: missing $SRC" >&2; exit 1; }
+[[ -d "$WS_ROOT" ]] || { echo "sync-openclaw-baseline: no $WS_ROOT, nothing to do"; exit 0; }
+
+count=0
+for ws in "$WS_ROOT"/*/; do
+  agents_file="${ws}AGENTS.md"
+  tmp="$(mktemp)"
+  if [[ -f "$agents_file" ]]; then
+    awk -v b="$BEGIN" -v e="$END" '($0==b){skip=1} (!skip){print} ($0==e){skip=0}' "$agents_file" \
+      | tac | awk 'NF{found=1} found' | tac > "$tmp"
+  fi
+  {
+    cat "$tmp"
+    printf '\n%s\n# Baseline instructions (synced from dotfiles .claude/CLAUDE.md; do not edit here)\n\n' "$BEGIN"
+    cat "$SRC"
+    printf '%s\n' "$END"
+  } > "$agents_file"
+  rm -f "$tmp"
+  count=$((count + 1))
+done
+echo "sync-openclaw-baseline: baseline embedded in $count workspace AGENTS.md files"

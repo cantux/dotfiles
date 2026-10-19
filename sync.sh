@@ -21,6 +21,7 @@ items=(
   .config/clangd/config.yaml
   .config/kitty/kitty.conf
   bin/gemini
+  bin/sync-openclaw-baseline
   .codex/config.toml
   .config/autostart/easyeffects-service.desktop
   .var/app/com.github.wwmm.easyeffects/data/easyeffects/output
@@ -68,4 +69,8 @@ done
 
 cp "$REPO/CLAUDE.md" "$HOME/AGENTS.md"
 echo "  synced AGENTS.md (copy of CLAUDE.md)"
+
+if [[ -d "$HOME/.openclaw/workspaces" ]]; then
+  "$REPO/bin/sync-openclaw-baseline"
+fi
 echo "Done. Open a new shell or 'source ~/.bashrc' to pick up changes."
