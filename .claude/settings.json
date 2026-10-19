@@ -1,4 +1,5 @@
 {
+  "model": "fable",
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true
   },
@@ -6,5 +7,37 @@
   "tui": "default",
   "skipWorkflowUsageWarning": true,
   "theme": "dark-daltonized",
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "Bash(systemctl stop:*) / Bash(systemctl restart:*) in /home/ctuk/Projects/claude-slack-cli — systemctl seen repeatedly in this project's transcript and shell history but no default coverage confirms safe-scoping of service restarts for the bot's own systemd unit"
+    ],
+    "environment": [
+      "### Org-wide",
+      "**Organization**: None configured",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: not queryable here — assume private (remote is github.com:cantux/claude-slack-cli.git, no public indicators found); treat as private for commit/push scoping",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: None configured — repo uses local .env (gitignored) for Slack tokens (SLACK_BOT_TOKEN, SLACK_APP_TOKEN)",
+      "**Default / protected branches**: default branch is main; protected-branch/ruleset status not queryable here — treat main as protected by default caution",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine (this Linux box) with open internet",
+      "**Source control**: The trusted repo (github.com:cantux/claude-slack-cli.git) and its remote(s) only (no additional orgs configured)",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: None configured",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: .env and .env.example (Slack bot/app tokens), secrets/ directory — share only with audiences cleared at the [named+specifics] bar",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries prod or production as a whole word or name segment",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries prod or production as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development (this repo: a Slack bot forwarding messages to a persistent Claude Code session)",
+      "**Trusted repo**: /home/ctuk/Projects/claude-slack-cli and its remote github.com:cantux/claude-slack-cli.git (visibility not queryable — treat as private for now, but verify before assuming confidential material is safe to push)",
+      "**Org-specific CLIs**: None configured — systemctl and kubectl appear in shell history/project usage but are standard tools, not org-specific"
+    ]
+  }
 }
