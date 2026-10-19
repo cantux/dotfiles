@@ -20,6 +20,7 @@ items=(
   .config/yapf/style
   .config/clangd/config.yaml
   .config/kitty/kitty.conf
+  bin/gemini
   .codex/config.toml
   .config/autostart/easyeffects-service.desktop
   .var/app/com.github.wwmm.easyeffects/data/easyeffects/output

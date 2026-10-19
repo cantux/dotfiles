@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+translated=()
+skip_next=0
+pending_output_format=0
+stream_json=0
+has_effort=0
+
+for argument in "$@"; do
+  if [[ "$skip_next" -eq 1 ]]; then
+    skip_next=0
+    continue
+  fi
+
+  if [[ "$pending_output_format" -eq 1 ]]; then
+    pending_output_format=0
+    if [[ "$argument" == "stream-json" || "$argument" == "jsonl" ]]; then
+      stream_json=1
+      translated+=(--output-format json)
+    else
+      translated+=(--output-format "$argument")
+    fi
+    continue
+  fi
+
+  case "$argument" in
+    --skip-trust)
+      ;;
+    --approval-mode)
+      skip_next=1
+      ;;
+    --approval-mode=*)
+      ;;
+    --resume)
+      translated+=(--conversation)
+      ;;
+    --output-format)
+      pending_output_format=1
+      ;;
+    --output-format=stream-json|--output-format=jsonl)
+      stream_json=1
+      translated+=(--output-format json)
+      ;;
+    --effort|--effort=*)
+      has_effort=1
+      translated+=("$argument")
+      ;;
+    *)
+      translated+=("$argument")
+      ;;
+  esac
+done
+
+if [[ "$has_effort" -eq 0 ]]; then
+  translated+=(--effort high)
+fi
+
+if [[ "$stream_json" -eq 1 ]]; then
+  translated+=(--dangerously-skip-permissions)
+  output_file=$(mktemp)
+  trap 'rm -f "$output_file"' EXIT
+
+  if /home/ctuk/.local/bin/agy "${translated[@]}" >"$output_file"; then
+    command_status=0
+  else
+    command_status=$?
+  fi
+
+  if [[ "$command_status" -ne 0 ]]; then
+    cat "$output_file"
+    exit "$command_status"
+  fi
+
+  response=$(jq -r '.response // empty' "$output_file")
+  conversation_id=$(jq -r '.conversation_id // empty' "$output_file")
+  result_status=$(jq -r '.status // empty' "$output_file")
+
+  if [[ "$result_status" != "SUCCESS" ]]; then
+    error_message=$(jq -r '.error // .response // "agy returned failure"' "$output_file")
+    jq -cn --arg error "$error_message" '{type:"result",status:"error",error:$error}'
+    exit 1
+  fi
+
+  jq -cn --arg content "$response" '{type:"message",role:"assistant",content:$content}'
+  jq -cn --arg session_id "$conversation_id" '{type:"result",status:"success",session_id:$session_id}'
+  exit 0
+fi
+
+exec /home/ctuk/.local/bin/agy "${translated[@]}"
