@@ -21,6 +21,9 @@ items=(
   .config/clangd/config.yaml
   .config/kitty/kitty.conf
   .codex/config.toml
+  .config/autostart/easyeffects-service.desktop
+  .var/app/com.github.wwmm.easyeffects/data/easyeffects/output
+  .var/app/com.github.wwmm.easyeffects/data/easyeffects/autoload/output
 )
 
 # Runtime data that lives under synced dirs (e.g. ~/.vim) but is NOT in the

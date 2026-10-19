@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Easy Effects
+Comment=Easy Effects background service
+Exec=flatpak run --command=easyeffects com.github.wwmm.easyeffects --service-mode --hide-window
+Icon=com.github.wwmm.easyeffects
+StartupNotify=false
+Terminal=false
+X-Flatpak=com.github.wwmm.easyeffects
