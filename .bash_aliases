@@ -34,3 +34,17 @@ tsan() { clang++ -std=c++20 -g -fsanitize=thread -fno-omit-frame-pointer "$@" &&
 # Leak/error check via valgrind (replaces Apple's `leaks`).
 # usage: memcheck ./a.out [args]
 memcheck() { valgrind --leak-check=full --show-leak-kinds=all "$@"; }
+
+agy-project() {
+  podman run --rm -it \
+    --userns=keep-id \
+    --net=host \
+    -v "$PWD:$PWD:Z" \
+    -w "$PWD" \
+    -v "$HOME/.gemini:$HOME/.gemini:Z" \
+    -v "$HOME/.gitconfig:$HOME/.gitconfig:ro" \
+    -v "$HOME/.local/bin/agy:/usr/local/bin/agy:ro" \
+    localhost/agy-dev:latest \
+    agy --dangerously-skip-permissions --mode accept-edits "$@"
+}
+
