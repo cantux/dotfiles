@@ -99,6 +99,7 @@ fi
 # On PATH for user programs: self-installing tools (pipx, claude, agy) land here;
 # downloaded programs live in ~/Applications and are symlinked here (see ~/CLAUDE.md)
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/Applications/node-v24.22.0-linux-x64/bin:$PATH"
 
 # npm global installs (prefix set in ~/.npmrc to ~/.npm-global)
 export PATH="$HOME/.npm-global/bin:$PATH"
