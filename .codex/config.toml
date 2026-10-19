@@ -1,5 +1,8 @@
-model = "gpt-5.6-luna"
-model_reasoning_effort = "medium"
+model = "gpt-6-luna"
+model_reasoning_effort = "max"
+
+[tui]
+screen_reader_detection_done = true
 
 [tui.keymap.editor]
 insert_newline = ["enter", "shift-enter"]
@@ -23,4 +26,10 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/home/ctuk/Projects/prep/dist"]
+trust_level = "trusted"
+
+[projects."/home/ctuk/Projects/blog_impl"]
+trust_level = "trusted"
+
+[projects."/home/ctuk/Projects/epi"]
 trust_level = "trusted"
