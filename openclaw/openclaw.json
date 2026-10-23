@@ -64,7 +64,7 @@
         "maxSpawnDepth": 2,
         "maxChildrenPerAgent": 5,
         "maxConcurrent": 8,
-        "runTimeoutSeconds": 2400,
+        "runTimeoutSeconds": 3600,
         "requireAgentId": true
       },
       "modelPolicy": {
@@ -232,12 +232,18 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/researcher_gemini",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "antigravity/gemini-3.8-flash-high"
+          "primary": "antigravity/gemini-3.8-flash-high",
+          "fallbacks": [
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
         },
         "modelPolicy": {
           "allow": [
             "antigravity/gemini-3.8-flash-high",
-            "google/gemini-3.8-flash"
+            "google/gemini-3.8-flash",
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium"
           ]
         },
         "thinkingDefault": "high",
@@ -271,11 +277,17 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/researcher_codex",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "openai/gpt-6-luna"
+          "primary": "openai/gpt-6-luna",
+          "fallbacks": [
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
         },
         "modelPolicy": {
           "allow": [
-            "openai/gpt-6-luna"
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
           ]
         },
         "thinkingDefault": "max",
@@ -290,11 +302,17 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/research_merger_codex",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "openai/gpt-6-luna"
+          "primary": "openai/gpt-6-luna",
+          "fallbacks": [
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
         },
         "modelPolicy": {
           "allow": [
-            "openai/gpt-6-luna"
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
           ]
         },
         "thinkingDefault": "max",
@@ -309,12 +327,18 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/designer_gemini",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "antigravity/gemini-3.8-flash-high"
+          "primary": "antigravity/gemini-3.8-flash-high",
+          "fallbacks": [
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
         },
         "modelPolicy": {
           "allow": [
             "antigravity/gemini-3.8-flash-high",
-            "google/gemini-3.8-flash"
+            "google/gemini-3.8-flash",
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium"
           ]
         },
         "thinkingDefault": "high",
@@ -348,11 +372,17 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/designer_codex",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "openai/gpt-6-luna"
+          "primary": "openai/gpt-6-luna",
+          "fallbacks": [
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
         },
         "modelPolicy": {
           "allow": [
-            "openai/gpt-6-luna"
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
           ]
         },
         "thinkingDefault": "max",
@@ -367,12 +397,18 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_gemini",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "antigravity/gemini-3.8-flash-high"
+          "primary": "antigravity/gemini-3.8-flash-high",
+          "fallbacks": [
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
         },
         "modelPolicy": {
           "allow": [
             "antigravity/gemini-3.8-flash-high",
-            "google/gemini-3.8-flash"
+            "google/gemini-3.8-flash",
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium"
           ]
         },
         "thinkingDefault": "high",
@@ -406,11 +442,17 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_codex",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "openai/gpt-6-luna"
+          "primary": "openai/gpt-6-luna",
+          "fallbacks": [
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
         },
         "modelPolicy": {
           "allow": [
-            "openai/gpt-6-luna"
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
           ]
         },
         "thinkingDefault": "max",
@@ -425,12 +467,18 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_gemini",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "antigravity/gemini-3.8-flash-high"
+          "primary": "antigravity/gemini-3.8-flash-high",
+          "fallbacks": [
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
         },
         "modelPolicy": {
           "allow": [
             "antigravity/gemini-3.8-flash-high",
-            "google/gemini-3.8-flash"
+            "google/gemini-3.8-flash",
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium"
           ]
         },
         "thinkingDefault": "high",
@@ -464,11 +512,17 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_codex",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "openai/gpt-6-luna"
+          "primary": "openai/gpt-6-luna",
+          "fallbacks": [
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
         },
         "modelPolicy": {
           "allow": [
-            "openai/gpt-6-luna"
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
           ]
         },
         "thinkingDefault": "max",
@@ -502,7 +556,13 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/pipeline_manager",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "claude-cli/claude-fable-5-1"
+          "primary": "claude-cli/claude-opus-5-5",
+          "fallbacks": [
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high",
+            "claude-cli/claude-fable-5-1"
+          ]
         },
         "modelPolicy": {
           "allow": [
@@ -511,7 +571,15 @@
             "google/gemini-3.8-flash",
             "anthropic/claude-opus-4-7",
             "openai/gpt-6-luna",
-            "claude-cli/claude-fable-5"
+            "claude-cli/claude-fable-5",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high",
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
           ]
         },
         "thinkingDefault": "max",
@@ -562,11 +630,21 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/researcher_fable_5_1",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "claude-cli/claude-fable-5-1"
+          "primary": "claude-cli/claude-opus-5-5",
+          "fallbacks": [
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high",
+            "claude-cli/claude-fable-5-1"
+          ]
         },
         "modelPolicy": {
           "allow": [
-            "claude-cli/claude-fable-5-1"
+            "claude-cli/claude-fable-5-1",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
           ]
         },
         "thinkingDefault": "max",
@@ -581,11 +659,21 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/designer_fable_5_1",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "claude-cli/claude-fable-5-1"
+          "primary": "claude-cli/claude-opus-5-5",
+          "fallbacks": [
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high",
+            "claude-cli/claude-fable-5-1"
+          ]
         },
         "modelPolicy": {
           "allow": [
-            "claude-cli/claude-fable-5-1"
+            "claude-cli/claude-fable-5-1",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
           ]
         },
         "thinkingDefault": "max",
@@ -600,11 +688,21 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_fable_5_1",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "claude-cli/claude-fable-5-1"
+          "primary": "claude-cli/claude-opus-5-5",
+          "fallbacks": [
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high",
+            "claude-cli/claude-fable-5-1"
+          ]
         },
         "modelPolicy": {
           "allow": [
-            "claude-cli/claude-fable-5-1"
+            "claude-cli/claude-fable-5-1",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
           ]
         },
         "thinkingDefault": "max",
@@ -619,11 +717,21 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_fable_5_1",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "claude-cli/claude-fable-5-1"
+          "primary": "claude-cli/claude-opus-5-5",
+          "fallbacks": [
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high",
+            "claude-cli/claude-fable-5-1"
+          ]
         },
         "modelPolicy": {
           "allow": [
-            "claude-cli/claude-fable-5-1"
+            "claude-cli/claude-fable-5-1",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
           ]
         },
         "thinkingDefault": "max",
@@ -638,11 +746,21 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/implementation_merger_fable_5_1",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "claude-cli/claude-fable-5-1"
+          "primary": "claude-cli/claude-opus-5-5",
+          "fallbacks": [
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high",
+            "claude-cli/claude-fable-5-1"
+          ]
         },
         "modelPolicy": {
           "allow": [
-            "claude-cli/claude-fable-5-1"
+            "claude-cli/claude-fable-5-1",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
           ]
         },
         "thinkingDefault": "max",
@@ -676,12 +794,18 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/research_merger_gemini",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "antigravity/gemini-3.8-flash-high"
+          "primary": "antigravity/gemini-3.8-flash-high",
+          "fallbacks": [
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
         },
         "modelPolicy": {
           "allow": [
             "antigravity/gemini-3.8-flash-high",
-            "google/gemini-3.8-flash"
+            "google/gemini-3.8-flash",
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium"
           ]
         },
         "thinkingDefault": "high",
@@ -715,7 +839,7 @@
         "enabled": true,
         "config": {
           "command": "/home/ctuk/.local/bin/agy",
-          "project": "default-cli-project"
+          "project": "749a726c-e771-4b76-a646-3e0171617650"
         }
       }
     }
