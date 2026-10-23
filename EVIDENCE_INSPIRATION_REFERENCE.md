@@ -200,3 +200,33 @@ workflow described in Andrii Nakryiko, "BPF Portability and CO-RE"
   `--listen-peer-urls`. etcd documentation, "Configuration flags": listen
   URLs must name addresses the host holds. The observed etcd crash loop is
   consistent with the address 192.168.1.130 no longer being assigned.
+
+## 2026-10-22 — Claude Code effort: `max` is reachable only through the environment
+
+### Primary sources (checked on this box)
+
+- `~/.local/share/claude/versions/2.1.309` (293 MB), byte offsets found with
+  `grep -a -b -o`, context read with `tail -c +N | head -c M`:
+  - 240534458: `effortLevel:()=>B(["low","medium","high","xhigh"]).optional().catch(void 0).describe("Persisted effort level for supported models.")`;
+  - 240535261: `modelSettings` with the same enumeration for
+    `effortLevel`, and `maxEffortLevel`;
+  - 129488860: description of `maxEffortLevel`, a cap that clamps `/effort`,
+    `--effort` and `CLAUDE_CODE_EFFORT_LEVEL`;
+  - 244168936: a sanitizer that persists only `low`, `medium`, `high` and
+    `xhigh`, and `UA()`, which reads `CLAUDE_CODE_EFFORT_LEVEL` (`auto` and
+    `unset` mean no override);
+  - 263160125: the `/effort` messages when the variable overrides the request,
+    and the suffixes "(saved as your default for new sessions)" and
+    "(this session only)".
+- `agy --help`: "--effort  Reasoning effort for the current CLI session
+  (low|medium|high|xhigh|max)".
+- `.codex/config.toml` line 2: `model_reasoning_effort = "max"`.
+- The output of `/effort max` in the session of this entry: "Set effort level
+  to max (this session only)".
+
+### Method
+
+- The enumeration of the persisted key excludes `max`, and `.catch(void 0)`
+  turns an excluded value into "unset"; the environment variable therefore is
+  the only persistent route to `max`. The effect on a new session is read from
+  the code and not yet observed.

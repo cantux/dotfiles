@@ -295,3 +295,29 @@ Enable autonomous Antigravity CLI execution with `--dangerously-skip-permissions
    - installs into `~/.local/bin`, each checked against its published sha256: kubectl v1.36.5 (the host's 1.31 is outside the skew of a 1.36 API server), cilium-cli v0.20.1, hubble v1.20.2.
 2. `--undo` removes the kernel arguments, disables the libvirt sockets, drops the group membership and deletes the three binaries.
 3. `shellcheck` clean. Not yet executed: it needs the user's sudo and a reboot afterwards.
+
+## 2026-10-22 — Maximum reasoning effort as the default of every agent
+
+### Need
+
+The author wants every model to work at its maximum reasoning effort by default. The persisted Claude Code level was `xhigh`; `/effort max` sets `max` for the current session only.
+
+### Evidence
+
+1. `claude` 2.1.309 (`~/.local/share/claude/versions/2.1.309`): the settings schema declares `effortLevel` as the enumeration `["low","medium","high","xhigh"]` with `.catch(void 0)`, so a value `"max"` is discarded without an error; `modelSettings.<model>.effortLevel` uses the same enumeration.
+2. The same binary reads `CLAUDE_CODE_EFFORT_LEVEL` through a parser that accepts `["low","medium","high","xhigh","max"]` (`auto` and `unset` mean no override), and `/effort` reports that the variable overrides the requested level.
+3. `.codex/config.toml` already holds `model_reasoning_effort = "max"`. `agy --help` lists `--effort` with `low|medium|high|xhigh|max`; `bin/gemini` appended `--effort high` when the caller passed none.
+
+### Implementation
+
+1. `.claude/settings.json`: added `"env": {"CLAUDE_CODE_EFFORT_LEVEL": "max"}`; kept `"effortLevel": "xhigh"` as the highest persistable fallback. Carried over `"model": "sonnet"` and `modelSettings` from the deployed file, where `/model` had written them; a sync would otherwise have restored `"model": "fable"`.
+2. `.claude/CLAUDE.md`: one line in the baseline register: every model, and every agent it delegates to, runs at its maximum reasoning effort. The `effort` parameter of the Agent tool is set only when an instruction such as `CLAUDE.md` asks for a specific level.
+3. `bin/gemini`: the default `--effort high` became `--effort max`.
+4. Executed `./sync.sh`.
+
+### Consequences
+
+1. `/effort` cannot lower the level of a Claude Code session while the variable is set. A session at another level starts with `CLAUDE_CODE_EFFORT_LEVEL=high claude`.
+2. The binary treats claude-3-*, claude-opus-4-0, claude-opus-4-1, claude-sonnet-4-0, claude-sonnet-4-5 and claude-haiku-4-5 as models without an effort setting; they ignore the variable.
+3. Every Claude Code session of this account, among them the persistent session of `claude-slack-cli`, now runs at `max`.
+4. The effect on a new session is read from the code, not observed. `/effort status` in a new session shows it.

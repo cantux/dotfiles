@@ -1,9 +1,15 @@
 {
-  "model": "fable",
+  "model": "sonnet",
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true
   },
   "effortLevel": "xhigh",
+  "env": {
+    "CLAUDE_CODE_EFFORT_LEVEL": "max"
+  },
+  "modelSettings": {
+    "claude-opus-5-5": {}
+  },
   "tui": "default",
   "skipWorkflowUsageWarning": true,
   "theme": "dark-daltonized",

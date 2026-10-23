@@ -53,7 +53,7 @@ for argument in "$@"; do
 done
 
 if [[ "$has_effort" -eq 0 ]]; then
-  translated+=(--effort high)
+  translated+=(--effort max)
 fi
 
 if [[ "$stream_json" -eq 1 ]]; then
