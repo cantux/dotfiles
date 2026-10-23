@@ -277,3 +277,21 @@ Enable autonomous Antigravity CLI execution with `--dangerously-skip-permissions
 1. Added `bin/sync-openclaw-baseline` and a `sync.sh` hook: embeds `.claude/CLAUDE.md` into every `~/.openclaw/workspaces/*/AGENTS.md` between `baseline:begin`/`baseline:end` markers, idempotently; executed against 35 workspaces.
 2. Added `bin/snapshot-openclaw` and `openclaw/NOTES.md`: reverse-direction redacted snapshot of `~/.openclaw/openclaw.json` into `openclaw/openclaw.json` (gateway auth token and any credential-shaped value replaced by REDACTED; the script refuses to write if a secret pattern survives). Forward `sync.sh` deliberately never writes the live OpenClaw config. First snapshot taken: 36 agent entries, one redaction (`gateway.auth.token`).
 3. Security audit of this repository: working tree and full git history scanned for credential patterns (AIza, sk-, ghp_, gho_, xox, private-key blocks) — zero hits in any ref; word-level matches resolve to vim plugin documentation and this worklog; `.claude/settings.json` contains security-posture descriptions, no values. The repository is public (`cantux/dotfiles`); recommendation recorded in the session log to make it private.
+
+## 2026-10-22 — install_llm_cluster_host.sh (merged_llm_serving host)
+
+### Need
+
+`~/Projects/ai/merged_llm_serving` runs four KVM machines under libvirt `qemu:///system`, passes the RTX 2060 into one of them by VFIO, and is operated from this host with kubectl/cilium/hubble at the cluster's versions.
+
+### Implementation
+
+1. New `install_llm_cluster_host.sh` (run as the user; it calls sudo):
+   - installs libvirt KVM daemons, `virt-install`, `policycoreutils-python-utils`; enables the modular sockets `virtqemud`, `virtnetworkd`, `virtstoraged`, `virtnodedevd`; adds the user to `libvirt`;
+   - creates the storage pool directory `/home/mls-pool` with SELinux type `virt_image_t` (`/` has 30 GB free, `/home` 60 GB);
+   - adds kernel arguments `intel_iommu=on iommu=pt` to every kernel with grubby (RHEL 10 GPU-assignment guide); no boot-time `vfio-pci ids=` binding, because libvirt managed hostdev detaches and reattaches the GPU around the machine's lifetime;
+   - installs `nsight-systems-cli` from NVIDIA's rhel10 devtools repo, for `nsys stats` on reports pulled from the GPU machine;
+   - resets the dead host kubeadm install (API server 192.168.1.130) and disables kubelet;
+   - installs into `~/.local/bin`, each checked against its published sha256: kubectl v1.36.5 (the host's 1.31 is outside the skew of a 1.36 API server), cilium-cli v0.20.1, hubble v1.20.2.
+2. `--undo` removes the kernel arguments, disables the libvirt sockets, drops the group membership and deletes the three binaries.
+3. `shellcheck` clean. Not yet executed: it needs the user's sudo and a reboot afterwards.
