@@ -2,6 +2,8 @@
 
 My CentOS setup: shell, tmux, git, and a vim IDE (YCM + clangd, formatters,
 linters, sanitizers). Branch `centos` is the CentOS port of the `mac` branch.
+Branch `centos_xps_9700` derives from `centos` and adds the configuration
+specific to the Dell XPS 17 9700.
 Tracked files are **copied** into `$HOME` by `sync.sh` — not symlinked.
 
 Any file that repo's `sync.sh` tracks (check its `items` list for the exact
