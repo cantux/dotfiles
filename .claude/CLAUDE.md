@@ -49,7 +49,7 @@ No asking and answering.
 
 ## Environment updates
 
-- Every environment/config change on this machine — anything `sync.sh` tracks, including this file — is made in `~/Projects/dotfiles` on the platform branch (this box: `centos`), then applied with `./sync.sh`. Never edit tracked files directly under `$HOME`; sync.sh rsyncs over them.
+- Every environment/config change on this machine — anything `sync.sh` tracks, including this file — is made in `~/Projects/dotfiles` on the branch of this box (`centos_xps_9700`, derived from the platform branch `centos`), then applied with `./sync.sh`. Never edit tracked files directly under `$HOME`; sync.sh rsyncs over them.
 - One prompt feeds every agent. `sync.sh` copies `.claude/CLAUDE.md` to `~/.claude/CLAUDE.md` (Claude, `claude`), `~/.codex/AGENTS.md` (Codex, `codex`), and `~/.gemini/config/rules/GEMINI.md` (Antigravity, `agy`); it copies the repo-root `CLAUDE.md` to `~/CLAUDE.md` and `~/AGENTS.md`. So edit the dotfiles copy, run `./sync.sh`, and keep the wording agent-neutral — all three read this same text.
 
 ## Plan mode

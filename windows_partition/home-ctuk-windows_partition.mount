@@ -1,0 +1,12 @@
+[Unit]
+Description=linux_share of the Windows volume at /home/ctuk/windows_partition
+BindsTo=run-media-ctuk-OS.mount
+After=run-media-ctuk-OS.mount
+
+[Mount]
+What=/run/media/ctuk/OS/Users/Can Tuksavul/linux_share
+Where=/home/ctuk/windows_partition
+Options=bind
+
+[Install]
+WantedBy=run-media-ctuk-OS.mount

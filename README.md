@@ -91,6 +91,13 @@ Sessions, window splits, working directories, and pane history can be persisted 
 - **Save session**: `Ctrl+b` + `Ctrl+s` (saves to `~/.local/share/tmux/resurrect/`)
 - **Restore session**: `Ctrl+b` + `Ctrl+r`
 
+## Dell XPS 17 9700: `~/windows_partition`
+
+Branch `centos_xps_9700` binds `linux_share` on the dual-boot Windows volume
+to `~/windows_partition`, space for large files beyond `/home`. Install once
+with `./windows_partition/install.sh` (needs `sudo`); see
+`windows_partition/README.md`.
+
 ## What's tracked
 
 `sync.sh` copies: `.bashrc`, `.bash_aliases`, `.tmux.conf`, `.gitconfig`,
