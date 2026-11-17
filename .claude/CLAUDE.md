@@ -67,6 +67,8 @@ When you are producing any kind of output for me, identify the root directory an
 - ARCH.md: Note down architectural design, concepts, invariants, and trade-offs for each specific program/exercise. Update if this ever changes.
 - INSTR.md: Explicit compilation, execution, testing, and debugging instructions.
 
+Before the first change, write PLAN.md at that root: my goal, then the work as an ordered list of units, each small enough that an interruption loses only it, with the check that shows it done and its state. Order the list breadth first: a small, complete form of every part before detail. After each unit, update its state, log it in WORKLOG.md and commit its paths before starting the next. When resuming, read both files and continue at the first open unit. Delegate one unit per agent; only the delegating session writes these two files and commits. A task of one unit needs no PLAN.md.
+
 I want your answers and the work you present to be evidence based, all steps tracable and documented, verifyable and rigorous.
 
 Think extra to find if your work can be referred back to a resource existing on the internet, a book, a paper. If the ideas are composed or patterns are parallel to another domain, I want you to list your inspirations.
