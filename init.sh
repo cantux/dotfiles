@@ -25,6 +25,7 @@ sudo dnf groupinstall -y "Development Tools"
 # Single transaction across base/AppStream/CRB + EPEL. Trailing comment on each
 # line maps it back to the Homebrew formula it replaces.
 sudo dnf install -y \
+  awscli2 \
   bash-completion \
   borgbackup \
   clang \
