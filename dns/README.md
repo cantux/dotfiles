@@ -16,8 +16,10 @@ TLS. Brave uses the operating system DNS client. The configuration prohibits
 plaintext fallback and uses public DNS for all domains, including during VPN
 connections. Public DNS does not resolve VPN-only internal names.
 
-Status: prepared in the repository; host activation remains pending because
-the execution sandbox prevents root operations. All 18 isolated tests passed.
-The deployment attempt stopped at `sudo`; the host still uses `192.168.0.1`.
+Status: installed after the user's host synchronization run. The package,
+three installed configuration files, and resolver symlink match the design.
+All 18 isolated tests passed. The sandbox still prevents live service and
+network verification. VM and pod DNS encryption requires separate configuration;
+the host change leaves bridge and TAP forwarding intact.
 See [INSTR.md](INSTR.md) for verification, restoration, and tests, and
 [sources](EVIDENCE_INSPIRATION_REFERENCE.md) for implementation references.

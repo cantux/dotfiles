@@ -63,6 +63,33 @@ Root: `/home/ctuk/Projects/dotfiles/dns`. Inspection date: 2026-11-24.
 21. [Isolated configuration tests](test_configure.py).
     Eighteen tests cover filesystem recovery and verification behavior. The
     work log records the command and result; no test claims host deployment.
+22. Follow-up host evidence on 2026-11-24: `rpm -q systemd-resolved` now reports
+    `257-35.el10`; byte comparisons match all three installed files to their
+    sources; `/etc/resolv.conf` points to the local stub. System-bus and
+    Kubernetes socket access still fail under the sandbox. These observations
+    establish installation, not live service or cluster health.
+23. [Laboratory architecture](../../ai/kubernetes/README.md),
+    [host network setup](../../ai/kubernetes/rack/00-host-net.sh), and
+    [network constants](../../ai/kubernetes/fleet/lib.sh).
+    Establish separate Debian guests, `br-lab`, TAP devices, private addressing,
+    and dedicated NAT. The DNS helper changes none of these components.
+24. [Native guest seed](../../ai/kubernetes/provision/02-seed.sh) and
+    [tutorial guest seed](../../ai/kubernetes_learning/cluster/seeds.sh).
+    Both select guest DNS `1.1.1.1` and `9.9.9.9`. The native seed also writes
+    laboratory names into each guest's `/etc/hosts`.
+25. [Archived guest kubelet configuration](../../ai/kubernetes_learning/cluster/evidence/main/2-after-network-plugin/22-kubelet-configuration.txt)
+    and [archived CoreDNS configuration](../../ai/kubernetes_learning/cluster/evidence/main/inventory/20-coredns-configuration.txt).
+    Evidence dated 2026-11-16 establishes guest resolver and cluster DNS
+    configuration at collection time. It does not establish live state.
+26. [Kubernetes DNS for Services and Pods](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/).
+    Defines cluster DNS policies and the network-namespace behavior relevant
+    to host-networked pods.
+27. [Kubernetes DNS troubleshooting](https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/).
+    Documents systemd stub inheritance and CoreDNS forwarding loops, including
+    kubelet's upstream resolver-file setting. That file does not encode TLS.
+28. [systemd 257 resolver service](https://www.freedesktop.org/software/systemd/man/257/systemd-resolved.service.html).
+    Documents the `127.0.0.53` and `127.0.0.54` local DNS listeners and the
+    separation between local clients and upstream resolution.
 
 The assessment applies these protocol and implementation references directly.
 It introduces no separate formal model or cross-domain analogy.

@@ -19,14 +19,29 @@ plaintext fallback and make Brave use that resolver. Keep the source in the
    Result: 18 isolated tests passed after correcting multiline DNS status
    parsing and cleanup after a failed initial baseline copy. Tests cover real
    temporary files and symlinks with simulated host commands and no network.
-3. State: pending host access. Apply the configuration and verify resolver
+3. State: installed; live verification pending. Apply the configuration and verify resolver
    status, successful DNS queries, Brave policy, and VPN routing.
    Check: collect host results. The current sandbox prevents root operations
    through its `no new privileges` restriction, so host activation requires a
    terminal outside this sandbox.
-   Attempt result: `./sync.sh --dns` exited 1 because `sudo` could not obtain
+   Initial sandbox attempt: `./sync.sh --dns` exited 1 because `sudo` could not obtain
    root under `no new privileges`. `--check` confirmed the managed configuration
    is absent. `/etc/resolv.conf` still names `192.168.0.1` and the resolver
    package remains absent. This unit remains open for host execution.
+   Follow-up result: the user ran synchronization. The package is now installed,
+   all three installed configuration files match their sources, and the resolver
+   symlink selects the local stub. The sandbox still denies system-bus and
+   network access, so live service, DNS, Brave, and VPN checks remain pending.
+4. State: complete. Review loopback and TAP-based Kubernetes compatibility
+   without changing the laboratory. Check: compare changed host components with
+   bridge, guest resolver, kubelet, and CoreDNS configuration; distinguish source
+   and archived evidence from live checks; obtain independent review and record
+   findings.
+   Result: source and archived evidence show separate guest and cluster DNS.
+   Independent review confirmed that host changes do not alter loopback IP
+   paths, bridge/TAP forwarding, routing, or NAT. Documented local DNS listener
+   conflicts, private-name changes, namespace-local loopback, and the absence
+   of automatic TLS protection for guest and pod DNS. Live checks remain
+   unavailable; no laboratory configuration changed.
 
 Only the primary session updates this plan, updates `WORKLOG.md`, and commits.

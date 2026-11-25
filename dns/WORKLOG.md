@@ -56,3 +56,29 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     unit 3 open and documented the exact command for a host terminal.
 16. Committed only this task's changes. The existing unrelated working-tree
     changes, including prior `sync.sh` edits, remain outside these commits.
+17. 2026-11-24: The user reported running synchronization and requested the
+    exact changes and loopback/Kubernetes compatibility. Re-read the plan and
+    log. Confirmed `systemd-resolved-257-35.el10` installed, all three managed
+    files identical to their sources, and `/etc/resolv.conf` pointing to the
+    local stub with `nameserver 127.0.0.53`.
+18. Runtime verification reached the service check but the sandbox denied
+    system-bus access. A read-only Kubernetes query likewise failed because
+    the sandbox denies sockets. These failures do not establish a host or
+    cluster failure. Added compatibility review unit 4 before documentation
+    changes.
+19. Inspected the Kubernetes laboratory source: separate Debian guests,
+    bridge `br-lab`, user-owned TAPs, and dedicated NAT. Both native and
+    tutorial seeds select guest DNS `1.1.1.1` and `9.9.9.9`; native seeds
+    write guest lab-name mappings to `/etc/hosts`.
+20. Read archived tutorial evidence dated 2026-11-16: guest kubelet uses
+    cluster DNS `10.96.0.10` and `/run/systemd/resolve/resolv.conf`; CoreDNS
+    handles cluster names and forwards other queries using its own resolver
+    file. Distinguished this archive from live state.
+21. Completed independent read-only compatibility review. Documented that
+    loopback addresses identify their own namespace, guest DNS does not gain
+    host TLS, wildcard DNS listeners can conflict, and private-name discovery
+    differs under the static public resolver policy. Added non-destructive
+    laboratory verification instructions. Changed documentation only.
+22. Validated local documentation links, Bash syntax for documented shell
+    commands, and whitespace. All checks passed. Kept host runtime verification
+    open because the sandbox still denies service and network access.

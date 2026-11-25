@@ -89,3 +89,30 @@
    changes to resolver files, failed backup creation, repeat execution,
    restoration, strict TLS requirements, wrapped DNS output, and foreign DNS.
    They do not establish host TLS reachability or Brave policy acceptance.
+
+8. Check the TAP-based laboratory from a host terminal. Select the kubeconfig
+   for the cluster currently occupying the shared bridge. This example selects
+   the native laboratory; the tutorial uses
+   `~/Projects/ai/kubernetes_learning/.state/main/kubeconfig` instead.
+
+   ```sh
+   dns_kubeconfig="$HOME/Projects/ai/kubernetes/.state/kubeconfig"
+   ip -brief address show br-lab
+   bridge link show master br-lab
+   kubectl --kubeconfig="$dns_kubeconfig" get nodes -o wide
+   kubectl --kubeconfig="$dns_kubeconfig" -n kube-system get pods -l k8s-app=kube-dns
+   ```
+
+   Use an existing pod with `nslookup` to check cluster and external DNS.
+   Replace the namespace and pod name with actual values:
+
+   ```sh
+   dns_namespace=default
+   dns_pod=existing_pod_name
+   kubectl --kubeconfig="$dns_kubeconfig" -n "$dns_namespace" exec "$dns_pod" -- nslookup kubernetes.default.svc.cluster.local
+   kubectl --kubeconfig="$dns_kubeconfig" -n "$dns_namespace" exec "$dns_pod" -- nslookup example.com
+   ```
+
+   These commands change no cluster configuration and create no probe pods.
+   Successful queries prove name resolution for that pod; they do not prove
+   TLS encryption. Inspect the guest and CoreDNS upstream settings separately.
