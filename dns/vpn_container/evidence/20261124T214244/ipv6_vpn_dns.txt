@@ -1,0 +1,250 @@
+
+== cell
+endpoint_family=ipv6 resolver_mode=vpn_dns qbittorrent_seconds=75
+2026-11-25T05:52:00+00:00
+
+== versions
+$ rpm -q systemd systemd-resolved wireguard-tools qbittorrent-nox openssl
+systemd-257-35.el10.x86_64
+systemd-resolved-257-35.el10.x86_64
+wireguard-tools-1.0.20250521-1.el10.x86_64
+qbittorrent-nox-5.2.4-2.el10_4.x86_64
+openssl-3.5.9-1.el10.x86_64
+[exit 0]
+$ sha256sum /etc/systemd/resolved.conf.d/90-dotfiles-dns.conf
+c7e062bc673b198fef60675c95a81784adf9077c8fc2bd2f09facd2c9133ae7d  /etc/systemd/resolved.conf.d/90-dotfiles-dns.conf
+[exit 0]
+selected_endpoint=[2a02:6ea0:e606:3742::10]:51820
+
+== tunnel setup
+$ ip link add wg-US-CA-515 type wireguard
+[exit 0]
+$ wg setconf wg-US-CA-515 /run/wg-setconf.conf
+[exit 0]
+$ wg set wg-US-CA-515 fwmark 51820
+[exit 0]
+$ ip address add 10.2.0.2/32 dev wg-US-CA-515
+[exit 0]
+$ ip address add 2a07:b944::2:2/128 dev wg-US-CA-515
+[exit 0]
+$ ip link set dev wg-US-CA-515 mtu 1420 up
+[exit 0]
+$ ip -4 route add default dev wg-US-CA-515 table 51820
+[exit 0]
+$ ip -4 rule add priority 32764 table main suppress_prefixlength 0
+[exit 0]
+$ ip -4 rule add priority 32765 not fwmark 51820 table 51820
+[exit 0]
+$ ip -6 route add default dev wg-US-CA-515 table 51820
+[exit 0]
+$ ip -6 rule add priority 32764 table main suppress_prefixlength 0
+[exit 0]
+$ ip -6 rule add priority 32765 not fwmark 51820 table 51820
+[exit 0]
+
+== routes
+$ ip -brief address show
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+wlp0s20f3        UNKNOWN        192.168.0.100/24 fe80::70f0:68ff:fec2:5080/64 
+wg-US-CA-515     UNKNOWN        10.2.0.2/32 2a07:b944::2:2/128 
+[exit 0]
+$ ip -4 rule show
+0:	from all lookup local
+32764:	from all lookup main suppress_prefixlength 0
+32765:	not from all fwmark 0xca6c lookup 51820
+32766:	from all lookup main
+32767:	from all lookup default
+[exit 0]
+$ ip -6 rule show
+0:	from all lookup local
+32764:	from all lookup main suppress_prefixlength 0
+32765:	not from all fwmark 0xca6c lookup 51820
+32766:	from all lookup main
+[exit 0]
+$ ip -4 route show table main
+default via 192.168.0.1 dev wlp0s20f3 proto dhcp metric 600 
+192.168.0.0/24 dev wlp0s20f3 proto kernel scope link metric 600 
+[exit 0]
+$ ip -6 route show table main
+2a07:b944::2:2 dev wg-US-CA-515 proto kernel metric 256 pref medium
+fe80::/64 dev wlp0s20f3 proto kernel metric 256 pref medium
+default via fe80::1 dev wlp0s20f3 metric 1024 pref medium
+[exit 0]
+$ ip -4 route show table 51820
+default dev wg-US-CA-515 scope link 
+[exit 0]
+$ ip -6 route show table 51820
+default dev wg-US-CA-515 metric 1024 pref medium
+[exit 0]
+$ ip -4 route get 1.1.1.1
+1.1.1.1 dev wg-US-CA-515 table 51820 src 10.2.0.2 uid 0 
+    cache 
+[exit 0]
+$ ip -6 route get 2606:4700:4700::1111
+2606:4700:4700::1111 dev wg-US-CA-515 table 51820 src 2a07:b944::2:2 metric 1024 pref medium
+[exit 0]
+$ ip -4 route get 149.22.84.89 mark 51820
+149.22.84.89 via 192.168.0.1 dev wlp0s20f3 src 192.168.0.100 mark 0xca6c uid 0 
+    cache 
+[exit 0]
+$ ip -6 route get 2a02:6ea0:e606:3742::10 mark 51820
+2a02:6ea0:e606:3742::10 via fe80::1 dev wlp0s20f3 src 2a07:b944::2:2 metric 1024 pref medium
+[exit 0]
+
+== resolver mode
+$ systemctl stop systemd-resolved.service
+[exit 0]
+$ rm --force /etc/resolv.conf
+[exit 0]
+$ ls -l /etc/resolv.conf
+-rw-r--r--. 1 root root 46 Nov 25 05:52 /etc/resolv.conf
+[exit 0]
+$ cat /etc/resolv.conf
+nameserver 10.2.0.1
+nameserver 2a07:b944::2:1
+[exit 0]
+$ grep -E ^hosts: /etc/nsswitch.conf
+hosts:      files  dns myhostname
+[exit 0]
+resolver_service=stopped_by_mode
+
+== tunnel liveness
+$ ping -c 3 -W 2 10.2.0.1
+PING 10.2.0.1 (10.2.0.1) 56(84) bytes of data.
+
+--- 10.2.0.1 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2049ms
+
+[exit 1]
+$ show_tunnel_state
+interface: wg-US-CA-515
+  public key: <redacted>
+  private key: (hidden)
+  listening port: 44302
+  fwmark: 0xca6c
+
+peer: Yg7VdAicq2Rj/FNl7dGvm4jB2XlmrzwBj6/eosX5CiY=
+  endpoint: [2a02:6ea0:e606:3742::10]:51820
+  allowed ips: 0.0.0.0/0, ::/0
+  transfer: 0 B received, 148 B sent
+  persistent keepalive: every 25 seconds
+[exit 0]
+latest_handshake_epoch=0
+
+== egress by address
+$ trace_egress https://1.1.1.1/cdn-cgi/trace
+curl: (28) Connection timed out after 15002 milliseconds
+[exit 1]
+$ trace_egress https://[2606:4700:4700::1111]/cdn-cgi/trace
+curl: (28) Connection timed out after 15002 milliseconds
+[exit 1]
+
+== DNS over TLS reachability
+$ probe_dns_over_tls 1.1.1.1:853
+[exit 124]
+$ probe_dns_over_tls [2606:4700:4700::1111]:853
+[exit 124]
+
+== VPN resolver without TLS
+$ dig +time=3 +tries=1 +short @10.2.0.1 tracker.opentrackr.org A
+;; communications error to 10.2.0.1#53: timed out
+;; no servers could be reached
+[exit 9]
+
+== system resolver lookups
+download.db-ip.com       exit=2   seconds= 20.04 first_address=none
+tracker.opentrackr.org   exit=2   seconds= 20.04 first_address=none
+open.stealth.si          exit=2   seconds= 20.04 first_address=none
+tracker.torrent.eu.org   exit=2   seconds= 20.04 first_address=none
+open.demonii.com         exit=2   seconds= 20.03 first_address=none
+exodus.desync.com        exit=2   seconds= 20.04 first_address=none
+router.bittorrent.com    exit=2   seconds= 20.02 first_address=none
+dht.transmissionbt.com   exit=2   seconds= 20.03 first_address=none
+bttracker.debian.org     exit=2   seconds= 20.03 first_address=none
+
+== qbittorrent
+$ start_qbittorrent
+[exit 0]
+$ api_get app/version
+v5.2.4[exit 0]
+$ api_post torrents/add --form torrents=@/mnt/vpn-input/control.torrent
+{"added_torrent_ids":["e75a1a6b922815d64cfa9b8904208d3a85143495"],"failure_count":0,"pending_count":0,"success_count":1}[exit 0]
+torrent_hash=e75a1a6b922815d64cfa9b8904208d3a85143495
+$ api_post torrents/addTrackers --data-urlencode hash=e75a1a6b922815d64cfa9b8904208d3a85143495 --data-urlencode urls=udp://tracker.opentrackr.org:1337
+udp://open.stealth.si:80/announce
+udp://tracker.torrent.eu.org:451/announce
+udp://open.demonii.com:1337/announce
+udp://exodus.desync.com:6969
+[exit 0]
+$ api_post torrents/reannounce --data-urlencode hashes=e75a1a6b922815d64cfa9b8904208d3a85143495
+[exit 0]
+waiting 75 seconds
+{
+  "connection_status": "firewalled",
+  "dht_nodes": 0,
+  "dl_info_data": 0,
+  "up_info_data": 0
+}
+{
+  "name": "debian-13.8.0-amd64-netinst.iso",
+  "state": "stalledDL",
+  "num_seeds": 0,
+  "num_leechs": 0,
+  "downloaded": 0,
+  "progress": 0
+}
+{"url":"** [DHT] **","status":2,"num_peers":0,"msg":""}
+{"url":"** [PeX] **","status":2,"num_peers":0,"msg":""}
+{"url":"** [LSD] **","status":2,"num_peers":0,"msg":""}
+{"url":"http://bttracker.debian.org:6969/announce","status":4,"num_peers":-1,"msg":"timed out"}
+{"url":"udp://exodus.desync.com:6969","status":4,"num_peers":-1,"msg":"timed out"}
+{"url":"udp://tracker.torrent.eu.org:451/announce","status":1,"num_peers":-1,"msg":""}
+{"url":"udp://open.demonii.com:1337/announce","status":1,"num_peers":-1,"msg":""}
+{"url":"udp://tracker.opentrackr.org:1337","status":1,"num_peers":-1,"msg":""}
+{"url":"udp://open.stealth.si:80/announce","status":1,"num_peers":-1,"msg":""}
+1 qBittorrent v5.2.4 started. Process ID: 219
+1 Using config directory: /home/qbt/.config/qBittorrent
+1 Trying to listen on the following list of IP addresses: "wg-US-CA-515:51820"
+2 Peer ID: "-qB5240-"
+2 HTTP User-Agent: "qBittorrent/5.2.4"
+2 Distributed Hash Table (DHT) support: ON
+2 Local Peer Discovery support: ON
+2 Peer Exchange (PeX) support: ON
+2 Anonymous mode: OFF
+2 Encryption support: ON
+2 Successfully listening on IP. IP: "10.2.0.2". Port: "TCP/51820"
+2 Successfully listening on IP. IP: "10.2.0.2". Port: "UTP/51820"
+2 Successfully listening on IP. IP: "2a07:b944::2:2". Port: "TCP/51820"
+2 Successfully listening on IP. IP: "2a07:b944::2:2". Port: "UTP/51820"
+4 Couldn't load IP geolocation database. Reason: No such file or directory
+1 Using built-in WebUI.
+4 Couldn't load WebUI translation for selected locale (C).
+1 WebUI: Now listening on IP: 127.0.0.1, port: 8080
+1 Added new torrent. Torrent: "debian-13.8.0-amd64-netinst.iso"
+1 Added tracker to torrent. Torrent: "debian-13.8.0-amd64-netinst.iso". Tracker: "udp://exodus.desync.com:6969"
+1 Added tracker to torrent. Torrent: "debian-13.8.0-amd64-netinst.iso". Tracker: "udp://tracker.torrent.eu.org:451/announce"
+1 Added tracker to torrent. Torrent: "debian-13.8.0-amd64-netinst.iso". Tracker: "udp://open.demonii.com:1337/announce"
+1 Added tracker to torrent. Torrent: "debian-13.8.0-amd64-netinst.iso". Tracker: "udp://tracker.opentrackr.org:1337"
+1 Added tracker to torrent. Torrent: "debian-13.8.0-amd64-netinst.iso". Tracker: "udp://open.stealth.si:80/announce"
+4 Couldn't download IP geolocation database file. Reason: The remote host name was not found (invalid hostname)
+$ api_post app/shutdown --data 
+[exit 0]
+
+== tunnel counters
+$ wg show wg-US-CA-515 transfer
+Yg7VdAicq2Rj/FNl7dGvm4jB2XlmrzwBj6/eosX5CiY=	0	9768
+[exit 0]
+
+== summary
+summary.cell=ipv6_vpn_dns
+summary.endpoint=[2a02:6ea0:e606:3742::10]:51820
+summary.resolver_service=stopped_by_mode
+summary.handshake=no
+summary.egress_ipv4=none
+summary.dns_over_tls_ipv4=fail
+summary.lookups_resolved=0/9
+summary.qbittorrent_connection_status=firewalled
+summary.qbittorrent_dht_nodes=0
+summary.qbittorrent_trackers_working=0/6
+summary.qbittorrent_downloaded_bytes=0
+summary.qbittorrent_geolocation=Couldn't download IP geolocation database file. Reason: The remote host name was not found (invalid hostname)

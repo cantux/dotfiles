@@ -25,7 +25,7 @@ run_logged() {
 remove_run_state() {
   local cell
   for cell in "${all_cells[@]}"; do
-    podman rm --force --ignore "dns-vpn-$cell" > /dev/null 2>&1 || true
+    podman rm --force --ignore "dns-vpn-${cell//_/-}" > /dev/null 2>&1 || true
   done
   if [[ -n $secret_dir ]]; then
     rm --recursive --force "$secret_dir"
@@ -96,7 +96,7 @@ run_cell() {
   local evidence_dir=$2
   local endpoint_family=${cell%%_*}
   local resolver_mode=${cell#*_}
-  local container_name=dns-vpn-$cell
+  local container_name=dns-vpn-${cell//_/-}
   podman rm --force --ignore "$container_name" > /dev/null
   podman run --detach --name "$container_name" --hostname dns-vpn-test \
     --cap-add NET_ADMIN --cap-add NET_RAW --cap-add SYS_ADMIN \

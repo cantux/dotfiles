@@ -144,3 +144,30 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     reported 0 of 6 trackers working, 0 DHT nodes, and the host's geolocation
     error. No evidence file contains private key material; no container or
     secret directory remained. Unit 6 complete.
+33. Changed container names to hyphenated forms: the resolver rejected the
+    underscore in the name that Podman writes to `/etc/hosts`. Ran the
+    four-cell matrix (`20261124T214244`) from 21:42 to 21:57 PST.
+
+    | Cell | Endpoint | Resolver | Handshake | Lookups | qBittorrent after 75 s |
+    | --- | --- | --- | --- | --- | --- |
+    | `ipv6_strict_dot` | IPv6 | strict DNS over TLS | no | 0/9, 10.02 s each | firewalled; 0 DHT nodes; 0 bytes; geolocation lookup failed |
+    | `ipv4_strict_dot` | IPv4 | strict DNS over TLS | yes | 9/9, 0.16 to 1.00 s | connected; 354 DHT nodes; 149,079,220 bytes; 89 seeds |
+    | `ipv4_vpn_dns` | IPv4 | VPN resolver without TLS | yes | 9/9, 0.09 to 0.31 s | connected; 332 DHT nodes; 152,405,090 bytes; 95 seeds |
+    | `ipv6_vpn_dns` | IPv6 | VPN resolver without TLS | no | 0/9, 20.04 s each | firewalled; 0 DHT nodes; 0 bytes; geolocation lookup failed |
+
+34. The endpoint family alone determines the outcome; the resolver mode does
+    not change it. With the IPv4 endpoint, the strict resolver authenticated
+    `cloudflare-dns.com` on IPv4 and IPv6 port 853 through the tunnel, and
+    `resolvectl` reported encrypted transport on link `wg-US-CA-515`.
+    qBittorrent detected the exit addresses `149.22.84.92` and
+    `2a02:6ea0:e606:3742::13`, which match its log of 2026-11-20. The lookup
+    durations equal the glibc defaults: 5-second timeout times 2 attempts for
+    one server (10 s) and for two servers (20 s).
+35. Recorded two anomalies that do not vary with resolver mode. First, in
+    `ipv4_strict_dot` the IPv4 HTTPS trace to `1.1.1.1` failed with curl exit
+    35 (TLS connect error), while the IPv6 trace, DNS over TLS to
+    `1.1.1.1:853`, and the download succeeded in the same cell; this request
+    uses an IP literal and no DNS. Second, in both IPv4 cells one of six
+    trackers worked: Debian's HTTP tracker reset the connection and four UDP
+    trackers remained uncontacted within 75 seconds. No evidence file
+    contains key material. Unit 7 complete.

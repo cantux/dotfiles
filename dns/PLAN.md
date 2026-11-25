@@ -77,9 +77,13 @@ the profile's IPv6 peer endpoint.
    default capabilities; the corrected run reproduced the host failure: no
    handshake, 0/9 lookups, and qBittorrent's host error message. Evidence:
    `vpn_container/evidence/20261124T213537`.
-7. State: open. Run the remaining cells of the matrix: endpoint family (IPv6,
+7. State: complete. Run the remaining cells of the matrix: endpoint family (IPv6,
    IPv4) by resolver mode (strict DNS over TLS; VPN resolver without TLS).
    Check: four evidence files and a results table in the work log.
+   Result: the endpoint family alone determines the outcome. Both IPv6 cells
+   fail (no handshake, 0/9 lookups); both IPv4 cells succeed (9/9 lookups,
+   qBittorrent connected and downloading). Evidence:
+   `vpn_container/evidence/20261124T214244`.
 8. State: open. Record the cause, the correction, and the procedure in the
    project documents. Check: document links resolve; each claim cites an
    evidence file or a reference.
