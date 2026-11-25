@@ -10,7 +10,14 @@ readonly wireguard_source=${WIREGUARD_SOURCE:-$HOME/Downloads/wg-US-CA-515.conf}
 readonly connection_name=wg-US-CA-515
 readonly control_torrent_index=https://cdimage.debian.org/debian-cd/current/amd64/bt-cd/
 readonly qbittorrent_seconds=${QBITTORRENT_SECONDS:-75}
-readonly all_cells=(ipv6_strict_dot ipv4_strict_dot ipv4_vpn_dns ipv6_vpn_dns)
+readonly all_cells=(
+  ipv6_strict_dot
+  ipv4_strict_dot
+  ipv4_vpn_dns
+  ipv6_vpn_dns
+  ipv4_strict_dot_valid_mark
+  ipv4_vpn_dns_valid_mark
+)
 
 secret_dir=
 input_dir=
@@ -53,6 +60,11 @@ route_to_endpoint() {
   fi
 }
 
+uplink_interface() {
+  ip -4 route show table main default \
+    | awk '{ for (i = 1; i < NF; i++) if ($i == "dev") { print $(i + 1); exit } }'
+}
+
 record_host_context() {
   local endpoint
   date --iso-8601=seconds
@@ -61,6 +73,9 @@ record_host_context() {
   while IFS= read -r endpoint; do
     run_logged route_to_endpoint "$endpoint"
   done < <(source_endpoints)
+  run_logged sysctl net.ipv4.conf.all.rp_filter net.ipv4.conf.default.rp_filter \
+    "net.ipv4.conf.$(uplink_interface).rp_filter" \
+    net.ipv4.conf.all.src_valid_mark
   run_logged sha256sum /etc/systemd/resolved.conf.d/90-dotfiles-dns.conf \
     "$dns_dir/resolved.conf"
   run_logged resolvectl status
@@ -94,14 +109,18 @@ wait_for_boot() {
 run_cell() {
   local cell=$1
   local evidence_dir=$2
-  local endpoint_family=${cell%%_*}
-  local resolver_mode=${cell#*_}
+  local base_cell=${cell%_valid_mark}
+  local endpoint_family=${base_cell%%_*}
+  local resolver_mode=${base_cell#*_}
+  local source_valid_mark=0
   local container_name=dns-vpn-${cell//_/-}
+  if [[ $cell != "$base_cell" ]]; then
+    source_valid_mark=1
+  fi
   podman rm --force --ignore "$container_name" > /dev/null
   podman run --detach --name "$container_name" --hostname dns-vpn-test \
     --cap-add NET_ADMIN --cap-add NET_RAW --cap-add SYS_ADMIN \
-    --sysctl net.ipv4.conf.all.rp_filter=2 \
-    --sysctl net.ipv4.conf.all.src_valid_mark=1 \
+    --sysctl "net.ipv4.conf.all.src_valid_mark=$source_valid_mark" \
     --sysctl net.ipv6.conf.all.disable_ipv6=0 \
     --dns none \
     --volume "$secret_dir:/mnt/vpn-secret:ro,Z" \
@@ -144,11 +163,15 @@ main() {
     printf 'cannot read %s\n' "$wireguard_source" >&2
     exit 2
   fi
+  if [[ -z ${XDG_RUNTIME_DIR:-} || ! -d ${XDG_RUNTIME_DIR:-} ]]; then
+    printf 'XDG_RUNTIME_DIR must name the private runtime directory\n' >&2
+    exit 2
+  fi
   evidence_dir=$script_dir/evidence/$(date +%Y%m%dT%H%M%S)
   mkdir --parents "$evidence_dir"
   trap remove_run_state EXIT
-  secret_dir=$(mktemp --directory "${XDG_RUNTIME_DIR:-/tmp}/dns-vpn-secret.XXXXXX")
-  input_dir=$(mktemp --directory "${XDG_RUNTIME_DIR:-/tmp}/dns-vpn-input.XXXXXX")
+  secret_dir=$(mktemp --directory "$XDG_RUNTIME_DIR/dns-vpn-secret.XXXXXX")
+  input_dir=$(mktemp --directory "$XDG_RUNTIME_DIR/dns-vpn-input.XXXXXX")
   install --mode 600 "$wireguard_source" "$secret_dir/source.conf"
   podman build --quiet --tag "$image_name" \
     --file "$script_dir/Containerfile" "$dns_dir" > /dev/null

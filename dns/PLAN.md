@@ -95,12 +95,16 @@ the profile's IPv6 peer endpoint.
    reported 13 findings. One blocks the correction: the host's strict
    reverse-path filter, which the harness masked with loose filtering. Units
    10 and 11 resolve the findings.
-10. State: open. Replicate the host's reverse-path conditions: inherit strict
+10. State: complete. Replicate the host's reverse-path conditions: inherit strict
     `rp_filter` and `src_valid_mark=0`, and install NetworkManager's
     connection-mark rules. Add a third factor, `src_valid_mark` 0 or 1, for the
     IPv4 endpoint; repeat the IPv4 HTTPS trace; require `XDG_RUNTIME_DIR`.
     Check: per-cell evidence shows the effective sysctls, the handshake, and
     the change in the `IPReversePathFilter` counter.
+    Result: with `src_valid_mark=0` the filter dropped 69 replies and no
+    traffic passed; with `src_valid_mark=1` it dropped none and qBittorrent
+    downloaded. The host profile `wg-US-CA-515-ipv4` then passed the same
+    checks. Evidence: `vpn_container/evidence/20261124T224242`.
 11. State: open. Correct the documents for findings 2 to 13 and for the outcome
     of unit 10, including the correction procedure. Check: links resolve; each
     corrected claim matches its evidence.

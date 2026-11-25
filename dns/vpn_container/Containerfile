@@ -1,7 +1,7 @@
 FROM quay.io/centos/centos:stream10
 RUN dnf --assumeyes install epel-release \
  && dnf --assumeyes install bind-utils curl dbus-broker iproute iputils jq \
-      openssl procps-ng qbittorrent-nox systemd systemd-resolved \
+      nftables openssl procps-ng qbittorrent-nox systemd systemd-resolved \
       wireguard-tools \
  && dnf clean all
 RUN systemctl enable dbus-broker.service systemd-resolved.service \

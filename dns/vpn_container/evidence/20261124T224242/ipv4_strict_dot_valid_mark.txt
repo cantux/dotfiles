@@ -1,0 +1,452 @@
+
+== cell
+endpoint_family=ipv4 resolver_mode=strict_dot qbittorrent_seconds=75
+2026-11-25T06:48:57+00:00
+
+== versions
+$ rpm -q systemd systemd-resolved wireguard-tools qbittorrent-nox openssl
+systemd-257-35.el10.x86_64
+systemd-resolved-257-35.el10.x86_64
+wireguard-tools-1.0.20250521-1.el10.x86_64
+qbittorrent-nox-5.2.4-2.el10_4.x86_64
+openssl-3.5.9-1.el10.x86_64
+[exit 0]
+$ sha256sum /etc/systemd/resolved.conf.d/90-dotfiles-dns.conf
+c7e062bc673b198fef60675c95a81784adf9077c8fc2bd2f09facd2c9133ae7d  /etc/systemd/resolved.conf.d/90-dotfiles-dns.conf
+[exit 0]
+selected_endpoint=149.22.84.89:51820
+
+== tunnel setup
+$ ip link add wg-US-CA-515 type wireguard
+[exit 0]
+$ wg setconf wg-US-CA-515 /run/wg-setconf.conf
+[exit 0]
+$ wg set wg-US-CA-515 fwmark 51820
+[exit 0]
+$ ip address add 10.2.0.2/32 dev wg-US-CA-515
+[exit 0]
+$ ip address add 2a07:b944::2:2/128 dev wg-US-CA-515
+[exit 0]
+$ ip link set dev wg-US-CA-515 mtu 1420 up
+[exit 0]
+$ ip -4 route add default dev wg-US-CA-515 table 51820
+[exit 0]
+$ ip -4 rule add priority 32764 table main suppress_prefixlength 0
+[exit 0]
+$ ip -4 rule add priority 32765 not fwmark 51820 table 51820
+[exit 0]
+$ ip -6 route add default dev wg-US-CA-515 table 51820
+[exit 0]
+$ ip -6 rule add priority 32764 table main suppress_prefixlength 0
+[exit 0]
+$ ip -6 rule add priority 32765 not fwmark 51820 table 51820
+[exit 0]
+$ cat /run/nm-wg.nft
+add table ip nm-wg-wg-US-CA-515
+flush table ip nm-wg-wg-US-CA-515
+add table ip6 nm-wg-wg-US-CA-515
+flush table ip6 nm-wg-wg-US-CA-515
+add chain ip nm-wg-wg-US-CA-515 preraw { iifname != "wg-US-CA-515" ip daddr 10.2.0.2 fib saddr type != local drop; }
+add chain ip6 nm-wg-wg-US-CA-515 preraw { iifname != "wg-US-CA-515" ip6 daddr 2a07:b944::2:2 fib saddr type != local drop; }
+add chain ip nm-wg-wg-US-CA-515 premangle { type filter hook prerouting priority mangle; policy accept; meta l4proto udp meta mark set ct mark; }
+add chain ip nm-wg-wg-US-CA-515 postmangle { type filter hook postrouting priority mangle; policy accept; meta l4proto udp mark 0x0000ca6c ct mark set meta mark; }
+add chain ip6 nm-wg-wg-US-CA-515 premangle { type filter hook prerouting priority mangle; policy accept; meta l4proto udp meta mark set ct mark; }
+add chain ip6 nm-wg-wg-US-CA-515 postmangle { type filter hook postrouting priority mangle; policy accept; meta l4proto udp mark 0x0000ca6c ct mark set meta mark; }
+[exit 0]
+$ nft --file /run/nm-wg.nft
+[exit 0]
+
+== routes
+$ ip -brief address show
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+wlp0s20f3        UNKNOWN        192.168.0.100/24 fe80::107b:d1ff:fec4:9b54/64 
+wg-US-CA-515     UNKNOWN        10.2.0.2/32 2a07:b944::2:2/128 
+[exit 0]
+$ ip -4 rule show
+0:	from all lookup local
+32764:	from all lookup main suppress_prefixlength 0
+32765:	not from all fwmark 0xca6c lookup 51820
+32766:	from all lookup main
+32767:	from all lookup default
+[exit 0]
+$ ip -6 rule show
+0:	from all lookup local
+32764:	from all lookup main suppress_prefixlength 0
+32765:	not from all fwmark 0xca6c lookup 51820
+32766:	from all lookup main
+[exit 0]
+$ ip -4 route show table main
+default via 192.168.0.1 dev wlp0s20f3 proto dhcp metric 600 
+192.168.0.0/24 dev wlp0s20f3 proto kernel scope link metric 600 
+[exit 0]
+$ ip -6 route show table main
+2a07:b944::2:2 dev wg-US-CA-515 proto kernel metric 256 pref medium
+fe80::/64 dev wlp0s20f3 proto kernel metric 256 pref medium
+default via fe80::1 dev wlp0s20f3 metric 1024 pref medium
+[exit 0]
+$ ip -4 route show table 51820
+default dev wg-US-CA-515 scope link 
+[exit 0]
+$ ip -6 route show table 51820
+default dev wg-US-CA-515 metric 1024 pref medium
+[exit 0]
+$ ip -4 route get 1.1.1.1
+1.1.1.1 dev wg-US-CA-515 table 51820 src 10.2.0.2 uid 0 
+    cache 
+[exit 0]
+$ ip -6 route get 2606:4700:4700::1111
+2606:4700:4700::1111 dev wg-US-CA-515 table 51820 src 2a07:b944::2:2 metric 1024 pref medium
+[exit 0]
+$ ip -4 route get 149.22.84.89 mark 51820
+149.22.84.89 via 192.168.0.1 dev wlp0s20f3 src 192.168.0.100 mark 0xca6c uid 0 
+    cache 
+[exit 0]
+$ ip -4 route get 149.22.84.89
+149.22.84.89 dev wg-US-CA-515 table 51820 src 10.2.0.2 uid 0 
+    cache 
+[exit 0]
+$ ip -6 route get 2a02:6ea0:e606:3742::10 mark 51820
+2a02:6ea0:e606:3742::10 via fe80::1 dev wlp0s20f3 src 2a07:b944::2:2 metric 1024 pref medium
+[exit 0]
+$ nft list ruleset
+table ip nm-wg-wg-US-CA-515 {
+	chain preraw {
+		iifname != "wg-US-CA-515" ip daddr 10.2.0.2 fib saddr type != local drop
+	}
+
+	chain premangle {
+		type filter hook prerouting priority mangle; policy accept;
+		meta l4proto udp meta mark set ct mark
+	}
+
+	chain postmangle {
+		type filter hook postrouting priority mangle; policy accept;
+		meta l4proto udp meta mark 0x0000ca6c ct mark set meta mark
+	}
+}
+table ip6 nm-wg-wg-US-CA-515 {
+	chain preraw {
+		iifname != "wg-US-CA-515" ip6 daddr 2a07:b944::2:2 fib saddr type != local drop
+	}
+
+	chain premangle {
+		type filter hook prerouting priority mangle; policy accept;
+		meta l4proto udp meta mark set ct mark
+	}
+
+	chain postmangle {
+		type filter hook postrouting priority mangle; policy accept;
+		meta l4proto udp meta mark 0x0000ca6c ct mark set meta mark
+	}
+}
+[exit 0]
+
+== resolver mode
+$ ln --symbolic --force --no-dereference ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+[exit 0]
+$ systemctl restart systemd-resolved.service
+[exit 0]
+$ cat /etc/systemd/resolved.conf.d/90-dotfiles-dns.conf
+[Resolve]
+DNS=
+DNS=1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111#cloudflare-dns.com 2606:4700:4700::1001#cloudflare-dns.com
+FallbackDNS=
+Domains=
+Domains=~.
+DNSOverTLS=yes
+DNSStubListener=yes
+LLMNR=no
+MulticastDNS=no
+[exit 0]
+$ resolvectl status
+Global
+         Protocols: -LLMNR -mDNS +DNSOverTLS DNSSEC=no/unsupported
+  resolv.conf mode: stub
+       DNS Servers: 1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com
+                    2606:4700:4700::1111#cloudflare-dns.com
+                    2606:4700:4700::1001#cloudflare-dns.com
+        DNS Domain: ~.
+
+Link 2 (wlp0s20f3)
+    Current Scopes: none
+         Protocols: -DefaultRoute -LLMNR -mDNS +DNSOverTLS DNSSEC=no/unsupported
+     Default Route: no
+
+Link 3 (wg-US-CA-515)
+    Current Scopes: none
+         Protocols: -DefaultRoute -LLMNR -mDNS +DNSOverTLS DNSSEC=no/unsupported
+     Default Route: no
+[exit 0]
+$ ls -l /etc/resolv.conf
+lrwxrwxrwx. 1 root root 39 Nov 25 06:48 /etc/resolv.conf -> ../run/systemd/resolve/stub-resolv.conf
+[exit 0]
+$ cat /etc/resolv.conf
+# This is /run/systemd/resolve/stub-resolv.conf managed by man:systemd-resolved(8).
+# Do not edit.
+#
+# This file might be symlinked as /etc/resolv.conf. If you're looking at
+# /etc/resolv.conf and seeing this text, you have followed the symlink.
+#
+# This is a dynamic resolv.conf file for connecting local clients to the
+# internal DNS stub resolver of systemd-resolved. This file lists all
+# configured search domains.
+#
+# Run "resolvectl status" to see details about the uplink DNS servers
+# currently in use.
+#
+# Third party programs should typically not access this file directly, but only
+# through the symlink at /etc/resolv.conf. To manage man:resolv.conf(5) in a
+# different way, replace this symlink by a static file or a different symlink.
+#
+# See man:systemd-resolved.service(8) for details about the supported modes of
+# operation for /etc/resolv.conf.
+
+nameserver 127.0.0.53
+options edns0 trust-ad
+search .
+[exit 0]
+$ grep -E ^hosts: /etc/nsswitch.conf
+hosts:      files  dns myhostname
+[exit 0]
+resolver_service=active
+
+== reverse path before traffic
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.rp_filter = 1
+net.ipv4.conf.wlp0s20f3.rp_filter = 1
+net.ipv4.conf.all.src_valid_mark = 1
+rp_filter_effective=1
+IPReversePathFilter=1
+
+== tunnel liveness
+$ ping -c 3 -W 2 10.2.0.1
+PING 10.2.0.1 (10.2.0.1) 56(84) bytes of data.
+
+--- 10.2.0.1 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2054ms
+
+[exit 1]
+$ show_tunnel_state
+interface: wg-US-CA-515
+  public key: <redacted>
+  private key: (hidden)
+  listening port: 46095
+  fwmark: 0xca6c
+
+peer: Yg7VdAicq2Rj/FNl7dGvm4jB2XlmrzwBj6/eosX5CiY=
+  endpoint: 149.22.84.89:51820
+  allowed ips: 0.0.0.0/0, ::/0
+  transfer: 0 B received, 148 B sent
+  persistent keepalive: every 25 seconds
+[exit 0]
+latest_handshake_epoch=0
+
+== egress by address
+attempt 1 of 1
+$ trace_egress https://1.1.1.1/cdn-cgi/trace
+ip=149.22.84.92
+colo=SJC
+loc=US
+tls=TLSv1.3
+[exit 0]
+$ trace_egress https://[2606:4700:4700::1111]/cdn-cgi/trace
+ip=2a02:6ea0:e606:3742::13
+colo=SJC
+loc=US
+tls=TLSv1.3
+[exit 0]
+
+== DNS over TLS reachability
+$ probe_dns_over_tls 1.1.1.1:853
+Connecting to 1.1.1.1
+CONNECTION ESTABLISHED
+Protocol version: TLSv1.3
+Ciphersuite: TLS_AES_256_GCM_SHA384
+Peer certificate: C=US, ST=California, L=San Francisco, O=Cloudflare, Inc., CN=cloudflare-dns.com
+Hash used: SHA256
+Signature type: ecdsa_secp256r1_sha256
+Verification: OK
+Verified peername: cloudflare-dns.com
+Negotiated TLS1.3 group: X25519MLKEM768
+DONE
+[exit 0]
+$ probe_dns_over_tls [2606:4700:4700::1111]:853
+Connecting to 2606:4700:4700::1111
+CONNECTION ESTABLISHED
+Protocol version: TLSv1.3
+Ciphersuite: TLS_AES_256_GCM_SHA384
+Peer certificate: C=US, ST=California, L=San Francisco, O=Cloudflare, Inc., CN=cloudflare-dns.com
+Hash used: SHA256
+Signature type: ecdsa_secp256r1_sha256
+Verification: OK
+Verified peername: cloudflare-dns.com
+Negotiated TLS1.3 group: X25519MLKEM768
+DONE
+[exit 0]
+
+== VPN resolver without TLS
+$ dig +time=3 +tries=1 +short @10.2.0.1 tracker.opentrackr.org A
+93.158.213.92
+[exit 0]
+
+== system resolver lookups
+download.db-ip.com       exit=0   seconds=  0.75 first_address=104.26.5.15
+tracker.opentrackr.org   exit=0   seconds=  0.40 first_address=93.158.213.92
+open.stealth.si          exit=0   seconds=  0.40 first_address=2a03:94e0:2455:151:242:104:0:187
+tracker.torrent.eu.org   exit=0   seconds=  0.35 first_address=2a03:7220:8083:cd00::1
+open.demonii.com         exit=0   seconds=  0.36 first_address=2a06:9f80:a000::96:1
+exodus.desync.com        exit=0   seconds=  0.38 first_address=2607:f178:0:32::3
+router.bittorrent.com    exit=0   seconds=  0.40 first_address=52.204.46.16
+dht.transmissionbt.com   exit=0   seconds=  0.40 first_address=2001:41d0:203:4cca:5::
+bttracker.debian.org     exit=0   seconds=  0.37 first_address=2001:6b0:e:2018::158
+
+== resolver statistics
+$ resolvectl query --cache=no tracker.opentrackr.org
+tracker.opentrackr.org: 93.158.213.92                       -- link: wg-US-CA-515
+
+-- Information acquired via protocol DNS in 367.3ms.
+-- Data is authenticated: no; Data was acquired via local or encrypted transport: yes
+-- Data from: network
+[exit 0]
+$ resolvectl statistics
+Transactions                                 
+                       Current Transactions:  0
+                         Total Transactions: 20
+                                             
+Cache                                        
+                         Current Cache Size: 19
+                                 Cache Hits:  0
+                               Cache Misses: 18
+                                             
+Failure Transactions                         
+                             Total Timeouts:  0
+         Total Timeouts (Stale Data Served):  0
+                    Total Failure Responses:  0
+Total Failure Responses (Stale Data Served):  0
+                                             
+DNSSEC Verdicts                              
+                                     Secure:  0
+                                   Insecure:  0
+                                      Bogus:  0
+                              Indeterminate:  0
+[exit 0]
+$ journalctl --unit systemd-resolved.service --no-pager --lines 20
+Nov 25 06:48:56 dns-vpn-test systemd[1]: Starting systemd-resolved.service - Network Name Resolution...
+Nov 25 06:48:56 dns-vpn-test systemd-resolved[30]: Positive Trust Anchors:
+Nov 25 06:48:56 dns-vpn-test systemd-resolved[30]: . IN DS 20326 8 2 e06d44b80b8f1d39a95c0b0d7c65d08458e880409bbc683457104237c7f8ec8d
+Nov 25 06:48:56 dns-vpn-test systemd-resolved[30]: . IN DS 38696 8 2 683d2d0acb8c9b712a1948b27f741219298d0a450d612c483af444a4c0fb2b16
+Nov 25 06:48:56 dns-vpn-test systemd-resolved[30]: Negative trust anchors: home.arpa 10.in-addr.arpa 16.172.in-addr.arpa 17.172.in-addr.arpa 18.172.in-addr.arpa 19.172.in-addr.arpa 20.172.in-addr.arpa 21.172.in-addr.arpa 22.172.in-addr.arpa 23.172.in-addr.arpa 24.172.in-addr.arpa 25.172.in-addr.arpa 26.172.in-addr.arpa 27.172.in-addr.arpa 28.172.in-addr.arpa 29.172.in-addr.arpa 30.172.in-addr.arpa 31.172.in-addr.arpa 170.0.0.192.in-addr.arpa 171.0.0.192.in-addr.arpa 168.192.in-addr.arpa d.f.ip6.arpa ipv4only.arpa resolver.arpa corp home internal intranet lan local private test
+Nov 25 06:48:56 dns-vpn-test systemd-resolved[30]: Using system hostname 'dns-vpn-test'.
+Nov 25 06:48:56 dns-vpn-test systemd[1]: Started systemd-resolved.service - Network Name Resolution.
+Nov 25 06:48:57 dns-vpn-test systemd[1]: Stopping systemd-resolved.service - Network Name Resolution...
+Nov 25 06:48:57 dns-vpn-test systemd[1]: systemd-resolved.service: Deactivated successfully.
+Nov 25 06:48:57 dns-vpn-test systemd[1]: Stopped systemd-resolved.service - Network Name Resolution.
+Nov 25 06:48:57 dns-vpn-test systemd[1]: Starting systemd-resolved.service - Network Name Resolution...
+Nov 25 06:48:57 dns-vpn-test systemd-resolved[120]: Positive Trust Anchors:
+Nov 25 06:48:57 dns-vpn-test systemd-resolved[120]: . IN DS 20326 8 2 e06d44b80b8f1d39a95c0b0d7c65d08458e880409bbc683457104237c7f8ec8d
+Nov 25 06:48:57 dns-vpn-test systemd-resolved[120]: . IN DS 38696 8 2 683d2d0acb8c9b712a1948b27f741219298d0a450d612c483af444a4c0fb2b16
+Nov 25 06:48:57 dns-vpn-test systemd-resolved[120]: Negative trust anchors: home.arpa 10.in-addr.arpa 16.172.in-addr.arpa 17.172.in-addr.arpa 18.172.in-addr.arpa 19.172.in-addr.arpa 20.172.in-addr.arpa 21.172.in-addr.arpa 22.172.in-addr.arpa 23.172.in-addr.arpa 24.172.in-addr.arpa 25.172.in-addr.arpa 26.172.in-addr.arpa 27.172.in-addr.arpa 28.172.in-addr.arpa 29.172.in-addr.arpa 30.172.in-addr.arpa 31.172.in-addr.arpa 170.0.0.192.in-addr.arpa 171.0.0.192.in-addr.arpa 168.192.in-addr.arpa d.f.ip6.arpa ipv4only.arpa resolver.arpa corp home internal intranet lan local private test
+Nov 25 06:48:57 dns-vpn-test systemd-resolved[120]: Using system hostname 'dns-vpn-test'.
+Nov 25 06:48:57 dns-vpn-test systemd[1]: Started systemd-resolved.service - Network Name Resolution.
+[exit 0]
+
+== qbittorrent
+$ start_qbittorrent
+[exit 0]
+$ api_get app/version
+v5.2.4[exit 0]
+$ api_post torrents/add --form torrents=@/mnt/vpn-input/control.torrent
+{"added_torrent_ids":["e75a1a6b922815d64cfa9b8904208d3a85143495"],"failure_count":0,"pending_count":0,"success_count":1}[exit 0]
+torrent_hash=e75a1a6b922815d64cfa9b8904208d3a85143495
+$ api_post torrents/addTrackers --data-urlencode hash=e75a1a6b922815d64cfa9b8904208d3a85143495 --data-urlencode urls=udp://tracker.opentrackr.org:1337
+udp://open.stealth.si:80/announce
+udp://tracker.torrent.eu.org:451/announce
+udp://open.demonii.com:1337/announce
+udp://exodus.desync.com:6969
+[exit 0]
+$ api_post torrents/reannounce --data-urlencode hashes=e75a1a6b922815d64cfa9b8904208d3a85143495
+[exit 0]
+waiting 75 seconds
+{
+  "connection_status": "connected",
+  "dht_nodes": 339,
+  "dl_info_data": 145795635,
+  "up_info_data": 0
+}
+{
+  "name": "debian-13.8.0-amd64-netinst.iso",
+  "state": "downloading",
+  "num_seeds": 97,
+  "num_leechs": 2,
+  "downloaded": 144747213,
+  "progress": 0.17966688654353563
+}
+{"url":"** [DHT] **","status":2,"num_peers":0,"msg":""}
+{"url":"** [PeX] **","status":2,"num_peers":0,"msg":""}
+{"url":"** [LSD] **","status":2,"num_peers":0,"msg":""}
+{"url":"http://bttracker.debian.org:6969/announce","status":4,"num_peers":-1,"msg":"Connection reset by peer"}
+{"url":"udp://tracker.opentrackr.org:1337","status":2,"num_peers":44,"msg":""}
+{"url":"udp://tracker.torrent.eu.org:451/announce","status":2,"num_peers":15,"msg":""}
+{"url":"udp://exodus.desync.com:6969","status":1,"num_peers":-1,"msg":""}
+{"url":"udp://open.stealth.si:80/announce","status":1,"num_peers":-1,"msg":""}
+{"url":"udp://open.demonii.com:1337/announce","status":1,"num_peers":-1,"msg":""}
+1 qBittorrent v5.2.4 started. Process ID: 241
+1 Using config directory: /home/qbt/.config/qBittorrent
+1 Trying to listen on the following list of IP addresses: "wg-US-CA-515:51820"
+2 Peer ID: "-qB5240-"
+2 HTTP User-Agent: "qBittorrent/5.2.4"
+2 Distributed Hash Table (DHT) support: ON
+2 Local Peer Discovery support: ON
+2 Peer Exchange (PeX) support: ON
+2 Anonymous mode: OFF
+2 Encryption support: ON
+2 Successfully listening on IP. IP: "10.2.0.2". Port: "TCP/51820"
+2 Successfully listening on IP. IP: "10.2.0.2". Port: "UTP/51820"
+2 Successfully listening on IP. IP: "2a07:b944::2:2". Port: "TCP/51820"
+2 Successfully listening on IP. IP: "2a07:b944::2:2". Port: "UTP/51820"
+4 Couldn't load IP geolocation database. Reason: No such file or directory
+1 Using built-in WebUI.
+4 Couldn't load WebUI translation for selected locale (C).
+1 WebUI: Now listening on IP: 127.0.0.1, port: 8080
+2 Detected external IP. IP: "149.22.84.92"
+1 Added new torrent. Torrent: "debian-13.8.0-amd64-netinst.iso"
+2 Detected external IP. IP: "2a02:6ea0:e606:3742::13"
+2 IP geolocation database loaded. Type: DBIP-Country-Lite. Build time: Sun Nov 1 02:47:39 2026.
+2 Successfully updated IP geolocation database.
+1 Added tracker to torrent. Torrent: "debian-13.8.0-amd64-netinst.iso". Tracker: "udp://tracker.opentrackr.org:1337"
+1 Added tracker to torrent. Torrent: "debian-13.8.0-amd64-netinst.iso". Tracker: "udp://tracker.torrent.eu.org:451/announce"
+1 Added tracker to torrent. Torrent: "debian-13.8.0-amd64-netinst.iso". Tracker: "udp://exodus.desync.com:6969"
+1 Added tracker to torrent. Torrent: "debian-13.8.0-amd64-netinst.iso". Tracker: "udp://open.stealth.si:80/announce"
+1 Added tracker to torrent. Torrent: "debian-13.8.0-amd64-netinst.iso". Tracker: "udp://open.demonii.com:1337/announce"
+$ api_post app/shutdown --data 
+[exit 0]
+
+== tunnel counters
+$ wg show wg-US-CA-515 transfer
+Yg7VdAicq2Rj/FNl7dGvm4jB2XlmrzwBj6/eosX5CiY=	177626332	12380480
+[exit 0]
+
+== reverse path after traffic
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.rp_filter = 1
+net.ipv4.conf.wlp0s20f3.rp_filter = 1
+net.ipv4.conf.all.src_valid_mark = 1
+rp_filter_effective=1
+IPReversePathFilter=1
+
+== summary
+summary.cell=ipv4_strict_dot
+summary.endpoint=149.22.84.89:51820
+summary.resolver_service=active
+summary.reverse_path=rp_filter_effective=1 src_valid_mark=1
+summary.reverse_path_drops=0
+summary.handshake=no
+summary.egress_ipv4=149.22.84.92
+summary.egress_ipv4_successes=1/1
+summary.dns_over_tls_ipv4=ok
+summary.lookups_resolved=9/9
+summary.qbittorrent_connection_status=connected
+summary.qbittorrent_dht_nodes=339
+summary.qbittorrent_trackers_working=2/6
+summary.qbittorrent_downloaded_bytes=145795635
+summary.qbittorrent_geolocation=Successfully updated IP geolocation database.

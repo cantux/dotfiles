@@ -1,0 +1,30 @@
+2026-11-24T22:51:29-08:00
+net.ipv4.conf.all.src_valid_mark = 1
+net.ipv4.conf.wlp0s20f3.rp_filter = 1
+IPReversePathFilter before: 315
+Warning: There is another connection with the name 'wg-US-CA-515'. Reference the connection by its uuid '7d0da835-83c3-4a67-84fa-c5c5069697a4'
+Connection 'wg-US-CA-515' (7d0da835-83c3-4a67-84fa-c5c5069697a4) successfully added.
+renamed to wg-US-CA-515-ipv4; autoconnect off
+Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/10)
+Proton resolver 10.2.0.1 answered on attempt 4
+3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+rtt min/avg/max/mdev = 126.039/162.708/202.936/31.493 ms
+ip=149.22.84.92
+colo=SJC
+loc=US
+tracker.opentrackr.org: 93.158.213.92                       -- link: wg-US-CA-515
+
+-- Information acquired via protocol DNS in 245.1ms.
+-- Data is authenticated: no; Data was acquired via local or encrypted transport: yes
+-- Data from: network
+8: wg-US-CA-515: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1420 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    RX:  bytes packets errors dropped  missed   mcast           
+         28920      89      0       0       0       0 
+    TX:  bytes packets errors dropped carrier collsns           
+         49284     236      0      14       0       0 
+IPReversePathFilter after: 335 (before: 315)
+WOODMAN24:802-11-wireless:wlp0s20f3
+wg-US-CA-515-ipv4:wireguard:wg-US-CA-515
+lo:loopback:lo
+qBittorrent sockets:
+none

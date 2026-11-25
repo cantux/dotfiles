@@ -200,3 +200,34 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
        21:10:14, so the tunnel's `::/0` route was the host's only IPv6 path.
     The reported Brave errors were absent from the user journal and were not
     adopted. Units 10 and 11 resolve the findings. Unit 9 complete.
+38. Unit 10. Changed the harness to inherit the host's reverse-path settings
+    instead of loose filtering, to install NetworkManager 1.58.0's nftables
+    rules (table `nm-wg-wg-US-CA-515`: `preraw`, `premangle`, `postmangle`),
+    to add `src_valid_mark` as a cell factor (suffix `_valid_mark`), to record
+    the effective sysctls and the `IPReversePathFilter` counter, to repeat the
+    IPv4 trace five times after a handshake, and to require
+    `XDG_RUNTIME_DIR`. A smoke container confirmed the inherited values
+    (`all.rp_filter=0`, `default.rp_filter=1`, `wlp0s20f3.rp_filter=1`,
+    `src_valid_mark=0`) and that NetworkManager's rule text loads. Stopped a
+    six-cell run during its first cell to shorten the wait, removed its
+    incomplete directory, and ran the two decisive cells (`20261124T224242`):
+
+    | Cell | `src_valid_mark` | Reverse-path drops | Tunnel | Lookups | qBittorrent |
+    | --- | --- | --- | --- | --- | --- |
+    | `ipv4_strict_dot` | 0 | 69 | 0 bytes received | 0/9 | firewalled; the host's geolocation error |
+    | `ipv4_strict_dot_valid_mark` | 1 | 0 | 177,626,332 bytes received | 9/9 | connected; 339 DHT nodes; 145,795,635 bytes |
+
+    In the second cell the first initiation went unanswered during the
+    2-second ping, so its summary reads `handshake=no`; WireGuard's 5-second
+    retry established the tunnel before the egress probe.
+39. The user set `net.ipv4.conf.all.src_valid_mark=1` at runtime and asked for
+    a working profile. Wrote `~/Downloads/wg-US-CA-515-ipv4/wg-US-CA-515.conf`
+    (mode 600; IPv6 `Endpoint` commented out; key line identical). Imported it
+    as `wg-US-CA-515-ipv4` (UUID `7d0da835-83c3-4a67-84fa-c5c5069697a4`) with
+    autoconnect off; the original profile remains unchanged. Activated it
+    under a guard that reverts after 15 seconds without a reply. The Proton
+    resolver answered on attempt 4; egress showed `149.22.84.92`; the
+    resolver reported encrypted transport on link `wg-US-CA-515`;
+    `IPReversePathFilter` rose from 315 to 335 during activation.
+    qBittorrent held no sockets and requires a restart. Evidence:
+    `host_ipv4_profile.txt`. Unit 10 complete.

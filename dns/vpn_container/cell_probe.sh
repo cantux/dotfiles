@@ -34,6 +34,8 @@ selected_endpoint=none
 resolver_service_state=not_checked
 handshake_state=no
 egress_address=none
+egress_successes=0
+egress_attempts=0
 dns_over_tls_state=fail
 lookup_resolved_count=0
 qbittorrent_connection_status=none
@@ -42,6 +44,8 @@ qbittorrent_trackers_working=0
 qbittorrent_trackers_total=0
 qbittorrent_downloaded_bytes=0
 qbittorrent_geolocation=none
+uplink_interface_name=none
+reverse_path_drops_before=0
 
 print_section() {
   printf '\n== %s\n' "$1"
@@ -141,6 +145,78 @@ create_tunnel() {
     table "$routing_mark"
 }
 
+write_networkmanager_rules() {
+  local table_name=nm-wg-$interface_name
+  local address
+  local family
+  for family in ip ip6; do
+    printf 'add table %s %s\n' "$family" "$table_name"
+    printf 'flush table %s %s\n' "$family" "$table_name"
+  done
+  while IFS= read -r address; do
+    address=${address%/*}
+    family=ip
+    if [[ $address == *:* ]]; then
+      family=ip6
+    fi
+    printf 'add chain %s %s preraw { iifname != "%s" %s daddr %s fib saddr type != local drop; }\n' \
+      "$family" "$table_name" "$interface_name" "$family" "$address"
+  done < <(read_value Interface Address | split_list)
+  for family in ip ip6; do
+    printf 'add chain %s %s premangle { type filter hook prerouting priority mangle; policy accept; meta l4proto udp meta mark set ct mark; }\n' \
+      "$family" "$table_name"
+    printf 'add chain %s %s postmangle { type filter hook postrouting priority mangle; policy accept; meta l4proto udp mark 0x%08x ct mark set meta mark; }\n' \
+      "$family" "$table_name" "$routing_mark"
+  done
+}
+
+apply_networkmanager_rules() {
+  write_networkmanager_rules > /run/nm-wg.nft
+  run_logged cat /run/nm-wg.nft
+  run_logged nft --file /run/nm-wg.nft
+}
+
+uplink_interface() {
+  ip -4 route show table main default \
+    | awk '{ for (i = 1; i < NF; i++) if ($i == "dev") { print $(i + 1); exit } }'
+}
+
+reverse_path_drop_count() {
+  awk '/^TcpExt:/ {
+      if (!header_seen) {
+        split($0, names)
+        header_seen = 1
+        next
+      }
+      split($0, values)
+      for (i = 2; i in names; i++) {
+        if (names[i] == "IPReversePathFilter") {
+          print values[i]
+        }
+      }
+    }' /proc/net/netstat
+}
+
+effective_rp_filter() {
+  local all_value
+  local interface_value
+  all_value=$(sysctl -n net.ipv4.conf.all.rp_filter)
+  interface_value=$(sysctl -n "net.ipv4.conf.$uplink_interface_name.rp_filter")
+  if ((all_value > interface_value)); then
+    printf '%s\n' "$all_value"
+  else
+    printf '%s\n' "$interface_value"
+  fi
+}
+
+show_reverse_path_state() {
+  sysctl net.ipv4.conf.all.rp_filter net.ipv4.conf.default.rp_filter \
+    "net.ipv4.conf.$uplink_interface_name.rp_filter" \
+    net.ipv4.conf.all.src_valid_mark
+  printf 'rp_filter_effective=%s\n' "$(effective_rp_filter)"
+  printf 'IPReversePathFilter=%s\n' "$(reverse_path_drop_count)"
+}
+
 show_routes() {
   local endpoint_ipv4
   local endpoint_ipv6
@@ -156,7 +232,9 @@ show_routes() {
   run_logged ip -4 route get 1.1.1.1
   run_logged ip -6 route get 2606:4700:4700::1111
   run_logged ip -4 route get "$endpoint_ipv4" mark "$routing_mark"
+  run_logged ip -4 route get "$endpoint_ipv4"
   run_logged ip -6 route get "$endpoint_ipv6" mark "$routing_mark"
+  run_logged nft list ruleset
 }
 
 configure_resolver() {
@@ -203,10 +281,22 @@ trace_egress() {
 
 measure_egress() {
   local trace
-  trace=$(run_logged trace_egress https://1.1.1.1/cdn-cgi/trace)
-  printf '%s\n' "$trace"
-  egress_address=$(printf '%s\n' "$trace" | sed -n 's/^ip=//p')
-  egress_address=${egress_address:-none}
+  local address
+  local attempt
+  egress_attempts=1
+  if [[ $handshake_state == yes ]]; then
+    egress_attempts=5
+  fi
+  for ((attempt = 1; attempt <= egress_attempts; attempt++)); do
+    printf 'attempt %d of %d\n' "$attempt" "$egress_attempts"
+    trace=$(run_logged trace_egress https://1.1.1.1/cdn-cgi/trace)
+    printf '%s\n' "$trace"
+    address=$(printf '%s\n' "$trace" | sed -n 's/^ip=//p')
+    if [[ -n $address ]]; then
+      egress_address=$address
+      egress_successes=$((egress_successes + 1))
+    fi
+  done
   run_logged trace_egress 'https://[2606:4700:4700::1111]/cdn-cgi/trace'
 }
 
@@ -343,8 +433,14 @@ print_summary() {
   printf 'summary.cell=%s_%s\n' "$endpoint_family" "$resolver_mode"
   printf 'summary.endpoint=%s\n' "$selected_endpoint"
   printf 'summary.resolver_service=%s\n' "$resolver_service_state"
+  printf 'summary.reverse_path=rp_filter_effective=%s src_valid_mark=%s\n' \
+    "$(effective_rp_filter)" "$(sysctl -n net.ipv4.conf.all.src_valid_mark)"
+  printf 'summary.reverse_path_drops=%s\n' \
+    "$(($(reverse_path_drop_count) - reverse_path_drops_before))"
   printf 'summary.handshake=%s\n' "$handshake_state"
   printf 'summary.egress_ipv4=%s\n' "$egress_address"
+  printf 'summary.egress_ipv4_successes=%s/%s\n' "$egress_successes" \
+    "$egress_attempts"
   printf 'summary.dns_over_tls_ipv4=%s\n' "$dns_over_tls_state"
   printf 'summary.lookups_resolved=%s/%s\n' "$lookup_resolved_count" \
     "${#lookup_names[@]}"
@@ -374,10 +470,15 @@ main() {
   write_setconf_file "$selected_endpoint"
   print_section 'tunnel setup'
   create_tunnel
+  apply_networkmanager_rules
+  uplink_interface_name=$(uplink_interface)
   print_section routes
   show_routes
   print_section 'resolver mode'
   configure_resolver
+  print_section 'reverse path before traffic'
+  reverse_path_drops_before=$(reverse_path_drop_count)
+  show_reverse_path_state
   print_section 'tunnel liveness'
   measure_tunnel
   print_section 'egress by address'
@@ -402,6 +503,8 @@ main() {
   measure_qbittorrent
   print_section 'tunnel counters'
   run_logged wg show "$interface_name" transfer
+  print_section 'reverse path after traffic'
+  show_reverse_path_state
   print_summary
 }
 
