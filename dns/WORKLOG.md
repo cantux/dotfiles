@@ -180,3 +180,23 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     tracker status table verbatim. The local manual confirmed NetworkManager's
     DNS priority defaults. All 32 local links resolve; the new shell blocks
     pass `bash -n`; `git diff --check` is clean. Unit 8 complete.
+37. Obtained the independent review (unit 9). The reviewer derived the same
+    cause from primary evidence before reading the documents and reported 13
+    findings. Verified directly:
+    1. The host applies strict reverse-path filtering on `wlp0s20f3`
+       (`/usr/lib/sysctl.d/50-redhat.conf`) with `src_valid_mark=0`.
+       NetworkManager 1.58.0 installs wg-quick's connection-mark rules
+       (`_fw_nft_wg_default_construct`) but sets no `src_valid_mark`, so the
+       kernel validates reply sources without the restored mark. The harness
+       masked this condition with loose filtering, so the IPv4-endpoint
+       correction remains unverified for the host.
+    2. The seed counts in entry 33 are swapped: `ipv4_strict_dot` has 95 and
+       `ipv4_vpn_dns` 89. The system `grep` (ugrep) printed the two files out
+       of order.
+    3. Failed lookups took 10.01 to 10.02 s and 20.02 to 20.04 s. The final
+       counters of 10,360 and 9,768 bytes equal 70 and 66 unanswered
+       initiations.
+    4. chronyd marked its IPv6 sources online at 21:03:06 and offline at
+       21:10:14, so the tunnel's `::/0` route was the host's only IPv6 path.
+    The reported Brave errors were absent from the user journal and were not
+    adopted. Units 10 and 11 resolve the findings. Unit 9 complete.
