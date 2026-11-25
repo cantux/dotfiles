@@ -171,3 +171,12 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     trackers worked: Debian's HTTP tracker reset the connection and four UDP
     trackers remained uncontacted within 75 seconds. No evidence file
     contains key material. Unit 7 complete.
+36. Documented the cause, the correction, and the harness: `ARCH.md` (VPN
+    endpoint and resolver interaction; harness design, invariants, and four
+    deviations from the host), `INSTR.md` (steps 11 and 12; step 9 updated),
+    the `README.md` status, `MAP.md`, and evidence items 34 to 45. A web-fetch
+    subagent read Proton's NetShield page, which it quoted verbatim, and the
+    qBittorrent API wiki. A recheck of the raw wiki Markdown confirmed the
+    tracker status table verbatim. The local manual confirmed NetworkManager's
+    DNS priority defaults. All 32 local links resolve; the new shell blocks
+    pass `bash -n`; `git diff --check` is clean. Unit 8 complete.

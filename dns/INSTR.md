@@ -154,8 +154,9 @@
    interfaces can come from guests; this host configuration does not encrypt
    guest forwarding. Repeat after VPN disconnection to compare behavior.
 
-   The current session has not performed this VPN activation or capture.
-   `--check` verifies the resolver configuration and queries, not VPN routing.
+   No host VPN activation or capture has occurred; step 11 reproduces the VPN
+   path in containers. `--check` verifies the resolver configuration and
+   queries, not VPN routing.
 
 10. Capture evidence during a repeated lookup delay. In one host terminal:
 
@@ -182,3 +183,56 @@
     that has already recovered may therefore lack enough evidence for a
     retrospective diagnosis. Preserve the observations before flushing caches
     or restarting services.
+
+11. Reproduce the VPN path in containers from a host terminal. The harness
+    requires rootless Podman, the loaded `wireguard` kernel module, and the
+    profile's source file. It changes no host network setting:
+
+    ```sh
+    ~/Projects/dotfiles/dns/vpn_container/run_matrix.sh
+    ~/Projects/dotfiles/dns/vpn_container/run_matrix.sh ipv4_strict_dot
+    ```
+
+    The cells are `ipv6_strict_dot`, `ipv4_strict_dot`, `ipv4_vpn_dns`, and
+    `ipv6_vpn_dns`. Without arguments, the harness runs all four in about 16
+    minutes. `WIREGUARD_SOURCE` selects another source file;
+    `QBITTORRENT_SECONDS` sets the qBittorrent interval (default 75). Each run
+    writes `vpn_container/evidence/<timestamp>/`, and the `summary.` lines of
+    each cell file report its result. Keep the host profile inactive during a
+    run: the VPN server tracks one endpoint per peer key.
+
+    Check the scripts after a change:
+
+    ```sh
+    cd ~/Projects/dotfiles/dns/vpn_container
+    bash -n cell_probe.sh run_matrix.sh
+    podman run --rm -i docker.io/koalaman/shellcheck:stable --shell=bash - < cell_probe.sh
+    podman run --rm -i docker.io/koalaman/shellcheck:stable --shell=bash - < run_matrix.sh
+    ```
+
+12. Correct the profile when the access network has no IPv6 route. Confirm the
+    condition:
+
+    ```sh
+    nmcli -f wireguard.peers connection show wg-US-CA-515
+    ip -6 route get 2a02:6ea0:e606:3742::10
+    ```
+
+    "Network is unreachable" for the stored endpoint identifies the failure.
+    Select the IPv4 endpoint from the same source file, then activate and
+    verify:
+
+    ```sh
+    nmcli connection modify wg-US-CA-515 wireguard.peers 'Yg7VdAicq2Rj/FNl7dGvm4jB2XlmrzwBj6/eosX5CiY= endpoint=149.22.84.89:51820 allowed-ips=0.0.0.0/0;::/0 persistent-keepalive=25'
+    nmcli connection up wg-US-CA-515
+    curl -sS --max-time 15 https://1.1.1.1/cdn-cgi/trace | grep '^ip='
+    resolvectl --cache=no --synthesize=no query tracker.opentrackr.org
+    ```
+
+    Success shows a Proton exit address (`149.22.84.92` in the container
+    evidence) and an answer "acquired via local or encrypted transport". The
+    IPv4 endpoint also serves dual-stack networks. To restore the IPv6
+    endpoint, repeat the modification with
+    `endpoint=[2a02:6ea0:e606:3742::10]:51820`. Commenting out the IPv6
+    `Endpoint` line in `~/Downloads/wg-US-CA-515.conf` prevents the same
+    selection on a later import.

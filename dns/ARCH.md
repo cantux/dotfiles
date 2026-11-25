@@ -119,6 +119,66 @@ configuration and recovery behavior; they do not establish network routing.
    requires an explicit cluster DNS route; host DNS does not gain those names
    merely because the host can reach the cluster's IP network.
 
+## VPN endpoint and resolver interaction
+
+1. The NetworkManager profile `wg-US-CA-515` stores the peer endpoint
+   `[2a02:6ea0:e606:3742::10]:51820`. Its source file contains two uncommented
+   `Endpoint` lines; the profile holds the second, IPv6 line. The first line
+   names `149.22.84.89:51820`.
+2. The profile's policy routing sends all IPv4 and IPv6 traffic into the
+   tunnel. On an access network without an IPv6 route, no handshake with the
+   IPv6 endpoint completes, yet the device activates. DNS queries, tracker
+   requests, and peer connections then enter a tunnel that carries nothing.
+   Encrypted and plaintext DNS fail alike; the resolver does not decide the
+   outcome.
+3. Through an established tunnel, strict DNS over TLS reaches Cloudflare,
+   authenticates `cloudflare-dns.com`, and resolves the names that qBittorrent
+   uses. The VPN resolver resolves them as well. Measured lookups took 0.16 to
+   1.00 seconds over TLS and 0.09 to 0.31 seconds through the VPN resolver.
+4. Strict DNS over TLS replaces the VPN resolver. Proton's NetShield filters
+   domains in Proton's DNS servers, so queries sent to Cloudflare receive no
+   NetShield filtering. Cloudflare receives each query from the VPN exit
+   address.
+
+## VPN verification harness
+
+1. `vpn_container/run_matrix.sh` runs one rootless Podman container per matrix
+   cell. Each container owns a separate network namespace; the harness changes
+   no host interface, route, rule, or resolver setting.
+2. The image reproduces the measured host components: CentOS Stream 10,
+   `systemd-resolved-257-35.el10`, the NSS line `hosts: files dns myhostname`,
+   and the repository `resolved.conf`, whose SHA-256 equals the installed
+   drop-in. It runs `qbittorrent-nox` 5.2.4; the host runs the 5.2.3 AppImage.
+3. `vpn_container/cell_probe.sh` creates the kernel WireGuard device
+   `wg-US-CA-515` from the profile's source file and applies NetworkManager's
+   routing for a peer with `/0` allowed IPs: fwmark 51820, a default route in
+   table 51820, and the rules `lookup main suppress_prefixlength 0` and
+   `not fwmark 51820 lookup 51820` for both address families.
+4. Two factors define four cells. The endpoint factor selects the IPv6 or the
+   IPv4 `Endpoint` line. The resolver factor selects `strict_dot`, the
+   installed resolver behind its local stub, or `vpn_dns`, the profile's DNS
+   servers in `/etc/resolv.conf`.
+5. Each cell measures, in order: tunnel setup and routes, handshake, egress by
+   IP address, DNS over TLS to Cloudflare, the VPN resolver, nine lookups
+   through glibc, and `qbittorrent-nox` bound to `wg-US-CA-515` on port 51820.
+   qBittorrent loads the Debian netinst torrent and five trackers from the
+   failing magnet link, limited to 2 MiB/s for 75 seconds.
+6. Invariants: the private key exists only in `$XDG_RUNTIME_DIR` and in the
+   container's `/run`, and the harness deletes both; evidence redacts the
+   interface public key; each cell starts from a new container.
+7. Deviations from the host:
+   1. The container holds `CAP_SYS_ADMIN` within its user namespace; systemd
+      requires it to start the sandboxed resolver.
+   2. Reverse-path filtering is loose.
+   3. pasta, the rootless network backend, installs an IPv6 default route
+      through `fe80::1`. The container therefore sends the 148-byte handshake
+      initiation, which the host cannot forward without an IPv6 route.
+   4. Before `dns=none`, NetworkManager listed the VPN resolvers (priority 50)
+      above the access network's resolver (priority 100). The `vpn_dns` cell
+      omits the access network's resolver. That resolver can answer through
+      the local subnet route outside the tunnel, but qBittorrent's bound
+      sockets and every other destination still use the tunnel.
+
 See [primary and local references](EVIDENCE_INSPIRATION_REFERENCE.md).
-Installed host files match the design; live host and cluster checks remain
-unavailable within the execution sandbox.
+Installed host files match the design, and host resolver status matched it on
+2026-11-24. Cluster checks remain unperformed.

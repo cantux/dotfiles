@@ -113,5 +113,67 @@ Root: `/home/ctuk/Projects/dotfiles/dns`. Inspection date: 2026-11-24.
     explains caching of valid and negative answers; that mechanism alone
     does not establish the cause of this incident.
 
-The assessment applies these protocol and implementation references directly.
-It introduces no separate formal model or cross-domain analogy.
+34. Host evidence for the qBittorrent failure, collected on 2026-11-24 from
+    21:13 to 21:31 PST: the NetworkManager journal (`wg-US-CA-515` activated
+    at 21:03:06 and deactivated at 21:10:13; `WOODMAN24` first activated on
+    2026-11-23 at 14:36:36; "Blues Junior" set as the IPv6 default on
+    2026-11-21); qBittorrent logs (the geolocation error at 21:03:19; exit
+    addresses on 2026-11-20 and earlier); `nmcli -f wireguard.peers` (the
+    stored IPv6 endpoint); the source file, read with its private key redacted
+    (two `Endpoint` lines); `ip -6 route get` ("Network is unreachable");
+    `nmcli -f IP6 device show wlp0s20f3` (no global address or gateway); and
+    `strings -el` on the running qBittorrent 5.2.3 binary
+    (`https://download.db-ip.com/free/dbip-country-lite-%1.mmdb.gz`).
+35. Container evidence: the
+    [host replica](vpn_container/evidence/20261124T213537/ipv6_strict_dot.txt)
+    and the [four-cell matrix](vpn_container/evidence/20261124T214244/). The
+    directory
+    [20261124T213123_resolver_inactive](vpn_container/evidence/20261124T213123_resolver_inactive/)
+    records the harness defect in which the resolver did not start.
+36. nm-settings-nmcli(5), NetworkManager 1.58.0, local manual and
+    [online edition](https://networkmanager.dev/docs/api/latest/nm-settings-nmcli.html).
+    `wireguard.ip4-auto-default-route` places the default route in a dedicated
+    table with an automatic fwmark and two policy rules, as wg-quick does with
+    `Table=auto`. `wireguard.peers` defines the `endpoint` attribute.
+    `ipv4.dns-priority` defaults to 50 for VPNs, including WireGuard, and 100
+    for other connections, and orders `resolv.conf` under `dns=default`.
+37. [WireGuard routing and network namespaces](https://www.wireguard.com/netns/)
+    describes "Improved Rule-based Routing", the rule pair that the harness
+    applies.
+38. [WireGuard protocol](https://www.wireguard.com/protocol/) defines the
+    148-byte handshake initiation; 148 bytes sent and 0 received identify one
+    unanswered initiation.
+39. resolv.conf(5), man-pages 6.06, local manual: `timeout` defaults to 5
+    seconds and `attempts` to 2. These defaults account for the measured
+    10.02-second and 20.04-second lookup failures.
+40. podman-run(1), local manual: `--dns none` leaves the image's
+    `/etc/resolv.conf` unchanged. pasta(1), local manual: the link-local
+    address `fe80::1` serves as the IPv6 gateway fallback; the container's
+    main table shows `default via fe80::1` although the host has no IPv6
+    default route.
+41. [qBittorrent WebUI API for 5.0](https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-5.0)):
+    tracker status 1 means "Tracker has not been contacted yet", 2 "Tracker
+    has been contacted and is working", and 4 "Tracker has been contacted, but
+    it is not working"; `dht_nodes` counts "DHT nodes connected to". Checked
+    in the raw wiki Markdown, lines 1487 to 1491.
+42. [Proton VPN NetShield](https://protonvpn.com/support/netshield): "the DNS
+    server will check these domains against databases of domains known to host
+    malware, ads, or trackers". NetShield therefore operates in Proton's DNS
+    servers. The statement that queries sent to Cloudflare bypass it is an
+    inference; the page states the same precedence for Android Private DNS.
+43. [Debian CD torrents](https://cdimage.debian.org/debian-cd/current/amd64/bt-cd/)
+    supplied the control torrent `debian-13.8.0-amd64-netinst.iso.torrent`.
+44. Inspiration: the four-cell matrix is a two-level, two-factor factorial
+    design, which separates the effects of two changes that occurred together.
+    G. E. P. Box, J. S. Hunter, and W. G. Hunter, *Statistics for
+    Experimenters: Design, Innovation, and Discovery*, 2nd ed., Wiley, 2005.
+45. Inspiration: isolating the failure-inducing difference between a working
+    state (2026-11-20) and a failing state (2026-11-24) follows scientific
+    debugging and delta debugging. A. Zeller, *Why Programs Fail: A Guide to
+    Systematic Debugging*, 2nd ed., Morgan Kaufmann, 2009. A. Zeller and
+    R. Hildebrandt, "Simplifying and Isolating Failure-Inducing Input," *IEEE
+    Transactions on Software Engineering*, 28(2):183–200, 2002.
+
+The DNS assessment applies the protocol and implementation references
+directly. The VPN verification adopts the experimental design and debugging
+methods of items 44 and 45.

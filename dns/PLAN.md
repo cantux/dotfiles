@@ -84,9 +84,11 @@ the profile's IPv6 peer endpoint.
    fail (no handshake, 0/9 lookups); both IPv4 cells succeed (9/9 lookups,
    qBittorrent connected and downloading). Evidence:
    `vpn_container/evidence/20261124T214244`.
-8. State: open. Record the cause, the correction, and the procedure in the
+8. State: complete. Record the cause, the correction, and the procedure in the
    project documents. Check: document links resolve; each claim cites an
    evidence file or a reference.
+   Result: ARCH, INSTR (steps 11 and 12), README, MAP, and evidence items 34 to
+   45 updated; 32 local links resolve; new shell blocks pass `bash -n`.
 9. State: open. Obtain an independent review of the evidence and conclusion.
    Check: findings resolved and recorded.
 
