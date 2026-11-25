@@ -102,6 +102,16 @@ Root: `/home/ctuk/Projects/dotfiles/dns`. Inspection date: 2026-11-24.
 31. [WireGuard protocol](https://www.wireguard.com/protocol/) explains one VPN
     protocol's independent encryption layer. This reference does not establish
     the active VPN protocol or its current routing on this machine.
+32. Retrospective lookup investigation on 2026-11-24 around 20:55 PST:
+    `journalctl -u systemd-resolved --since '2026-11-24 17:00:00'` contained
+    startup records only. Recent NetworkManager, kernel, and sleep-service
+    journals supplied no event that establishes a cause. No per-query timing
+    or contemporaneous packet capture exists in the inspected evidence.
+33. [systemd 257 resolvectl](https://www.freedesktop.org/software/systemd/man/257/resolvectl.html)
+    defines the completed-local-query monitor and cache/synthesis bypass
+    options. [Resolver cache documentation](https://www.freedesktop.org/software/systemd/man/257/resolved.conf.html)
+    explains caching of valid and negative answers; that mechanism alone
+    does not establish the cause of this incident.
 
 The assessment applies these protocol and implementation references directly.
 It introduces no separate formal model or cross-domain analogy.

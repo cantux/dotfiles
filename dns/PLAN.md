@@ -32,6 +32,10 @@ plaintext fallback and make Brave use that resolver. Keep the source in the
    all three installed configuration files match their sources, and the resolver
    symlink selects the local stub. The sandbox still denies system-bus and
    network access, so live service, DNS, Brave, and VPN checks remain pending.
+   Journal follow-up: service logs confirm startup at 17:01:39 PST on
+   2026-11-24. They contain no later errors, restarts, or per-query timing.
+   A recovered domain-lookup delay therefore remains unattributed; it does
+   not provide the missing live DNS and VPN-route verification.
 4. State: complete. Review loopback and TAP-based Kubernetes compatibility
    without changing the laboratory. Check: compare changed host components with
    bridge, guest resolver, kubelet, and CoreDNS configuration; distinguish source

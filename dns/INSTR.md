@@ -156,3 +156,29 @@
 
    The current session has not performed this VPN activation or capture.
    `--check` verifies the resolver configuration and queries, not VPN routing.
+
+10. Capture evidence during a repeated lookup delay. In one host terminal:
+
+    ```sh
+    sudo resolvectl monitor
+    ```
+
+    In another host terminal, time an upstream query without using the local
+    resolver cache or synthetic answers:
+
+    ```sh
+    time resolvectl --cache=no --synthesize=no query piratebay.org
+    ```
+
+    Record the exact domain, time, browser error, and command result. The
+    monitor shows completed local queries and answers; it does not capture
+    individual upstream packets. The timed query requests IPv4 and IPv6
+    addresses. Quick results while Brave remains delayed support checking
+    browser caching, other hostnames the page needs, and the subsequent
+    website connection. A slow or failed system lookup supports investigation
+    of resolver and upstream transport behavior.
+
+    Normal resolver logging need not retain per-query timing. An incident
+    that has already recovered may therefore lack enough evidence for a
+    retrospective diagnosis. Preserve the observations before flushing caches
+    or restarting services.

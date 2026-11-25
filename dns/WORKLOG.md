@@ -93,3 +93,16 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     that `--check` does not verify VPN routing. Rechecked primary systemd,
     Cloudflare, RFC 7858, and VPN protocol references. Document-link, shell
     procedure syntax, and whitespace checks passed. Changed documentation only.
+25. 2026-11-24, approximately 20:55 PST: The user reported that a previously
+    failing domain lookup recovered and requested retrospective diagnosis.
+    Reviewed resolver logs since installation at 17:01 and recent network,
+    kernel, suspend, and hibernate journals. The resolver recorded normal
+    startup at 17:01:39 and no subsequent events. NetworkManager recorded a
+    DHCP lease renewal at 20:14:34; the last 15 minutes contained no entries.
+    Kernel and suspend/hibernate journals contained no entries for the last
+    45 minutes.
+26. Found no recorded timeout, TLS error, DNSSEC validation error, resolver
+    restart, or domain-specific query timing. These logs cannot establish
+    the delay's cause. Requested the duration and browser error. Cache expiry
+    and transient upstream or transport failures remain unverified possibilities.
+    Made no resolver, VPN, browser, or logging configuration change.
