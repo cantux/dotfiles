@@ -56,4 +56,34 @@ plaintext fallback and make Brave use that resolver. Keep the source in the
    procedure. Document links, shell syntax, and whitespace checks passed.
    Live VPN verification remains open under unit 3.
 
+## VPN and qBittorrent verification
+
+Goal: determine whether the strict resolver configuration prevents qBittorrent
+from operating through the `wg-US-CA-515` WireGuard profile. Reproduce the host
+in a rootless container from the profile's source file
+`~/Downloads/wg-US-CA-515.conf`. Separate two factors that changed before the
+failure: the resolver configuration (installed 2026-11-24 17:01) and the access
+network `WOODMAN24` (first joined 2026-11-23 14:36), which has no IPv6 route to
+the profile's IPv6 peer endpoint.
+
+6. State: complete. Build the harness and run the cell that replicates the host:
+   IPv6 endpoint with strict DNS over TLS. The harness builds a CentOS Stream 10
+   image with the installed resolver file, creates the tunnel with
+   NetworkManager's policy routing, measures handshake, egress, DNS over TLS,
+   name lookups, and `qbittorrent-nox`, and redacts key material.
+   Check: `bash -n` and ShellCheck pass; one evidence file records each
+   measurement.
+   Result: the first run exposed an inactive resolver under rootless Podman's
+   default capabilities; the corrected run reproduced the host failure: no
+   handshake, 0/9 lookups, and qBittorrent's host error message. Evidence:
+   `vpn_container/evidence/20261124T213537`.
+7. State: open. Run the remaining cells of the matrix: endpoint family (IPv6,
+   IPv4) by resolver mode (strict DNS over TLS; VPN resolver without TLS).
+   Check: four evidence files and a results table in the work log.
+8. State: open. Record the cause, the correction, and the procedure in the
+   project documents. Check: document links resolve; each claim cites an
+   evidence file or a reference.
+9. State: open. Obtain an independent review of the evidence and conclusion.
+   Check: findings resolved and recorded.
+
 Only the primary session updates this plan, updates `WORKLOG.md`, and commits.

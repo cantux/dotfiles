@@ -106,3 +106,41 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     the delay's cause. Requested the duration and browser error. Cache expiry
     and transient upstream or transport failures remain unverified possibilities.
     Made no resolver, VPN, browser, or logging configuration change.
+27. 2026-11-24, approximately 21:15 PST: The user reported that the resolver
+    change appeared to break qBittorrent and requested a container test with
+    the VPN configuration. Read resolver status, the installed drop-in, the
+    DNS commits, the qBittorrent configuration and log, and the NetworkManager
+    journal.
+28. Established the failure window. NetworkManager activated `wg-US-CA-515` at
+    21:03:06. qBittorrent 5.2.3, bound to interface `wg-US-CA-515` and port
+    51820, logged "Couldn't download IP geolocation database file. Reason: The
+    remote host name was not found (invalid hostname)" at 21:03:19; its binary
+    names `download.db-ip.com` for that file. The user deactivated the profile
+    at 21:10:13. Separately, 86 of 89 "Failed to restore torrent" warnings
+    name the unmounted external drive `/run/media/ctuk/Seagate Expansion Drive`.
+29. Identified a second change before the failure. The profile's peer endpoint
+    is `[2a02:6ea0:e606:3742::10]:51820`, the last of two uncommented
+    `Endpoint` lines in `~/Downloads/wg-US-CA-515.conf`; the first line names
+    `149.22.84.89:51820`. The host returns "Network is unreachable" for the
+    IPv6 endpoint: network `WOODMAN24`, first joined 2026-11-23 14:36, supplies
+    no global IPv6 address or gateway. qBittorrent last detected VPN exit
+    addresses on 2026-11-20 and did not run again until 2026-11-24 21:03.
+30. Added verification units 6 to 9 to `PLAN.md`. Built a CentOS Stream 10
+    image with the host's `systemd-resolved-257-35.el10`, the repository
+    resolver file, `wireguard-tools`, and `qbittorrent-nox` 5.2.4. Wrote the
+    orchestrator and probe; both passed `bash -n` and ShellCheck 0.11.0, run
+    from its container image with the scripts on standard input.
+31. The first host-replica run exposed a harness defect: `systemd-resolved`
+    exited with status 217/USER ("Failed to keep CAP_SYS_ADMIN") under rootless
+    Podman's default capabilities, and lookups failed in 0.00 seconds against an
+    absent stub. A paired container comparison showed that `--cap-add SYS_ADMIN`
+    starts the resolver. Added that capability, a resolver-state summary line,
+    a recorded egress command, and a `resolvectl query`. Renamed the defective
+    run's directory to `20261124T213123_resolver_inactive`.
+32. Reran the host-replica cell (`20261124T213537`). The resolver ran with the
+    host's global configuration. The tunnel sent one 148-byte handshake
+    initiation and received nothing. Egress, DNS over TLS, and the VPN resolver
+    timed out; 0 of 9 lookups resolved, each after 10.02 seconds. qBittorrent
+    reported 0 of 6 trackers working, 0 DHT nodes, and the host's geolocation
+    error. No evidence file contains private key material; no container or
+    secret directory remained. Unit 6 complete.

@@ -15,6 +15,10 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
 | [brave-policy.json](brave-policy.json) | Selects the operating system DNS client for Brave. |
 | [configure.py](configure.py) | Installs, verifies, and restores configuration. |
 | [test_configure.py](test_configure.py) | Exercises installation, restoration, repeat execution, and runtime verification in isolation. |
+| [vpn_container/Containerfile](vpn_container/Containerfile) | CentOS Stream 10 image with the installed resolver file, WireGuard tools, and `qbittorrent-nox`. |
+| [vpn_container/run_matrix.sh](vpn_container/run_matrix.sh) | Host orchestrator: copies the WireGuard source file to private runtime storage, builds the image, runs each matrix cell in a fresh rootless container, and records host context. |
+| [vpn_container/cell_probe.sh](vpn_container/cell_probe.sh) | In-container probe: creates the tunnel with NetworkManager's policy routing, selects the resolver mode, and measures handshake, egress, DNS over TLS, lookups, and qBittorrent. |
+| [vpn_container/evidence/](vpn_container/evidence/) | One directory per run: host context, control torrent name, and one redacted evidence file per cell. |
 | [../sync.sh](../sync.sh) | Dispatches `--dns` to the configuration helper. |
 
 The helper stores original files and resolver service state under
