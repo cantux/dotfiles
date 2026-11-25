@@ -24,5 +24,9 @@ plaintext fallback and make Brave use that resolver. Keep the source in the
    Check: collect host results. The current sandbox prevents root operations
    through its `no new privileges` restriction, so host activation requires a
    terminal outside this sandbox.
+   Attempt result: `./sync.sh --dns` exited 1 because `sudo` could not obtain
+   root under `no new privileges`. `--check` confirmed the managed configuration
+   is absent. `/etc/resolv.conf` still names `192.168.0.1` and the resolver
+   package remains absent. This unit remains open for host execution.
 
 Only the primary session updates this plan, updates `WORKLOG.md`, and commits.

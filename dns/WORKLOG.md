@@ -47,3 +47,12 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     All 18 tests passed. Tests exercise real temporary files and symlinks while
     simulating package, service, label, and DNS commands. They do not execute
     privileged host operations or send network traffic.
+14. Attempted deployment unit 3 with `./sync.sh --dns`. The command exited 1
+    because `sudo` cannot obtain root under the sandbox's `no new privileges`
+    restriction. No package or host configuration change occurred.
+15. Ran `./sync.sh --dns --check`; it exited 1 because the managed NetworkManager
+    configuration does not exist. Rechecked `/etc/resolv.conf`: it still names
+    `192.168.0.1`. RPM still reports `systemd-resolved` absent. Kept deployment
+    unit 3 open and documented the exact command for a host terminal.
+16. Committed only this task's changes. The existing unrelated working-tree
+    changes, including prior `sync.sh` edits, remain outside these commits.
