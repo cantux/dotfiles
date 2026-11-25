@@ -90,6 +90,18 @@ Root: `/home/ctuk/Projects/dotfiles/dns`. Inspection date: 2026-11-24.
 28. [systemd 257 resolver service](https://www.freedesktop.org/software/systemd/man/257/systemd-resolved.service.html).
     Documents the `127.0.0.53` and `127.0.0.54` local DNS listeners and the
     separation between local clients and upstream resolution.
+29. Follow-up inspection on 2026-11-24 reconfirmed `DNSOverTLS=yes`, static
+    Cloudflare addresses with the TLS authentication name, the local stub, and
+    the Brave policies. NetworkManager and routing queries still deny access.
+    No VPN activation or packet capture occurred. The installer and isolated
+    tests do not verify VPN routing.
+30. [RFC 7858](https://www.rfc-editor.org/rfc/rfc7858) defines DNS over TLS,
+    persistent TCP/TLS connections, and its stub-to-recursive scope.
+    The DNS request sequence applies that protocol to the installed systemd
+    configuration; it introduces no SSH transport.
+31. [WireGuard protocol](https://www.wireguard.com/protocol/) explains one VPN
+    protocol's independent encryption layer. This reference does not establish
+    the active VPN protocol or its current routing on this machine.
 
 The assessment applies these protocol and implementation references directly.
 It introduces no separate formal model or cross-domain analogy.

@@ -43,5 +43,13 @@ plaintext fallback and make Brave use that resolver. Keep the source in the
    conflicts, private-name changes, namespace-local loopback, and the absence
    of automatic TLS protection for guest and pod DNS. Live checks remain
    unavailable; no laboratory configuration changed.
+5. State: complete. Explain the DNS request sequence and distinguish DNS
+   encryption from VPN routing. Check: re-read installed configuration and
+   primary protocol documentation; state the absent VPN test explicitly;
+   document a host procedure that observes both the resolver and its route.
+   Result: documented cache handling, loopback, TCP routing, TLS authentication,
+   optional VPN encapsulation, and response handling. Added a host capture
+   procedure. Document links, shell syntax, and whitespace checks passed.
+   Live VPN verification remains open under unit 3.
 
 Only the primary session updates this plan, updates `WORKLOG.md`, and commits.

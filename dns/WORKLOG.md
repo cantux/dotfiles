@@ -82,3 +82,14 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
 22. Validated local documentation links, Bash syntax for documented shell
     commands, and whitespace. All checks passed. Kept host runtime verification
     open because the sandbox still denies service and network access.
+23. 2026-11-24: The user requested confirmation of VPN testing and a mechanical
+    explanation. Confirmed that no VPN activation or packet capture has occurred.
+    Re-read installed settings: strict DNS over TLS remains configured, with
+    Brave using the system resolver. Live NetworkManager and route queries
+    still fail under the sandbox. The saved VPN profile also denies reads.
+24. Documented the mechanical DNS sequence and the separate TLS and VPN layers.
+    Added a host-side procedure for VPN-on inspection, routing to each upstream,
+    packet capture, and a query that bypasses cache and synthesis. Clarified
+    that `--check` does not verify VPN routing. Rechecked primary systemd,
+    Cloudflare, RFC 7858, and VPN protocol references. Document-link, shell
+    procedure syntax, and whitespace checks passed. Changed documentation only.

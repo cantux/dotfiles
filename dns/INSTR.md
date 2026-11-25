@@ -116,3 +116,43 @@
    These commands change no cluster configuration and create no probe pods.
    Successful queries prove name resolution for that pod; they do not prove
    TLS encryption. Inspect the guest and CoreDNS upstream settings separately.
+
+9. Verify DNS while the VPN is active from a host terminal. Activate the VPN
+   through its normal connection control, then inspect actual state:
+
+   ```sh
+   nmcli -t -f NAME,TYPE,DEVICE connection show --active
+   ~/Projects/dotfiles/sync.sh --dns --check
+   resolvectl status
+   ip -4 route get 1.1.1.1
+   ip -4 route get 1.0.0.1
+   ip -6 route get 2606:4700:4700::1111
+   ip -6 route get 2606:4700:4700::1001
+   ```
+
+   Check the route for the server the resolver actually uses. A destination
+   on the VPN interface supports the intended route; route output alone does
+   not prove packet traversal or exclude firewall redirection.
+
+   Capture traffic in one terminal:
+
+   ```sh
+   sudo timeout 20s tcpdump -nn -p -i any 'tcp port 853 or udp port 53 or tcp port 53'
+   ```
+
+   Generate a network query in another terminal:
+
+   ```sh
+   resolvectl --cache=no --synthesize=no --type=A query example.com
+   ```
+
+   DNS on loopback is expected. With VPN routing, the VPN interface shows the
+   inner TCP 853 exchange, while the physical interface carries encrypted VPN
+   transport. TCP 853 to Cloudflare on the physical interface indicates direct
+   DoT outside the VPN: it still encrypts DNS contents but does not hide the
+   access-network source address from Cloudflare. Plain DNS on TAP or bridge
+   interfaces can come from guests; this host configuration does not encrypt
+   guest forwarding. Repeat after VPN disconnection to compare behavior.
+
+   The current session has not performed this VPN activation or capture.
+   `--check` verifies the resolver configuration and queries, not VPN routing.

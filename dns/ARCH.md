@@ -27,6 +27,43 @@
    perform their own DNS exchanges can bypass the system resolver. This
    configuration does not impose firewall controls.
 
+## DNS request sequence
+
+1. After Brave loads the installed policies, it uses the operating system DNS
+   client. A browser cache entry can satisfy a lookup without invoking DNS.
+   The current NSS order checks `/etc/hosts` before DNS.
+2. For an unresolved name, the system client reads `/etc/resolv.conf` and sends
+   an ordinary DNS query to `127.0.0.53`, port 53. This exchange remains on
+   loopback; it does not travel to the router or ISP.
+3. `systemd-resolved` checks its local data and cache. On a cache miss, it
+   selects a configured Cloudflare IP address. The static IP means it needs
+   no separate DNS lookup to find the upstream server.
+4. The kernel selects a route for TCP traffic to that IP on port 853. A VPN
+   route encapsulates the connection in the VPN protocol. A physical route
+   sends the TLS connection directly through the access network. DNS settings
+   alone do not choose between these paths.
+5. The resolver establishes or reuses a TLS connection to Cloudflare. On a new
+   connection, it authenticates the certificate against `cloudflare-dns.com`
+   and the system trust store. TLS then protects DNS requests and responses.
+   `DNSOverTLS=yes` rejects an upstream that cannot provide authenticated TLS.
+   This exchange uses neither SSH nor browser DNS over HTTPS.
+6. Cloudflare decrypts the question, obtains an answer from cache or DNS
+   resolution, and returns it over TLS. The client-to-Cloudflare encryption
+   does not guarantee encryption of Cloudflare's queries to other DNS servers.
+7. The local resolver returns the answer over loopback. The application can
+   then connect to the returned address. A website connection constitutes a
+   separate exchange with its own transport and encryption settings.
+
+| Route | Query transport | Source address that Cloudflare observes |
+| --- | --- | --- |
+| VPN carries the connection | DNS inside TLS inside the VPN; TLS remains after the VPN endpoint removes VPN encapsulation. | VPN exit address. |
+| Physical interface carries the connection | DNS inside TLS through the router and ISP. | Access-network public address, subject to address translation. |
+
+TLS protects query contents along the client-to-resolver connection in both
+cases. Cloudflare receives the question. No live VPN activation, route test,
+or packet capture has occurred in this session. The isolated tests establish
+configuration and recovery behavior; they do not establish network routing.
+
 ## Installation and restoration
 
 1. The helper checks NetworkManager and authenticates TLS to a configured
