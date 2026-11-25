@@ -29,3 +29,12 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
    `sudo -n true` failed because the sandbox sets `no new privileges`.
    The current session cannot install packages, change `/etc`, or activate host
    services. Added `PLAN.md` before the first configuration change.
+10. Completed implementation unit 1: added strict Cloudflare DNS over TLS,
+    disabled NetworkManager DNS injection, selected the operating system DNS
+    client for Brave, and added a DNS-specific `sync.sh` dispatch. The helper
+    preserves original and transaction snapshots, applies atomic file changes,
+    restores SELinux labels, verifies runtime state, and supports restoration.
+11. Reviewed systemd 257, NetworkManager, Brave, Chromium policy, and Cloudflare
+    primary references. Ran YAPF, Python/INI/JSON syntax and configuration checks,
+    document-link validation, Bash syntax, whitespace checks, and
+    `./sync.sh --dns --help`; all passed. Host activation remains pending.

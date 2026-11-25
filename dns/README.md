@@ -1,15 +1,22 @@
-# DNS privacy assessment
+# System DNS over TLS
 
 Root: `/home/ctuk/Projects/dotfiles/dns`.
 
-1. The inspection on 2026-11-24 found `nameserver 192.168.0.1` in
-   `/etc/resolv.conf` and both NetworkManager resolver files.
-2. The execution sandbox prevented inspection of host routing and live
-   NetworkManager state. These observations do not establish a DNS leak.
-3. A VPN protects DNS from access-network observers when it carries the queries
-   through its encrypted connection. DNS over HTTPS and DNS over TLS provide
-   encryption between a client and its selected resolver; that resolver still
-   receives the query contents. See [sources](EVIDENCE_INSPIRATION_REFERENCE.md).
+1. Apply from a host terminal:
 
-Use [INSTR.md](INSTR.md) for host verification and configuration choices.
-This assessment changes documentation only.
+   ```sh
+   ~/Projects/dotfiles/sync.sh --dns
+   ```
+
+2. Restart Brave. Open `brave://policy` and confirm
+   `BuiltInDnsClientEnabled=false` and `DnsOverHttpsMode=off`.
+
+The system resolver encrypts upstream queries to Cloudflare over authenticated
+TLS. Brave uses the operating system DNS client. The configuration prohibits
+plaintext fallback and uses public DNS for all domains, including during VPN
+connections. Public DNS does not resolve VPN-only internal names.
+
+Status: prepared in the repository; host activation remains pending because
+the execution sandbox prevents root operations. See [INSTR.md](INSTR.md) for
+verification, restoration, and tests, and
+[sources](EVIDENCE_INSPIRATION_REFERENCE.md) for implementation references.

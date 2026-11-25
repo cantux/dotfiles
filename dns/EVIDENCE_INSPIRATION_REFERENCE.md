@@ -35,6 +35,26 @@ Root: `/home/ctuk/Projects/dotfiles/dns`. Inspection date: 2026-11-24.
 11. Local workflow evidence: `/home/ctuk/AGENTS.md`, the supplied repository
     instructions, and `/home/ctuk/Projects/dotfiles/.vimrc`. These define the
     environment-change location and available save-time checks.
+12. [systemd 257 resolver configuration](https://www.freedesktop.org/software/systemd/man/257/resolved.conf.html).
+    Matches the installed systemd major version. Defines strict TLS,
+    certificate server names, list resets, fallback servers, routing domains,
+    and the local DNS stub.
+13. [systemd 257 resolvectl](https://www.freedesktop.org/software/systemd/man/257/resolvectl.html).
+    Defines runtime DNS and TLS inspection and queries that bypass caches
+    and synthetic answers.
+14. [Cloudflare DNS over TLS](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-tls/).
+    Documents IPv4 and IPv6 endpoints, port 853, and TLS certificates.
+15. [Brave Group Policy](https://support.brave.app/hc/en-us/articles/360039248271-Group-Policy).
+    Documents Chromium policy compatibility, Linux managed policy placement
+    under `/etc/brave/policies/managed/`, and `brave://policy` verification.
+16. [Chromium DNS over HTTPS policy](https://chromium.googlesource.com/chromium/src/+/376fc41e87a058f7a7b300b0ec3a4982b4ec0960/components/policy/resources/templates/policy_definitions/Miscellaneous/DnsOverHttpsMode.yaml).
+    Defines `off` as disabling browser DoH.
+17. [Chromium built-in DNS client policy](https://chromium.googlesource.com/chromium/src/+/376fc41e87a058f7a7b300b0ec3a4982b4ec0960/components/policy/resources/templates/policy_definitions/Miscellaneous/BuiltInDnsClientEnabled.yaml).
+    Defines the disabled built-in client behavior. Combining it with DoH off
+    selects the operating system DNS client.
+18. Local privilege evidence: `sudo -n true` failed with the explicit
+    `no new privileges` diagnostic. The session cannot apply host configuration.
+    Host activation and network verification remain pending.
 
 The assessment applies these protocol and implementation references directly.
 It introduces no separate formal model or cross-domain analogy.

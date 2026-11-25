@@ -5,6 +5,11 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+if [[ "${1:-}" == "--dns" ]]; then
+  shift
+  exec python3 "$REPO/dns/configure.py" "$@"
+fi
+
 items=(
   .bashrc
   .bash_aliases

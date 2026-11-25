@@ -1,0 +1,4 @@
+{
+  "BuiltInDnsClientEnabled": false,
+  "DnsOverHttpsMode": "off"
+}
