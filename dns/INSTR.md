@@ -154,9 +154,11 @@
    interfaces can come from guests; this host configuration does not encrypt
    guest forwarding. Repeat after VPN disconnection to compare behavior.
 
-   No host VPN activation or capture has occurred; step 11 reproduces the VPN
-   path in containers. `--check` verifies the resolver configuration and
-   queries, not VPN routing.
+   This procedure has not run on the host, and no capture exists. After the
+   DNS change, the host activated the IPv6-endpoint profile at 21:03:06 on
+   2026-11-24, which failed, and `wg-US-CA-515-ipv4` at 22:51, which step 12
+   verifies. Step 11 reproduces the VPN path in containers. `--check`
+   verifies the resolver configuration and queries, not VPN routing.
 
 10. Capture evidence during a repeated lookup delay. In one host terminal:
 
@@ -190,16 +192,18 @@
 
     ```sh
     ~/Projects/dotfiles/dns/vpn_container/run_matrix.sh
-    ~/Projects/dotfiles/dns/vpn_container/run_matrix.sh ipv4_strict_dot
+    ~/Projects/dotfiles/dns/vpn_container/run_matrix.sh ipv4_strict_dot ipv4_strict_dot_valid_mark
     ```
 
-    The cells are `ipv6_strict_dot`, `ipv4_strict_dot`, `ipv4_vpn_dns`, and
-    `ipv6_vpn_dns`. Without arguments, the harness runs all four in about 16
-    minutes. `WIREGUARD_SOURCE` selects another source file;
+    The cells are `ipv6_strict_dot`, `ipv4_strict_dot`, `ipv4_vpn_dns`,
+    `ipv6_vpn_dns`, `ipv4_strict_dot_valid_mark`, and
+    `ipv4_vpn_dns_valid_mark`. Each cell takes about 3.5 to 4.5 minutes; the
+    first run also builds the image. The harness requires
+    `XDG_RUNTIME_DIR`. `WIREGUARD_SOURCE` selects another source file;
     `QBITTORRENT_SECONDS` sets the qBittorrent interval (default 75). Each run
     writes `vpn_container/evidence/<timestamp>/`, and the `summary.` lines of
-    each cell file report its result. Keep the host profile inactive during a
-    run: the VPN server tracks one endpoint per peer key.
+    each cell file report its result. Keep both host profiles inactive during
+    a run: the VPN server tracks one endpoint per peer key.
 
     Check the scripts after a change:
 
@@ -210,29 +214,53 @@
     podman run --rm -i docker.io/koalaman/shellcheck:stable --shell=bash - < run_matrix.sh
     ```
 
-12. Correct the profile when the access network has no IPv6 route. Confirm the
-    condition:
+12. Correct the VPN when the access network has no IPv6 route. With both
+    profiles inactive, confirm the condition; empty output from the first
+    command means that no IPv6 path exists outside the tunnel:
 
     ```sh
+    ip -6 route show table main default
     nmcli -f wireguard.peers connection show wg-US-CA-515
-    ip -6 route get 2a02:6ea0:e606:3742::10
     ```
 
-    "Network is unreachable" for the stored endpoint identifies the failure.
-    Select the IPv4 endpoint from the same source file, then activate and
-    verify:
+    Allow marked replies through the strict reverse-path filter. This runtime
+    setting lasts until reboot:
 
     ```sh
-    nmcli connection modify wg-US-CA-515 wireguard.peers 'Yg7VdAicq2Rj/FNl7dGvm4jB2XlmrzwBj6/eosX5CiY= endpoint=149.22.84.89:51820 allowed-ips=0.0.0.0/0;::/0 persistent-keepalive=25'
-    nmcli connection up wg-US-CA-515
+    sudo sysctl -w net.ipv4.conf.all.src_valid_mark=1
+    ```
+
+    Create a profile from a copy of the source file with the IPv6 `Endpoint`
+    line commented out. The file name keeps the interface name
+    `wg-US-CA-515`, to which qBittorrent binds. The import can activate the
+    profile at once:
+
+    ```sh
+    install -d -m 700 ~/Downloads/wg-US-CA-515-ipv4
+    sed -E 's/^([[:space:]]*Endpoint[[:space:]]*=[[:space:]]*\[)/# \1/' ~/Downloads/wg-US-CA-515.conf > ~/Downloads/wg-US-CA-515-ipv4/wg-US-CA-515.conf
+    chmod 600 ~/Downloads/wg-US-CA-515-ipv4/wg-US-CA-515.conf
+    profile_uuid=$(nmcli connection import type wireguard file ~/Downloads/wg-US-CA-515-ipv4/wg-US-CA-515.conf | grep -o -E '[0-9a-f-]{36}')
+    nmcli connection modify "$profile_uuid" connection.id wg-US-CA-515-ipv4 connection.autoconnect no
+    nmcli connection up wg-US-CA-515-ipv4
+    ```
+
+    Verify the tunnel, the exit address, and encrypted DNS. Repeat a failed
+    trace before drawing a conclusion; the first handshake can take 5 seconds:
+
+    ```sh
+    ping -c 3 10.2.0.1
     curl -sS --max-time 15 https://1.1.1.1/cdn-cgi/trace | grep '^ip='
     resolvectl --cache=no --synthesize=no query tracker.opentrackr.org
     ```
 
-    Success shows a Proton exit address (`149.22.84.92` in the container
-    evidence) and an answer "acquired via local or encrypted transport". The
-    IPv4 endpoint also serves dual-stack networks. To restore the IPv6
-    endpoint, repeat the modification with
-    `endpoint=[2a02:6ea0:e606:3742::10]:51820`. Commenting out the IPv6
-    `Endpoint` line in `~/Downloads/wg-US-CA-515.conf` prevents the same
-    selection on a later import.
+    Success shows replies from `10.2.0.1`, a Proton exit address
+    (`149.22.84.92` on 2026-11-24), and an answer "acquired via local or
+    encrypted transport". Restart qBittorrent after the tunnel is up; its log
+    then records "Detected external IP". The original profile `wg-US-CA-515`
+    still fails on networks without IPv6. Revert with:
+
+    ```sh
+    nmcli connection down wg-US-CA-515-ipv4
+    nmcli connection delete wg-US-CA-515-ipv4
+    sudo sysctl -w net.ipv4.conf.all.src_valid_mark=0
+    ```

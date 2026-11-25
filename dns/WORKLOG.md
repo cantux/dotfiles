@@ -138,9 +138,10 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     a recorded egress command, and a `resolvectl query`. Renamed the defective
     run's directory to `20261124T213123_resolver_inactive`.
 32. Reran the host-replica cell (`20261124T213537`). The resolver ran with the
-    host's global configuration. The tunnel sent one 148-byte handshake
-    initiation and received nothing. Egress, DNS over TLS, and the VPN resolver
-    timed out; 0 of 9 lookups resolved, each after 10.02 seconds. qBittorrent
+    host's global configuration. The tunnel sent 148-byte handshake
+    initiations, 70 by the end of the cell, and received nothing. Egress, DNS
+    over TLS, and the VPN resolver timed out; 0 of 9 lookups resolved, after
+    10.01 to 10.02 seconds each. qBittorrent
     reported 0 of 6 trackers working, 0 DHT nodes, and the host's geolocation
     error. No evidence file contains private key material; no container or
     secret directory remained. Unit 6 complete.
@@ -150,24 +151,29 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
 
     | Cell | Endpoint | Resolver | Handshake | Lookups | qBittorrent after 75 s |
     | --- | --- | --- | --- | --- | --- |
-    | `ipv6_strict_dot` | IPv6 | strict DNS over TLS | no | 0/9, 10.02 s each | firewalled; 0 DHT nodes; 0 bytes; geolocation lookup failed |
-    | `ipv4_strict_dot` | IPv4 | strict DNS over TLS | yes | 9/9, 0.16 to 1.00 s | connected; 354 DHT nodes; 149,079,220 bytes; 89 seeds |
-    | `ipv4_vpn_dns` | IPv4 | VPN resolver without TLS | yes | 9/9, 0.09 to 0.31 s | connected; 332 DHT nodes; 152,405,090 bytes; 95 seeds |
-    | `ipv6_vpn_dns` | IPv6 | VPN resolver without TLS | no | 0/9, 20.04 s each | firewalled; 0 DHT nodes; 0 bytes; geolocation lookup failed |
+    | `ipv6_strict_dot` | IPv6 | strict DNS over TLS | no | 0/9, 10.01 to 10.02 s | firewalled; 0 DHT nodes; 0 bytes; geolocation lookup failed |
+    | `ipv4_strict_dot` | IPv4 | strict DNS over TLS | yes | 9/9, 0.16 to 1.00 s | connected; 354 DHT nodes; 149,079,220 bytes; 95 seeds |
+    | `ipv4_vpn_dns` | IPv4 | VPN resolver without TLS | yes | 9/9, 0.09 to 0.31 s | connected; 332 DHT nodes; 152,405,090 bytes; 89 seeds |
+    | `ipv6_vpn_dns` | IPv6 | VPN resolver without TLS | no | 0/9, 20.02 to 20.04 s | firewalled; 0 DHT nodes; 0 bytes; geolocation lookup failed |
 
-34. The endpoint family alone determines the outcome; the resolver mode does
-    not change it. With the IPv4 endpoint, the strict resolver authenticated
-    `cloudflare-dns.com` on IPv4 and IPv6 port 853 through the tunnel, and
-    `resolvectl` reported encrypted transport on link `wg-US-CA-515`.
+    This matrix ran with loose reverse-path filtering; entry 38 supersedes
+    its IPv4 outcome for the host's strict filter.
+34. Under loose reverse-path filtering, the endpoint family alone determines
+    the outcome; the resolver mode does not change it. With the IPv4 endpoint,
+    `openssl` authenticated `cloudflare-dns.com` on IPv4 and IPv6 port 853
+    through the tunnel in both IPv4 cells, and `resolvectl` reported encrypted
+    transport on link `wg-US-CA-515` in the strict cell.
     qBittorrent detected the exit addresses `149.22.84.92` and
     `2a02:6ea0:e606:3742::13`, which match its log of 2026-11-20. The lookup
     durations equal the glibc defaults: 5-second timeout times 2 attempts for
     one server (10 s) and for two servers (20 s).
-35. Recorded two anomalies that do not vary with resolver mode. First, in
-    `ipv4_strict_dot` the IPv4 HTTPS trace to `1.1.1.1` failed with curl exit
-    35 (TLS connect error), while the IPv6 trace, DNS over TLS to
-    `1.1.1.1:853`, and the download succeeded in the same cell; this request
-    uses an IP literal and no DNS. Second, in both IPv4 cells one of six
+35. Recorded two anomalies. First, in `ipv4_strict_dot` the single IPv4 HTTPS
+    trace to `1.1.1.1` failed with curl exit 35 (TLS connect error), while the
+    IPv6 trace, DNS over TLS to `1.1.1.1:853`, and the download succeeded in
+    the same cell; the same probe succeeded in `ipv4_vpn_dns`. The request
+    uses an IP literal, which excludes DNS as its mechanism; one trial per
+    cell cannot separate a transient failure from a cell effect. Second, in
+    both IPv4 cells one of six
     trackers worked: Debian's HTTP tracker reset the connection and four UDP
     trackers remained uncontacted within 75 seconds. No evidence file
     contains key material. Unit 7 complete.
@@ -231,3 +237,23 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     `IPReversePathFilter` rose from 315 to 335 during activation.
     qBittorrent held no sockets and requires a restart. Evidence:
     `host_ipv4_profile.txt`. Unit 10 complete.
+40. Unit 11. Corrected the documents for review findings 2 to 13. `ARCH.md`:
+    the subnet route and the resolver list before `dns=none`, the
+    reverse-path mechanism, attribution of results to `openssl` and
+    `systemd-resolved`, the new profile, and the harness factors, invariants,
+    and deviations, including handshake timing. `INSTR.md`: the activation
+    record in step 9; cells, duration, and `XDG_RUNTIME_DIR` in step 11; step
+    12 rewritten as the performed procedure, with an inactive-profile check,
+    the runtime sysctl, the profile import, verification with a retry, the
+    qBittorrent restart, and reversal. Also corrected the `README.md` status,
+    `MAP.md`, evidence items 35, 44, and 46 to 50, and work-log entries 32 to
+    35: the initiation count, the duration ranges, the swapped seed counts,
+    and the anomaly wording. Finding 12 remains an inference: the
+    reverse-path condition implies that the IPv4 endpoint could not operate
+    on this host, so the sessions until 2026-11-20 used the IPv6 endpoint;
+    `sudo stat /etc/NetworkManager/system-connections/wg-US-CA-515.nmconnection`
+    would date the profile. The NetworkManager profile and the corrected
+    source copy contain the private key and stay outside the repository. A
+    persistent `src_valid_mark` awaits a decision on a dotfiles-managed sysctl
+    file. 34 local links resolve; procedure blocks pass `bash -n`;
+    `git diff --check` is clean. Unit 11 complete.

@@ -129,7 +129,10 @@ Root: `/home/ctuk/Projects/dotfiles/dns`. Inspection date: 2026-11-24.
     and the [four-cell matrix](vpn_container/evidence/20261124T214244/). The
     directory
     [20261124T213123_resolver_inactive](vpn_container/evidence/20261124T213123_resolver_inactive/)
-    records the harness defect in which the resolver did not start.
+    records the harness defect in which the resolver did not start. The
+    [reverse-path cells](vpn_container/evidence/20261124T224242/) and the
+    [host activation](vpn_container/evidence/20261124T224242/host_ipv4_profile.txt)
+    supersede the matrix's IPv4 outcome for the host.
 36. nm-settings-nmcli(5), NetworkManager 1.58.0, local manual and
     [online edition](https://networkmanager.dev/docs/api/latest/nm-settings-nmcli.html).
     `wireguard.ip4-auto-default-route` places the default route in a dedicated
@@ -163,8 +166,12 @@ Root: `/home/ctuk/Projects/dotfiles/dns`. Inspection date: 2026-11-24.
     inference; the page states the same precedence for Android Private DNS.
 43. [Debian CD torrents](https://cdimage.debian.org/debian-cd/current/amd64/bt-cd/)
     supplied the control torrent `debian-13.8.0-amd64-netinst.iso.torrent`.
-44. Inspiration: the four-cell matrix is a two-level, two-factor factorial
-    design, which separates the effects of two changes that occurred together.
+44. Inspiration: a two-level factorial design separates the effects of
+    changes that occur together. Two changes preceded the failure: the
+    resolver installation and the move from "Blues Junior" to `WOODMAN24`. The
+    endpoint factor stands in for the second change, because the move made the
+    unchanged IPv6 endpoint unreachable. The `vpn_dns` level approximates, but
+    does not reproduce, the resolver configuration before the change.
     G. E. P. Box, J. S. Hunter, and W. G. Hunter, *Statistics for
     Experimenters: Design, Innovation, and Discovery*, 2nd ed., Wiley, 2005.
 45. Inspiration: isolating the failure-inducing difference between a working
@@ -173,6 +180,33 @@ Root: `/home/ctuk/Projects/dotfiles/dns`. Inspection date: 2026-11-24.
     Systematic Debugging*, 2nd ed., Morgan Kaufmann, 2009. A. Zeller and
     R. Hildebrandt, "Simplifying and Isolating Failure-Inducing Input," *IEEE
     Transactions on Software Engineering*, 28(2):183–200, 2002.
+
+46. [Linux IP sysctl documentation](https://github.com/torvalds/linux/blob/master/Documentation/networking/ip-sysctl.rst):
+    "The max value from conf/{all,interface}/rp_filter is used when doing
+    source validation on the {interface}". With `src_valid_mark` set to 1,
+    "The fwmark of the packet is included in reverse path route lookup. This
+    permits rp_filter to function when the fwmark is used for routing traffic
+    in both directions."
+47. NetworkManager source at tag 1.58.0:
+    [`src/core/nm-firewall-utils.c`](https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/blob/1.58.0/src/core/nm-firewall-utils.c),
+    function `_fw_nft_wg_default_construct`, builds the `premangle` and
+    `postmangle` connection-mark chains. That file, `nm-device-wireguard.c`,
+    and `nm-device.c` contain no `src_valid_mark`; `nm-device.c` reads
+    `rp_filter` only for a connectivity-check warning. The installed binary
+    contains the same rule strings.
+48. wg-quick in `wireguard-tools-1.0.20250521-1.el10`, `/usr/bin/wg-quick`
+    lines 238 to 240: the same two mark rules, followed by
+    `sysctl -q net.ipv4.conf.all.src_valid_mark=1` for IPv4.
+49. Host reverse-path configuration: `/usr/lib/sysctl.d/50-redhat.conf`
+    lines 5 to 7 set `rp_filter = 1` for every interface;
+    `/etc/sysctl.d/99-zzz-override_cilium.conf` line 7 sets
+    `net.ipv4.conf.all.rp_filter = 0`. `src_valid_mark` remained 0 until the
+    user set it on 2026-11-24.
+50. Corroborating host evidence: chronyd marked its IPv6 sources online at
+    21:03:06 and offline at 21:10:14; `resolvectl statistics` reported no
+    failure responses since 17:01:39; with the VPN inactive, the host fetched
+    the control torrent through the strict resolver at 21:31, 21:35, 21:42,
+    and 22:42.
 
 The DNS assessment applies the protocol and implementation references
 directly. The VPN verification adopts the experimental design and debugging

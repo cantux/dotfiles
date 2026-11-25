@@ -125,20 +125,39 @@ configuration and recovery behavior; they do not establish network routing.
    `[2a02:6ea0:e606:3742::10]:51820`. Its source file contains two uncommented
    `Endpoint` lines; the profile holds the second, IPv6 line. The first line
    names `149.22.84.89:51820`.
-2. The profile's policy routing sends all IPv4 and IPv6 traffic into the
-   tunnel. On an access network without an IPv6 route, no handshake with the
-   IPv6 endpoint completes, yet the device activates. DNS queries, tracker
-   requests, and peer connections then enter a tunnel that carries nothing.
-   Encrypted and plaintext DNS fail alike; the resolver does not decide the
-   outcome.
-3. Through an established tunnel, strict DNS over TLS reaches Cloudflare,
-   authenticates `cloudflare-dns.com`, and resolves the names that qBittorrent
-   uses. The VPN resolver resolves them as well. Measured lookups took 0.16 to
-   1.00 seconds over TLS and 0.09 to 0.31 seconds through the VPN resolver.
-4. Strict DNS over TLS replaces the VPN resolver. Proton's NetShield filters
+2. The profile's policy routing sends all traffic except the access network's
+   subnet into the tunnel; the rule `lookup main suppress_prefixlength 0`
+   keeps subnet routes. On an access network without an IPv6 route, no
+   handshake with the IPv6 endpoint completes, yet the device activates. DNS
+   queries, tracker requests, and peer connections then enter a tunnel that
+   carries nothing, and every resolver reached through the tunnel fails.
+3. Before `dns=none`, NetworkManager also listed the access network's
+   resolver (`192.168.0.1`) after the VPN resolvers. That resolver answers
+   through the subnet route, so lookups would probably have succeeded after
+   the VPN resolvers' timeouts while tracker and peer traffic still failed.
+   The resolver change therefore set the error message, not the outcome.
+4. The host filters reverse paths strictly on `wlp0s20f3` and kept
+   `src_valid_mark=0`. NetworkManager restores the connection mark on
+   encrypted replies but does not set `src_valid_mark`. The kernel then
+   validates a reply's source without the mark: the lookup skips the main
+   table's suppressed default route, selects the WireGuard table, and finds a
+   device other than the receiving interface, so strict mode drops replies
+   from an IPv4 endpoint. An IPv4 endpoint therefore requires
+   `net.ipv4.conf.all.src_valid_mark = 1`, which wg-quick sets. This IPv4
+   filter does not apply to the IPv6 endpoint.
+5. Through an established tunnel, `openssl` authenticated `cloudflare-dns.com`
+   on IPv4 and IPv6 port 853, `systemd-resolved` reported encrypted
+   transport, and the nine tested names resolved under either resolver.
+   Lookups took 0.16 to 1.00 seconds over TLS and 0.09 to 0.31 seconds through
+   the VPN resolver.
+6. Strict DNS over TLS replaces the VPN resolver. Proton's NetShield filters
    domains in Proton's DNS servers, so queries sent to Cloudflare receive no
    NetShield filtering. Cloudflare receives each query from the VPN exit
    address.
+7. The profile `wg-US-CA-515-ipv4` holds the IPv4 endpoint, the same key, and
+   the interface name `wg-US-CA-515` that qBittorrent binds to; it does not
+   connect automatically. It requires `src_valid_mark=1`, which the user set
+   at runtime on 2026-11-24 and which lasts until reboot.
 
 ## VPN verification harness
 
@@ -154,22 +173,28 @@ configuration and recovery behavior; they do not establish network routing.
    routing for a peer with `/0` allowed IPs: fwmark 51820, a default route in
    table 51820, and the rules `lookup main suppress_prefixlength 0` and
    `not fwmark 51820 lookup 51820` for both address families.
-4. Two factors define four cells. The endpoint factor selects the IPv6 or the
+4. Three factors define the cells. The endpoint factor selects the IPv6 or the
    IPv4 `Endpoint` line. The resolver factor selects `strict_dot`, the
    installed resolver behind its local stub, or `vpn_dns`, the profile's DNS
-   servers in `/etc/resolv.conf`.
+   servers in `/etc/resolv.conf`. The suffix `_valid_mark` sets
+   `src_valid_mark=1`; other cells inherit the host's value.
 5. Each cell measures, in order: tunnel setup and routes, handshake, egress by
    IP address, DNS over TLS to Cloudflare, the VPN resolver, nine lookups
    through glibc, and `qbittorrent-nox` bound to `wg-US-CA-515` on port 51820.
    qBittorrent loads the Debian netinst torrent and five trackers from the
    failing magnet link, limited to 2 MiB/s for 75 seconds.
 6. Invariants: the private key exists only in `$XDG_RUNTIME_DIR` and in the
-   container's `/run`, and the harness deletes both; evidence redacts the
-   interface public key; each cell starts from a new container.
+   container's `/run`, and the harness deletes both; the harness refuses to
+   run without `XDG_RUNTIME_DIR`; evidence redacts the interface public key;
+   each cell starts from a new container.
 7. Deviations from the host:
    1. The container holds `CAP_SYS_ADMIN` within its user namespace; systemd
       requires it to start the sandboxed resolver.
-   2. Reverse-path filtering is loose.
+   2. The container inherits the host's reverse-path settings and loads
+      NetworkManager's connection-mark rules. Rule priorities 32764 and 32765
+      replace NetworkManager's UUID-derived priorities in the same order.
+      Runs before `20261124T224242` used loose filtering, which hid the
+      condition in item 4 of the preceding section.
    3. pasta, the rootless network backend, installs an IPv6 default route
       through `fe80::1`. The container therefore sends the 148-byte handshake
       initiation, which the host cannot forward without an IPv6 route.
@@ -178,6 +203,9 @@ configuration and recovery behavior; they do not establish network routing.
       omits the access network's resolver. That resolver can answer through
       the local subnet route outside the tunnel, but qBittorrent's bound
       sockets and every other destination still use the tunnel.
+   5. The `handshake` summary field reports the state about 2 seconds after
+      the first packet. WireGuard retries an unanswered initiation after 5
+      seconds, so a working tunnel can follow `handshake=no`.
 
 See [primary and local references](EVIDENCE_INSPIRATION_REFERENCE.md).
 Installed host files match the design, and host resolver status matched it on

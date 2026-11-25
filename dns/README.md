@@ -19,11 +19,13 @@ connections. Public DNS does not resolve VPN-only internal names.
 Status: installed after the user's host synchronization run. The package,
 three installed configuration files, and resolver symlink match the design,
 and host resolver status confirmed strict TLS to Cloudflare on 2026-11-24.
-All 18 isolated tests passed. Container tests show that strict DNS over TLS
-works through the `wg-US-CA-515` VPN tunnel. The qBittorrent failure of
-2026-11-24 came from the profile's IPv6 VPN endpoint on a network without
-IPv6, not from DNS; [INSTR.md](INSTR.md) step 12 gives the correction.
-VM and pod DNS encryption requires separate configuration; the host change
-leaves bridge and TAP forwarding intact.
+All 18 isolated tests passed. Strict DNS over TLS works through the VPN
+tunnel. The qBittorrent failure of 2026-11-24 came from the VPN profile's
+IPv6 endpoint on a network without IPv6; the DNS change altered only the
+error message. The IPv4 endpoint also needs
+`net.ipv4.conf.all.src_valid_mark=1` on this host. Profile
+`wg-US-CA-515-ipv4` applies both corrections; [INSTR.md](INSTR.md) step 12
+describes them. VM and pod DNS encryption requires separate configuration;
+the host change leaves bridge and TAP forwarding intact.
 See [INSTR.md](INSTR.md) for verification, restoration, and tests, and
 [sources](EVIDENCE_INSPIRATION_REFERENCE.md) for implementation references.

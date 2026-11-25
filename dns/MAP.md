@@ -18,7 +18,7 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
 | [vpn_container/Containerfile](vpn_container/Containerfile) | CentOS Stream 10 image with the installed resolver file, WireGuard tools, and `qbittorrent-nox`. |
 | [vpn_container/run_matrix.sh](vpn_container/run_matrix.sh) | Host orchestrator: copies the WireGuard source file to private runtime storage, builds the image, runs each matrix cell in a fresh rootless container, and records host context. |
 | [vpn_container/cell_probe.sh](vpn_container/cell_probe.sh) | In-container probe: creates the tunnel with NetworkManager's policy routing, selects the resolver mode, and measures handshake, egress, DNS over TLS, lookups, and qBittorrent. |
-| [vpn_container/evidence/](vpn_container/evidence/) | One directory per run: host context, control torrent name, and one redacted evidence file per cell. A name suffix states a known defect of that run. |
+| [vpn_container/evidence/](vpn_container/evidence/) | One directory per run: host context, control torrent name, and one redacted evidence file per cell. A name suffix states a known defect of that run. `20261124T224242/host_ipv4_profile.txt` records the host activation of `wg-US-CA-515-ipv4`. |
 | [../sync.sh](../sync.sh) | Dispatches `--dns` to the configuration helper. |
 
 The helper stores original files and resolver service state under

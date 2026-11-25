@@ -105,8 +105,12 @@ the profile's IPv6 peer endpoint.
     traffic passed; with `src_valid_mark=1` it dropped none and qBittorrent
     downloaded. The host profile `wg-US-CA-515-ipv4` then passed the same
     checks. Evidence: `vpn_container/evidence/20261124T224242`.
-11. State: open. Correct the documents for findings 2 to 13 and for the outcome
-    of unit 10, including the correction procedure. Check: links resolve; each
-    corrected claim matches its evidence.
+11. State: complete. Correct the documents for findings 2 to 13 and for the
+    outcome of unit 10, including the correction procedure. Check: links
+    resolve; each corrected claim matches its evidence.
+    Result: ARCH, INSTR, README, MAP, evidence items, and work-log entries 32
+    to 35 corrected; 34 local links resolve; procedure blocks pass `bash -n`.
+    Open decision: a dotfiles-managed sysctl file for a persistent
+    `src_valid_mark`.
 
 Only the primary session updates this plan, updates `WORKLOG.md`, and commits.
