@@ -38,3 +38,12 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     primary references. Ran YAPF, Python/INI/JSON syntax and configuration checks,
     document-link validation, Bash syntax, whitespace checks, and
     `./sync.sh --dns --help`; all passed. Host activation remains pending.
+12. Completed verification unit 2 through independent review and isolated tests.
+    Review identified wrapped `resolvectl dns` output and failure cleanup when
+    initial baseline creation fails before making the destination. Corrected
+    both conditions and added regression coverage.
+13. Ran `yapf -i dns/configure.py dns/test_configure.py`, then
+    `python3 -B -m unittest discover -s dns -p test_configure.py -v`.
+    All 18 tests passed. Tests exercise real temporary files and symlinks while
+    simulating package, service, label, and DNS commands. They do not execute
+    privileged host operations or send network traffic.

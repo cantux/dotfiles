@@ -14,6 +14,7 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
 | [resolved.conf](resolved.conf) | Requires authenticated TLS to Cloudflare and selects the local stub. |
 | [brave-policy.json](brave-policy.json) | Selects the operating system DNS client for Brave. |
 | [configure.py](configure.py) | Installs, verifies, and restores configuration. |
+| [test_configure.py](test_configure.py) | Exercises installation, restoration, repeat execution, and runtime verification in isolation. |
 | [../sync.sh](../sync.sh) | Dispatches `--dns` to the configuration helper. |
 
 The helper stores original files and resolver service state under

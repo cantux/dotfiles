@@ -17,6 +17,7 @@ plaintext fallback and uses public DNS for all domains, including during VPN
 connections. Public DNS does not resolve VPN-only internal names.
 
 Status: prepared in the repository; host activation remains pending because
-the execution sandbox prevents root operations. See [INSTR.md](INSTR.md) for
+the execution sandbox prevents root operations. All 18 isolated tests passed.
+See [INSTR.md](INSTR.md) for
 verification, restoration, and tests, and
 [sources](EVIDENCE_INSPIRATION_REFERENCE.md) for implementation references.

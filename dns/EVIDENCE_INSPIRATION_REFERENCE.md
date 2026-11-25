@@ -55,6 +55,14 @@ Root: `/home/ctuk/Projects/dotfiles/dns`. Inspection date: 2026-11-24.
 18. Local privilege evidence: `sudo -n true` failed with the explicit
     `no new privileges` diagnostic. The session cannot apply host configuration.
     Host activation and network verification remain pending.
+19. [systemd v257 resolvectl implementation](https://raw.githubusercontent.com/systemd/systemd/v257/src/resolve/resolvectl.c).
+    `status_print_strv_ifindex` wraps DNS server lists into continuation lines.
+    The verification parser accepts that native output format.
+20. [systemd v257 address formatting](https://raw.githubusercontent.com/systemd/systemd/v257/src/basic/in-addr-util.c).
+    Defines IPv6 formatting and the server-name suffix in resolver status.
+21. [Isolated configuration tests](test_configure.py).
+    Eighteen tests cover filesystem recovery and verification behavior. The
+    work log records the command and result; no test claims host deployment.
 
 The assessment applies these protocol and implementation references directly.
 It introduces no separate formal model or cross-domain analogy.

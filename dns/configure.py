@@ -113,8 +113,9 @@ def restore_configuration(directory=None):
   if directory is None:
     directory = STATE_DIR / 'baseline'
   state = json.loads((directory / 'state.json').read_text())
-  if state['version'] != 1 or [entry['path'] for entry in state['files']
-                               ] != [str(path) for path in managed_paths()]:
+  saved_paths = [entry['path'] for entry in state['files']]
+  current_paths = [str(path) for path in managed_paths()]
+  if state['version'] != 1 or saved_paths != current_paths:
     raise RuntimeError(
         'The saved configuration does not match the managed paths.')
   for index, entry in enumerate(state['files']):
@@ -157,12 +158,24 @@ def verify_configuration():
   servers = command(['resolvectl', 'dns']).stdout
   expected = {f'{address}#{TLS_SERVER}' for address in DNS_ADDRESSES}
   global_servers = set()
+  label = ''
   for line in servers.splitlines():
-    label, separator, values = line.partition(':')
-    if separator and label == 'Global':
-      global_servers = set(values.split())
-    elif separator and label.startswith('Link ') and values.strip():
+    if line.startswith(('Global:', 'Link ')):
+      label, separator, values = line.partition(':')
+      if not separator:
+        raise RuntimeError('Unexpected resolver server status format.')
+    elif line[:1].isspace():
+      values = line.strip()
+    elif not line:
+      continue
+    else:
+      raise RuntimeError('Unexpected resolver server status format.')
+    if label == 'Global':
+      global_servers.update(values.split())
+    elif label.startswith('Link ') and values.strip():
       raise RuntimeError('Another client supplied per-interface DNS servers.')
+    elif not label.startswith('Link '):
+      raise RuntimeError('Unexpected resolver server status format.')
   if global_servers != expected:
     raise RuntimeError(
         'The running resolver does not use the configured servers.')
@@ -219,7 +232,7 @@ def apply_configuration():
           'The saved files remain available; run --undo from a host terminal.'
       ) from restoration_error
     shutil.rmtree(transaction)
-    if first_installation:
+    if first_installation and baseline.exists():
       shutil.rmtree(baseline)
     raise
   shutil.rmtree(transaction)

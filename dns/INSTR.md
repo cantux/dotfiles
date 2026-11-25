@@ -73,7 +73,8 @@
 
    ```sh
    cd ~/Projects/dotfiles
-   yapf -i dns/configure.py
+   yapf -i dns/configure.py dns/test_configure.py
+   python3 -B -m unittest discover -s dns -p test_configure.py -v
    bash -n sync.sh
    python3 -m json.tool dns/brave-policy.json
    git diff --check
@@ -82,3 +83,9 @@
    Vim defines no Markdown, INI, JSON, or Bash save-time formatter or linter.
    Keep environment changes in this repository on `centos_xps_9700` and apply
    them through `sync.sh`.
+
+   The 18 isolated tests use real temporary files and symlinks and simulate
+   host commands. They cover rollback before and after activation, package
+   changes to resolver files, failed backup creation, repeat execution,
+   restoration, strict TLS requirements, wrapped DNS output, and foreign DNS.
+   They do not establish host TLS reachability or Brave policy acceptance.

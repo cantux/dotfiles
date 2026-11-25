@@ -13,9 +13,12 @@ plaintext fallback and make Brave use that resolver. Keep the source in the
    syntax and Bash syntax; confirm that restoration preserves the prior files.
    Result: primary-source review, YAPF, Python/INI/JSON validation, document
    links, Bash syntax, and the `sync.sh --dns --help` dispatch check passed.
-2. State: open. Delegate independent review and verification of TLS enforcement,
+2. State: complete. Delegate independent review and verification of TLS enforcement,
    Brave policy, installation failures, restoration, and repeat execution.
    Check: resolve findings and record the validation results.
+   Result: 18 isolated tests passed after correcting multiline DNS status
+   parsing and cleanup after a failed initial baseline copy. Tests cover real
+   temporary files and symlinks with simulated host commands and no network.
 3. State: pending host access. Apply the configuration and verify resolver
    status, successful DNS queries, Brave policy, and VPN routing.
    Check: collect host results. The current sandbox prevents root operations
