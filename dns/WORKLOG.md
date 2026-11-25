@@ -22,3 +22,10 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
 7. Completed the work unit after reviewing the documentation and validating
    whitespace, local document links, and shell syntax. Host routing checks and
    packet capture remain unperformed; they require a host terminal.
+8. 2026-11-24: The requested scope changed to system DNS configuration, with
+   Brave as the browser. Read the existing assessment, repository instructions,
+   synchronization script, and working-tree state before implementation.
+9. Confirmed Brave `1.100.58-1` and the absence of the `systemd-resolved` package.
+   `sudo -n true` failed because the sandbox sets `no new privileges`.
+   The current session cannot install packages, change `/etc`, or activate host
+   services. Added `PLAN.md` before the first configuration change.
