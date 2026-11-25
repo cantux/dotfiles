@@ -158,6 +158,12 @@ configuration and recovery behavior; they do not establish network routing.
    the interface name `wg-US-CA-515` that qBittorrent binds to; it does not
    connect automatically. It requires `src_valid_mark=1`, which the user set
    at runtime on 2026-11-24 and which lasts until reboot.
+8. A NetworkManager profile cannot carry `src_valid_mark`: the profile
+   settings define neither it nor `rp_filter`. The kernel combines the
+   receiving interface's value with `all` by logical OR, and the receiving
+   interface is the access network's interface, not the WireGuard device.
+   The setting therefore belongs to host sysctl configuration or to a
+   dispatcher script that runs when the profile changes state.
 
 ## VPN verification harness
 

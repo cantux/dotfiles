@@ -208,6 +208,17 @@ Root: `/home/ctuk/Projects/dotfiles/dns`. Inspection date: 2026-11-24.
     the control torrent through the strict resolver at 21:31, 21:35, 21:42,
     and 22:42.
 
+51. Follow-up checks on 2026-11-24: the NetworkManager journal records no IPv6
+    configuration event on `wlp0s20f3` since `WOODMAN24` joined, whereas
+    "Blues Junior" received DHCPv6 and the IPv6 default route; the link holds
+    only a link-local address and no IPv6 gateway. nm-settings-nmcli(5)
+    mentions `rp_filter` only in its MPTCP section (line 374) and defines no
+    `src_valid_mark` property.
+    [`include/linux/inetdevice.h`](https://github.com/torvalds/linux/blob/master/include/linux/inetdevice.h)
+    defines `IN_DEV_SRC_VMARK` with `IN_DEV_ORCONF` and `IN_DEV_RPFILTER` with
+    `IN_DEV_MAXCONF`. NetworkManager-dispatcher(8) documents state-change
+    scripts. `nstat -az TcpExtIPReversePathFilter` reports the drop counter.
+
 The DNS assessment applies the protocol and implementation references
 directly. The VPN verification adopts the experimental design and debugging
 methods of items 44 and 45.

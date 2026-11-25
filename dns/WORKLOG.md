@@ -257,3 +257,9 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     persistent `src_valid_mark` awaits a decision on a dotfiles-managed sysctl
     file. 34 local links resolve; procedure blocks pass `bash -n`;
     `git diff --check` is clean. Unit 11 complete.
+41. The user asked how to characterize the issue, what `src_valid_mark` is,
+    and why the profile cannot set it. Verified that `WOODMAN24` supplied no
+    IPv6 configuration to `wlp0s20f3`; that nm-settings-nmcli(5) defines no
+    `src_valid_mark` or `rp_filter` property; and that the kernel combines
+    `src_valid_mark` values by logical OR across `all` and the receiving
+    interface. Added `ARCH.md` item 8 and evidence item 51.
