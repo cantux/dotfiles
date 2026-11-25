@@ -82,6 +82,12 @@ configuration and recovery behavior; they do not establish network routing.
    baseline, including service activation and enablement. Restoration retains
    installed packages. A file lock serializes configuration operations. An
    interrupted transaction requires `--undo` before another application attempt.
+7. The helper also installs `src-valid-mark.conf` as
+   `/etc/sysctl.d/90-dotfiles-src-valid-mark.conf` and loads it with
+   `sysctl -p`; verification requires the running value 1. Snapshots of format
+   version 2 record the prior running value, and restoration writes it back.
+   Version-1 snapshots, including the baseline of 2026-11-24, predate the file;
+   restoration from them removes it and restores the documented default, 0.
 
 ## Loopback and Kubernetes compatibility
 
@@ -157,13 +163,17 @@ configuration and recovery behavior; they do not establish network routing.
 7. The profile `wg-US-CA-515-ipv4` holds the IPv4 endpoint, the same key, and
    the interface name `wg-US-CA-515` that qBittorrent binds to; it does not
    connect automatically. It requires `src_valid_mark=1`, which the user set
-   at runtime on 2026-11-24 and which lasts until reboot.
+   at runtime on 2026-11-24 and which item 7 of the installation section
+   makes persistent.
 8. A NetworkManager profile cannot carry `src_valid_mark`: the profile
    settings define neither it nor `rp_filter`. The kernel combines the
    receiving interface's value with `all` by logical OR, and the receiving
    interface is the access network's interface, not the WireGuard device.
    The setting therefore belongs to host sysctl configuration or to a
-   dispatcher script that runs when the profile changes state.
+   dispatcher script that runs when the profile changes state; the helper
+   uses sysctl configuration. With the setting on, the kernel uses a packet's
+   mark in reverse-path lookups and in ICMP reply source selection; unmarked
+   packets see no change.
 
 ## VPN verification harness
 

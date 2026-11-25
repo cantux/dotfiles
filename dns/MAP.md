@@ -13,6 +13,7 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
 | [networkmanager.conf](networkmanager.conf) | Prevents NetworkManager from replacing DNS or supplying per-interface servers. |
 | [resolved.conf](resolved.conf) | Requires authenticated TLS to Cloudflare and selects the local stub. |
 | [brave-policy.json](brave-policy.json) | Selects the operating system DNS client for Brave. |
+| [src-valid-mark.conf](src-valid-mark.conf) | Sets `net.ipv4.conf.all.src_valid_mark = 1`, which the IPv4 WireGuard endpoint requires under strict reverse-path filtering. |
 | [configure.py](configure.py) | Installs, verifies, and restores configuration. |
 | [test_configure.py](test_configure.py) | Exercises installation, restoration, repeat execution, and runtime verification in isolation. |
 | [vpn_container/Containerfile](vpn_container/Containerfile) | CentOS Stream 10 image with the installed resolver file, WireGuard tools, and `qbittorrent-nox`. |

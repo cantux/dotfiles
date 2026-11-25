@@ -1,7 +1,9 @@
 import contextlib
 import io
+import json
 import os
 from pathlib import Path
+import shutil
 import stat
 import subprocess
 import tempfile
@@ -41,6 +43,8 @@ class ConfigurationTest(unittest.TestCase):
     self.system_lookup_failure = False
     self.missing_stub = False
     self.interrupt_activation = False
+    self.src_valid_mark = '0'
+    self.sysctl_load_failure = False
     self.tls_output = 'Global: yes\nLink 2 (wlp0s1): yes\n'
     self.dns_output = (
         'Global: 1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com '
@@ -107,6 +111,20 @@ class ConfigurationTest(unittest.TestCase):
     elif arguments == ('getent', 'ahosts', 'example.com'):
       returncode = 2 if self.system_lookup_failure else 0
       stdout = '93.184.215.14 STREAM example.com\n'
+    elif arguments == ('sysctl', '-n', configure.SRC_VALID_MARK_KEY):
+      stdout = self.src_valid_mark + '\n'
+    elif arguments[:2] == ('sysctl', '-p'):
+      if self.sysctl_load_failure:
+        returncode = 1
+      else:
+        for line in Path(arguments[2]).read_text().splitlines():
+          key, _, value = line.partition('=')
+          if key.strip() == configure.SRC_VALID_MARK_KEY:
+            self.src_valid_mark = value.strip()
+    elif arguments[:2] == ('sysctl', '-w'):
+      key, _, value = arguments[2].partition('=')
+      self.assertEqual(key, configure.SRC_VALID_MARK_KEY)
+      self.src_valid_mark = value
     else:
       raise AssertionError(f'Unexpected host command: {arguments}')
     result = subprocess.CompletedProcess(arguments, returncode, stdout,
@@ -134,6 +152,7 @@ class ConfigurationTest(unittest.TestCase):
     self.assertEqual(self.resolv_conf.readlink(), self.stub_resolv)
     self.assertTrue(self.active)
     self.assertEqual(self.enabled, 'enabled')
+    self.assertEqual(self.src_valid_mark, '1')
     self.assertTrue((self.state_dir / 'baseline/state.json').is_file())
     self.assertFalse((self.state_dir / 'transaction').exists())
     configure.undo_configuration()
@@ -142,6 +161,7 @@ class ConfigurationTest(unittest.TestCase):
     self.assert_no_managed_files()
     self.assertFalse(self.active)
     self.assertEqual(self.enabled, 'disabled')
+    self.assertEqual(self.src_valid_mark, '0')
     self.assertTrue(self.installed)
     self.assertFalse((self.state_dir / 'baseline').exists())
 
@@ -355,6 +375,64 @@ class ConfigurationTest(unittest.TestCase):
     with self.assertRaisesRegex(RuntimeError,
                                 'installed configuration differs'):
       configure.verify_configuration()
+
+  def test_failed_src_valid_mark_load_restores_prior_value_and_files(self):
+    self.sysctl_load_failure = True
+    with self.assertRaises(subprocess.CalledProcessError):
+      configure.apply_configuration()
+    self.assert_original_resolver()
+    self.assert_no_managed_files()
+    self.assertEqual(self.src_valid_mark, '0')
+
+  def test_disabled_src_valid_mark_fails_verification(self):
+    configure.apply_configuration()
+    self.src_valid_mark = '0'
+    with self.assertRaisesRegex(RuntimeError, 'Source-mark validation is off'):
+      configure.verify_configuration()
+
+  def test_undo_from_version_1_baseline_removes_sysctl_file_and_resets_value(
+      self):
+    baseline = self.state_dir / 'baseline'
+    baseline.mkdir(parents=True)
+    targets = [
+        target for name, target in self.files
+        if name != configure.SRC_VALID_MARK_SOURCE
+    ] + [self.resolv_conf]
+    entries = []
+    for index, target in enumerate(targets):
+      entry = {'path': str(target), 'present': target == self.resolv_conf}
+      if entry['present']:
+        entry.update(uid=0, gid=0)
+        shutil.copy2(target, baseline / str(index), follow_symlinks=False)
+      entries.append(entry)
+    (baseline / 'state.json').write_text(
+        json.dumps({
+            'version': 1,
+            'enabled': 'not-found',
+            'active': False,
+            'files': entries
+        }))
+    self.src_valid_mark = '1'
+    configure.apply_configuration()
+    self.assertEqual(
+        json.loads((baseline / 'state.json').read_text())['version'], 1)
+    configure.undo_configuration()
+    self.assert_original_resolver()
+    self.assert_no_managed_files()
+    self.assertEqual(self.src_valid_mark, '0')
+
+  def test_saved_state_with_unknown_path_fails_restoration(self):
+    configure.apply_configuration()
+    state_path = self.state_dir / 'baseline/state.json'
+    state = json.loads(state_path.read_text())
+    state['files'].append({
+        'path': str(self.root / 'etc/unknown.conf'),
+        'present': False
+    })
+    state_path.write_text(json.dumps(state))
+    with self.assertRaisesRegex(RuntimeError,
+                                'does not match the managed paths'):
+      configure.undo_configuration()
 
 
 if __name__ == '__main__':

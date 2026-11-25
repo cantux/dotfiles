@@ -219,6 +219,12 @@ Root: `/home/ctuk/Projects/dotfiles/dns`. Inspection date: 2026-11-24.
     `IN_DEV_MAXCONF`. NetworkManager-dispatcher(8) documents state-change
     scripts. `nstat -az TcpExtIPReversePathFilter` reports the drop counter.
 
+52. sysctl.d(5), local manual: configuration files in `/etc/sysctl.d/` apply
+    in lexicographic order of file name, and files in `/etc/` override
+    same-named vendor files. procps-ng 4.0.4 `sysctl -p FILE` loads one file.
+    The kernel documentation gives `src_valid_mark` the default 0 and notes
+    its effect on ICMP reply source selection.
+
 The DNS assessment applies the protocol and implementation references
 directly. The VPN verification adopts the experimental design and debugging
 methods of items 44 and 45.

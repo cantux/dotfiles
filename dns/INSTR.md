@@ -2,7 +2,8 @@
 
 1. Run from a host terminal. The helper obtains administrator privileges,
    verifies authenticated TLS connectivity, saves configuration, installs
-   `systemd-resolved` if necessary, and applies tracked files:
+   `systemd-resolved` if necessary, and applies tracked files, including the
+   sysctl file that enables source-mark validation:
 
    ```sh
    ~/Projects/dotfiles/sync.sh --dns
@@ -31,7 +32,8 @@
    This read-only operation checks configuration and runtime state and sends
    test queries. It requires no administrator privileges. Success requires
    exact Cloudflare endpoints, strict global TLS, no per-interface servers,
-   and successful queries. It does not establish the network route.
+   a running `src_valid_mark` of 1, and successful queries. It does not
+   establish the network route.
 
 4. Inspect routing and DNS traffic in a host terminal:
 
@@ -66,8 +68,10 @@
    ```
 
    Restart Brave. Restoration recovers original files, symlinks, ownership,
-   and resolver service state; it retains packages. This operation also
-   supports recovery after interruption.
+   and resolver service state; it retains packages. It also removes the
+   sysctl file and restores the prior `src_valid_mark`, after which the
+   IPv4-endpoint VPN stops passing traffic. This operation also supports
+   recovery after interruption.
 
 7. No compilation applies. Format Python before validation:
 
@@ -84,10 +88,12 @@
    Keep environment changes in this repository on `centos_xps_9700` and apply
    them through `sync.sh`.
 
-   The 18 isolated tests use real temporary files and symlinks and simulate
+   The 22 isolated tests use real temporary files and symlinks and simulate
    host commands. They cover rollback before and after activation, package
    changes to resolver files, failed backup creation, repeat execution,
-   restoration, strict TLS requirements, wrapped DNS output, and foreign DNS.
+   restoration, strict TLS requirements, wrapped DNS output, foreign DNS,
+   source-mark loading and verification, and restoration from version-1
+   snapshots.
    They do not establish host TLS reachability or Brave policy acceptance.
 
 8. Check the TAP-based laboratory from a host terminal. Select the kubeconfig
@@ -223,8 +229,8 @@
     nmcli -f wireguard.peers connection show wg-US-CA-515
     ```
 
-    Allow marked replies through the strict reverse-path filter. This runtime
-    setting lasts until reboot:
+    Allow marked replies through the strict reverse-path filter. Step 1 sets
+    it persistently; this command sets it until reboot:
 
     ```sh
     sudo sysctl -w net.ipv4.conf.all.src_valid_mark=1
@@ -257,10 +263,11 @@
     (`149.22.84.92` on 2026-11-24), and an answer "acquired via local or
     encrypted transport". Restart qBittorrent after the tunnel is up; its log
     then records "Detected external IP". The original profile `wg-US-CA-515`
-    still fails on networks without IPv6. Revert with:
+    still fails on networks without IPv6. Revert the profile with the
+    following commands; step 6 removes the persistent setting together with
+    the DNS configuration:
 
     ```sh
     nmcli connection down wg-US-CA-515-ipv4
     nmcli connection delete wg-US-CA-515-ipv4
-    sudo sysctl -w net.ipv4.conf.all.src_valid_mark=0
     ```

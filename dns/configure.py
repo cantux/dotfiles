@@ -19,6 +19,8 @@ STUB_RESOLV = Path('/run/systemd/resolve/stub-resolv.conf')
 TLS_SERVER = 'cloudflare-dns.com'
 DNS_ADDRESSES = ('1.1.1.1', '1.0.0.1', '2606:4700:4700::1111',
                  '2606:4700:4700::1001')
+SRC_VALID_MARK_KEY = 'net.ipv4.conf.all.src_valid_mark'
+SRC_VALID_MARK_SOURCE = 'src-valid-mark.conf'
 FILES = (
     ('networkmanager.conf',
      Path('/etc/NetworkManager/conf.d/90-dotfiles-dns.conf')),
@@ -26,6 +28,8 @@ FILES = (
      Path('/etc/systemd/resolved.conf.d/90-dotfiles-dns.conf')),
     ('brave-policy.json',
      Path('/etc/brave/policies/managed/dotfiles-dns.json')),
+    (SRC_VALID_MARK_SOURCE,
+     Path('/etc/sysctl.d/90-dotfiles-src-valid-mark.conf')),
 )
 
 
@@ -42,6 +46,15 @@ def command(arguments, check=True):
 
 def managed_paths():
   return [target for _, target in FILES] + [RESOLV_CONF]
+
+
+def src_valid_mark_target():
+  return next(target for name, target in FILES
+              if name == SRC_VALID_MARK_SOURCE)
+
+
+def read_src_valid_mark():
+  return command(['sysctl', '-n', SRC_VALID_MARK_KEY]).stdout.strip()
 
 
 def replace_file(source, target, preserve=False):
@@ -90,7 +103,13 @@ def snapshot_configuration(directory):
     raise RuntimeError(f'Unsupported prior resolver service state: {enabled}')
   active = command(['systemctl', 'is-active', '--quiet', 'systemd-resolved'],
                    check=False).returncode == 0
-  state = {'version': 1, 'enabled': enabled, 'active': active, 'files': []}
+  state = {
+      'version': 2,
+      'enabled': enabled,
+      'active': active,
+      'src_valid_mark': read_src_valid_mark(),
+      'files': []
+  }
   directory.mkdir(mode=0o700)
   try:
     for index, target in enumerate(managed_paths()):
@@ -113,13 +132,19 @@ def restore_configuration(directory=None):
   if directory is None:
     directory = STATE_DIR / 'baseline'
   state = json.loads((directory / 'state.json').read_text())
-  saved_paths = [entry['path'] for entry in state['files']]
+  saved_files = {
+      entry['path']: (index, entry)
+      for index, entry in enumerate(state['files'])
+  }
   current_paths = [str(path) for path in managed_paths()]
-  if state['version'] != 1 or saved_paths != current_paths:
+  supported_version = state['version'] in (1, 2)
+  saved_paths_managed = set(saved_files) <= set(current_paths)
+  if not supported_version or not saved_paths_managed:
     raise RuntimeError(
         'The saved configuration does not match the managed paths.')
-  for index, entry in enumerate(state['files']):
-    target = Path(entry['path'])
+  for path in current_paths:
+    target = Path(path)
+    index, entry = saved_files.get(path, (None, {'present': False}))
     if entry['present']:
       replace_file(directory / str(index), target, preserve=True)
       os.chown(target, entry['uid'], entry['gid'], follow_symlinks=False)
@@ -131,6 +156,8 @@ def restore_configuration(directory=None):
   ]
   if restored_paths:
     command(['restorecon', '-F', *restored_paths])
+  saved_src_valid_mark = state.get('src_valid_mark', '0')
+  command(['sysctl', '-w', f'{SRC_VALID_MARK_KEY}={saved_src_valid_mark}'])
   command(['systemctl', 'daemon-reload'])
   if command(['rpm', '-q', '--quiet', 'systemd-resolved'],
              check=False).returncode == 0:
@@ -148,6 +175,9 @@ def verify_configuration():
   for name, target in FILES:
     if target.read_bytes() != (SCRIPT_DIR / name).read_bytes():
       raise RuntimeError(f'The installed configuration differs: {target}')
+  if read_src_valid_mark() != '1':
+    raise RuntimeError(
+        f'Source-mark validation is off: {SRC_VALID_MARK_KEY} is not 1.')
   if not RESOLV_CONF.is_symlink() or RESOLV_CONF.readlink() != STUB_RESOLV:
     raise RuntimeError('/etc/resolv.conf does not select the local DNS stub.')
   command(['systemctl', 'is-active', '--quiet', 'systemd-resolved'])
@@ -185,8 +215,10 @@ def verify_configuration():
   ])
   print(result.stdout, end='', flush=True)
   command(['getent', 'ahosts', 'example.com'])
-  print('Verified strict system DNS over TLS and system resolver lookup.',
-        flush=True)
+  print(
+      'Verified strict system DNS over TLS, source-mark validation, and '
+      'system resolver lookup.',
+      flush=True)
 
 
 def apply_configuration():
@@ -210,6 +242,7 @@ def apply_configuration():
     for name, target in FILES:
       replace_file(SCRIPT_DIR / name, target)
     command(['restorecon', '-F', *[str(target) for _, target in FILES]])
+    command(['sysctl', '-p', str(src_valid_mark_target())])
     command(['nmcli', 'general', 'reload'])
     command(['systemctl', 'daemon-reload'])
     command(['systemctl', 'enable', 'systemd-resolved'])
@@ -253,7 +286,8 @@ def undo_configuration():
 
 def main():
   parser = argparse.ArgumentParser(
-      description='Configure authenticated system DNS over TLS and Brave.')
+      description='Configure authenticated system DNS over TLS, Brave, and '
+      'source-mark validation.')
   operations = parser.add_mutually_exclusive_group()
   operations.add_argument('--check', action='store_true')
   operations.add_argument('--undo', action='store_true')

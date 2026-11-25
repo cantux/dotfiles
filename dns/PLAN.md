@@ -113,4 +113,21 @@ the profile's IPv6 peer endpoint.
     Open decision: a dotfiles-managed sysctl file for a persistent
     `src_valid_mark`.
 
+## Persistent source-mark validation
+
+Goal: make `net.ipv4.conf.all.src_valid_mark = 1` persistent through
+`sync.sh --dns`, with verification and undo, so that the profile
+`wg-US-CA-515-ipv4` keeps working after reboot.
+
+12. State: complete. Add `src-valid-mark.conf` to the DNS helper's managed
+    files. Load it on application, verify the running value, record and
+    restore the prior value, and keep `--undo` compatible with the existing
+    version-1 baseline. Check: YAPF; all isolated tests pass, including new
+    tests for loading, verification, failure rollback, and version-1 undo.
+    Result: 22 of 22 tests pass; `sync.sh --dns --check` reports the missing
+    file until application.
+13. State: open. The user applies `~/Projects/dotfiles/sync.sh --dns` from a
+    host terminal. Check: `sync.sh --dns --check` passes; the installed file
+    matches its source; the running value is 1.
+
 Only the primary session updates this plan, updates `WORKLOG.md`, and commits.

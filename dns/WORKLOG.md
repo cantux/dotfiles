@@ -263,3 +263,18 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     `src_valid_mark` or `rp_filter` property; and that the kernel combines
     `src_valid_mark` values by logical OR across `all` and the receiving
     interface. Added `ARCH.md` item 8 and evidence item 51.
+42. Unit 12. The user requested persistence through `sync.sh`. Added
+    `src-valid-mark.conf` (`net.ipv4.conf.all.src_valid_mark = 1`) to the DNS
+    helper's managed files with target
+    `/etc/sysctl.d/90-dotfiles-src-valid-mark.conf`. Application loads it with
+    `sysctl -p`; verification requires the running value 1. Snapshots now use
+    format version 2 and record the prior running value; restoration writes it
+    back. Restoration accepts version-1 snapshots, such as the host baseline,
+    by treating paths they do not list as absent and restoring the documented
+    default 0. Named the two restore conditions for readability. Added four
+    tests and extended one. YAPF 0.43.0 formatted both files; 22 of 22 tests
+    passed; `sync.sh --dns --help` dispatched; `sync.sh --dns --check` failed
+    as expected on the absent file. Updated `ARCH.md`, `INSTR.md` (steps 1, 3,
+    6, 7, and 12), `README.md`, `MAP.md`, and evidence item 52. 35 local links
+    resolve; all `INSTR.md` shell blocks pass `bash -n`. Unit 12 complete;
+    unit 13 awaits the user's `sync.sh --dns`.
