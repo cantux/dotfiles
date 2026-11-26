@@ -1,4 +1,4 @@
-model = "gpt-6-luna"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "max"
 
 [tui]
@@ -9,6 +9,9 @@ insert_newline = ["enter", "shift-enter"]
 
 [tui.keymap.composer]
 submit = "ctrl-enter"
+
+[tui.model_availability_nux]
+"gpt-6.1-sol" = 4
 
 [projects."/home/ctuk/Downloads"]
 trust_level = "trusted"
@@ -32,4 +35,13 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/home/ctuk/Projects/epi"]
+trust_level = "trusted"
+
+[projects."/home/ctuk/Projects/ai"]
+trust_level = "trusted"
+
+[projects."/home/ctuk/Projects/ai/kubernetes"]
+trust_level = "trusted"
+
+[projects."/home/ctuk/Projects/forum"]
 trust_level = "trusted"
