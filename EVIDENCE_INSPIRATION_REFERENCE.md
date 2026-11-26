@@ -230,3 +230,30 @@ workflow described in Andrii Nakryiko, "BPF Portability and CO-RE"
   turns an excluded value into "unset"; the environment variable therefore is
   the only persistent route to `max`. The effect on a new session is read from
   the code and not yet observed.
+
+## 2026-11-25 — check targets in the C++ Makefile template
+
+### Primary sources
+
+- Clang, *AddressSanitizer*, "Usage": `-O1` for performance, `-fno-omit-frame-pointer` for stack traces. https://clang.llvm.org/docs/AddressSanitizer.html#usage
+- Clang, *UndefinedBehaviorSanitizer*, "Usage": most checks recover by default; `-fno-sanitize-recover` exits the program at a report. https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#usage
+- Clang, *MemorySanitizer*, "Handling external code": every linked library needs instrumentation, so the template omits MSan. https://clang.llvm.org/docs/MemorySanitizer.html#handling-external-code
+- GCC, *libstdc++ Manual*, "Macros", entry `_GLIBCXX_ASSERTIONS`. https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_macros.html
+- Clang, *User's Manual*, "Enabling All Diagnostics": Clang does not recommend `-Weverything` for general use. https://clang.llvm.org/docs/UsersManual.html#enabling-all-diagnostics
+- LLVM, `clang/lib/StaticAnalyzer/Frontend/AnalysisConsumer.cpp`, function `shouldSkipFunction`: "if we visited the function before, do not reanalyze it". https://github.com/llvm/llvm-project/blob/main/clang/lib/StaticAnalyzer/Frontend/AnalysisConsumer.cpp
+- clangd, *Configuration*, "ClangTidy": clangd merges `.clang-tidy` files with its own configuration. https://clangd.llvm.org/config#clangtidy
+- GCC 14 manual (`man gcc`): the sub-options of `-fsanitize=undefined`; "The analyzer is only suitable for use on C code in this release."
+- Valgrind manuals, installed under `/usr/share/doc/valgrind-docs/html/`: Memcheck section 4.2 (error categories); Helgrind's three error classes; DRD `--check-stack-var` with default `no`.
+- `rpm --eval '%{optflags}'` on this machine: `-Wp,-D_GLIBCXX_ASSERTIONS`.
+
+### Inspirations
+
+- Linux kernel `make W=n` (help text in `~/src/linux/Makefile`): numbered warning levels, here `WARN_LEVEL`.
+- J. Turner et al., *C++ Best Practices*, chapter 2, "Use the Tools Available": level 1 holds the flags it says to use, level 2 the portable flags it says to consider. https://github.com/cpp-best-practices/cppbestpractices/blob/master/02-Use_the_Tools_Available.md
+- OpenSSF, *Compiler Options Hardening Guide for C and C++*: warning flags and `_GLIBCXX_ASSERTIONS`. https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Options-Hardening-Guide-for-C-and-C++.html
+- GNU Coding Standards, "Standard Targets for Users": `check` runs the self-tests. https://www.gnu.org/prep/standards/html_node/Standard-Targets.html
+
+### Method
+
+- One scratchpad directory per defect class, run through each target, with the exit status as the verdict.
+- A minimal Language Server Protocol client sent `initialize` and `textDocument/didOpen` to clangd and printed the published diagnostics, because `clangd --check` prints no clang-tidy findings.
