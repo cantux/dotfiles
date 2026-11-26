@@ -296,6 +296,14 @@ Enable autonomous Antigravity CLI execution with `--dangerously-skip-permissions
 2. `--undo` removes the kernel arguments, disables the libvirt sockets, drops the group membership and deletes the three binaries.
 3. `shellcheck` clean. Not yet executed: it needs the user's sudo and a reboot afterwards.
 
+### Run 1 (2026-10-26) and fix
+
+1. The run stopped at `dnf install -y nsight-systems-cli` with `GPG check FAILED`: `dnf config-manager --add-repo` writes a repo file without `gpgkey`, `/etc/dnf/dnf.conf` sets `gpgcheck=1`, and the rpm database held no NVIDIA key. Every step before it took effect (libvirt 12.8.0, `libvirt` group, `/home/mls-pool`, kernel arguments in `/etc/kernel/cmdline`); every step after it did not run.
+2. Evidence: the repository serves `nvidia.pub` (sha256 `f394a740…6515dde0`), RSA-4096 key `AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80`, `cudatools <cudatools@nvidia.com>`, created 2016-06-24, SHA-256 self-signature. Both packages carry `RSA/SHA512` signatures by key ID `7fa2af80`. Imported into a temporary rpm database (`--dbpath`), the key verifies both packages under crypto policy DEFAULT (`rpmkeys --checksig`: OK); a second import returns 0.
+3. Implementation: new pins `NVIDIA_DEVTOOLS_REPO` and `NVIDIA_DEVTOOLS_KEY_SHA256`; the script downloads `nvidia.pub`, checks its sha256 and runs `rpm --import` before `dnf install`. The `mktemp` work directory and its cleanup trap moved ahead of this step. The last line asks only for a reboot, because the login after the reboot has the `libvirt` group.
+4. A repeated run is safe: grubby removes an argument of the same name before adding it (`/usr/sbin/grubby`, `update_args`). `--undo` leaves the key, the repository file and the installed packages in place, as it leaves libvirt installed.
+5. `shellcheck` 0.11.0 clean.
+
 ## 2026-10-22 — Maximum reasoning effort as the default of every agent
 
 ### Need
@@ -321,6 +329,134 @@ The author wants every model to work at its maximum reasoning effort by default.
 2. The binary treats claude-3-*, claude-opus-4-0, claude-opus-4-1, claude-sonnet-4-0, claude-sonnet-4-5 and claude-haiku-4-5 as models without an effort setting; they ignore the variable.
 3. Every Claude Code session of this account, among them the persistent session of `claude-slack-cli`, now runs at `max`.
 4. The effect on a new session is read from the code, not observed. `/effort status` in a new session shows it.
+
+## 2026-11-04 — Maximum output tokens per response for Claude Code
+
+### Need
+
+At `max` effort a single response can spend its whole output budget on reasoning. On 2026-11-04 between 18:27 and 19:08 UTC, in `~/Projects/VCLN/beejxx`, four consecutive attempts of one design response stopped with `stop_reason: max_tokens` at exactly 64000 output tokens, each attempt holding only a thinking block; the CLI gave up after its third recovery and the turn ended with no result. The first recorded occurrence on this machine was 2026-10-23 20:22–20:31 UTC in `~/Projects/VCLN/trials` (15 stops, all at 64000, model `claude-fable-5-1`), the day after the `max` effort default of 2026-10-22.
+
+### Evidence
+
+1. `claude` 2.1.318 (`~/.local/share/claude/versions/2.1.318`): the per-model table gives `max_output_tokens: {default: 64000, upper: 128000}` for `claude-fable-5`, `claude-opus-5-5`, `claude-mythos-5-1`, `claude-opus-4-5` through `claude-opus-4-8` and `claude-sonnet-4-6`; `claude-opus-5` and `claude-sonnet-5` hold `{default: 128000, upper: 128000}`. Models without an entry fall back to the constants `kA=32000` and `JG=128000`.
+2. The same binary reads `CLAUDE_CODE_MAX_OUTPUT_TOKENS` through a parser that takes the default when the variable is unset or not a positive number, takes the value when it lies at or below the model's upper limit, and otherwise uses the upper limit with status `capped` and the log line `Capped from X to Y`. No value removes the ceiling; a request sent without streaming ignores the variable (the CLI's own error text states this).
+3. The CLI's recovery loop allows three resumptions per turn (`ls=3`); each injects the message `Output token limit hit. Resume directly …`. Session transcripts under `~/.claude/projects/` record each stop with `output_tokens` and the model.
+
+### Implementation
+
+1. `.claude/settings.json`: added `"CLAUDE_CODE_MAX_OUTPUT_TOKENS": "128000"` to `env`, the ceiling of the current models. Carried over `"model": "claude-fable-5-1[1m]"` and `"switchModelsOnFlag": false` from the deployed file, where `/model` had written them, so that the sync restores nothing older.
+2. Executed `./sync.sh`; the deployed file is byte-identical to the repository file.
+
+### Consequences
+
+1. Every Claude Code session of this account, subagents included, may now produce up to 128000 output tokens per response, twice the former default. A response that still exceeds it fails the same way.
+2. A model whose table entry has a lower upper limit receives that limit with a `capped` status, not an error; the effective value is read from the binary, not observed in a new session.
+3. Each attempt that reached 64000 tokens took about thirteen minutes; the new ceiling allows a single response to run for about twice that before it fails.
+
+## 2026-11-06, OpenClaw model roster update
+
+1. Moved every OpenAI-backed agent (`main` through `agents.defaults.model.primary`, `orchestrator`, `reviewer_openai`, `coolguy`, `mouse`, `hoddard`, the five `*_codex` pipeline workers) to `openai/gpt-6-astra` with thinking `max`; every Gemini-backed agent (`engineer_gemini`, `snake`, the five `*_gemini` workers) to `antigravity/gemini-4-argon-high`, the highest Antigravity effort; `engineer_claude` to `claude-cli/claude-opus-5-5`. The previous primary became the first fallback wherever a fallback list exists; allow-lists gained the new ids. 48 paths changed; `openclaw config validate` passes. Pre-change copy: `~/.openclaw/openclaw.json.bak.premodels-20261106`.
+2. `openclaw config patch` and `openclaw config set --batch-file` hang indefinitely on this host, before and after a gateway restart; per-path `openclaw config set <path> <json> --strict-json [--replace]` completes in about 10 s each with a hot reload. The gateway's owner lease in `state/openclaw.sqlite` had not been renewed since 2026-11-01 while the process kept running; `openclaw gateway restart` renewed it.
+3. Rewrote the Model and Fallbacks lines of the 18 affected `~/.openclaw/workspaces/*/IDENTITY.md` files by hand: `regen_souls.py` went away with `~/Projects/llm_serving` on 2026-10-27. Refreshed `openclaw/openclaw.json` with `bin/snapshot-openclaw`. Not committed.
+
+## 2026-11-06, OpenClaw Fable on the design stage
+
+1. `designer_fable_5_1`, `design_experimenter_evaluator_fable_5_1` and `implementation_merger_fable_5_1` moved to `claude-cli/claude-fable-5-1`; fallbacks `claude-cli/claude-opus-5-5`, `claude-cli/claude-sonnet-5-5`, `antigravity/claude-opus-5-5-high`, `antigravity/claude-sonnet-5-5-high`. Manager, researcher and implementor stay on Opus 5.5. Basis: the per-step usage in `~/Projects/ai/cloud_inference_provider/evidence/openclaw_phases.md` (phase 4 holds 45% of run-004's output tokens, phase 3 holds 3%). Six per-path `config set` writes; the three IDENTITY.md files rewritten; snapshot refreshed. Not committed.
+
+## 2026-11-06, OpenClaw role files under dotfiles
+
+1. Need: the pipeline's role files existed only in `~/.openclaw/workspaces/`, and the generators that produced them were deleted on 2026-10-27 with `~/Projects/llm_serving`; the findings of the pipeline review had no file at all.
+2. `bin/sync-openclaw-workspaces` (new): copies `SOUL.md` and `IDENTITY.md` per workspace between `openclaw/workspaces/<agent>/` and `~/.openclaw/workspaces/<agent>/`. Modes: `apply` (repository to live, the default), `import` (live to repository), `diff` (unified diff per file, then every live workspace the repository lacks). It copies only files whose content differs and deletes nothing. `sync.sh` runs it before `bin/sync-openclaw-baseline` whenever `~/.openclaw` exists (the guard was `~/.openclaw/workspaces`, which a restore does not have yet) and copies the script to `~/bin`.
+3. Executed `import`: 70 files from 35 workspaces (35 `SOUL.md`, 35 `IDENTITY.md`; the secret regex of `bin/snapshot-openclaw` matches nothing in them). `diff` reports identical, `apply` wrote 0 of 70, and `cmp` per file confirms byte identity. `bash -n` passes on the script and on `sync.sh`. `shellcheck` is not installed on this host at present, and this session was not permitted to fetch `shellcheck-py` through pipx; the script is unlinted.
+4. `openclaw/ISSUES.md` (new): the ten findings of the pipeline review, with every term introduced before it is used. Two coined names of the previous draft are gone: the fourth round of phase 4 is called "round 4 of phase 4", and the plan step that opens phases 4 and 5 is called "the planning step of phase 4" and "of phase 5". Two reviewer subagents checked the file, one for "every term introduced before it is used" and one for "every sentence adds a fact"; their first reports gave six findings each (title and preamble, terms 6, 7, 16, 17 and 25, finding 2, finding 9), one rebuild answered all twelve, and both re-checks pass with zero findings.
+5. `openclaw/NOTES.md`: the tracked set, the sync direction (the repository overwrites the live role files; run `import` after `openclaw agents add` or after an agent rewrites its own file), and restore step 5 is now `./sync.sh`. `README.md`, "What's tracked": one paragraph on the two OpenClaw hooks. Not committed.
+
+## 2026-11-06, OpenClaw second pipeline
+
+1. Need: the author asked for a parallel pipeline that implements the fixes of `openclaw/ISSUES.md`, section C, with the first pipeline left as it is.
+2. `openclaw/gen_roles.py` (new): one table of sixteen agents (`pipeline_manager_v2` and fifteen `*_v2` workers; the model profiles of the first pipeline) and one template per role; it writes `openclaw/workspaces/<agent>/SOUL.md` and `IDENTITY.md` and prints the configuration entries with `--config`. The templates derive from the first pipeline's role files (identical across families after normalising the family name) with the fixes applied; they name no technology and take task specifics from the clarified task. Sixteen workspaces, 32 files; `yapf` clean.
+3. Configuration: sixteen `agents.entries.*` written with per-path `config set --replace`. The first pass accepted the five codex entries and refused eleven: every `antigravity/` model reference was reported unresolvable while the gateway slowed from 41 s to 161 s per write and `openclaw models list` timed out. After `openclaw gateway restart` the eleven were accepted unchanged (194 s). `openclaw config validate` passes; the live entries equal the generator's output; `openclaw agents list` shows all sixteen. Snapshot refreshed with `bin/snapshot-openclaw`.
+4. Workspaces: `bin/sync-openclaw-workspaces apply` created the sixteen live workspaces (32 files written, 102 tracked); `bin/sync-openclaw-baseline` embedded the baseline into 51 `AGENTS.md` files. OpenClaw seeded `USER.md` into `pipeline_manager_v2` on its first session.
+5. `~/Projects/openclaw_pipeline/` (new, its own git repository, nothing committed): `tools/probe_host.sh`, `tools/verify_phase.sh`, `tools/closure_ledger.py` with `tools/test_closure_ledger.py`, `tools/run_pipeline.sh`, `runs/` (ignored), and README, MAP, ARCH, INSTR, WORKLOG and evidence files. The probe ran in 17 s on this host and records the refused BPF mount; the verifier detects missing files and changed markers; the ledger's two tests pass; the driver is syntax-checked only.
+6. Smoke test: `openclaw agent --agent pipeline_manager_v2 --session-key agent:pipeline_manager_v2:smoke-20261106 -m "identity probe: ..."` answered `pipeline_manager_v2: claude-cli/claude-opus-5-5 claude-cli`.
+7. `openclaw/ISSUES.md` gained sections C (the suggested fixes) and D (this implementation); `openclaw/NOTES.md` describes the generator and the second pipeline. Not done: the gemini family's route change (fix 8) and the OpenAI login (fix 10), both the author's decisions; no run started. `shellcheck` remains unavailable. Not committed.
+
+## OpenClaw gateway drop-in and the dry run of the second pipeline (2026-11-06)
+
+1. `.config/systemd/user/openclaw-gateway.service.d/override.conf` (new, in `sync.sh`): `Environment=CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`. Reason: the manager of the second pipeline, on the Claude runtime, wrote notes into Claude Code's auto-memory of its working folder `~/Projects/openclaw_pipeline`, which every Claude-runtime agent with that folder loads at session start, across roles and runs. Applied by `./sync.sh`, then `systemctl --user daemon-reload && openclaw gateway restart`.
+2. `openclaw/NOTES.md` restore steps 8 and 9: the Antigravity project roots the plugin requires (the gemini family failed every probe of the dry run because `~/Projects/openclaw_pipeline` lies outside them), and the drop-in. `openclaw/ISSUES.md` section D records both findings.
+3. Not applied by the assistant: the edit of `~/.gemini/config/projects/749a726c-e771-4b76-a646-3e0171617650.json` (the classifier denies a widening of a trust boundary); the operator applies it from the prepared copy.
+
+## Memory flush disabled for the OpenClaw gateway (2026-11-07)
+
+1. Finding: the pre-compaction memory flush of OpenClaw ran a hidden turn on `openai/gpt-6-astra` over 262 528 uncached context tokens when the `codex` evaluator of the second pipeline reached 265 278 of its 272k context tokens; it cost 9 points of the OpenAI 5-hour window and tried to write a memory file outside the run directory (`openclaw/ISSUES.md`, section D).
+2. Change: `openclaw config set agents.defaults.compaction.memoryFlush.enabled false --strict-json` on the live gateway (hot reload), `bin/snapshot-openclaw` refreshed `openclaw/openclaw.json`, restore step 10 added to `openclaw/NOTES.md`.
+3. Not committed; the user decides on the commit.
+
+## Unsupervised operation of the second pipeline (2026-11-07)
+
+1. `openclaw/gen_roles.py`: the manager template gained limits rules, operator levers, the `# WAITING` heading and the phase-5 rule for a family without a design; the worker contract gained item 14 (resume from partial outputs). Regenerated 16 role files under `openclaw/workspaces/` and applied them with `./sync.sh` at 12:35 PST.
+2. `openclaw/ISSUES.md` section F records the observed stops, the measurements and the mechanisms; the tools live in `~/Projects/openclaw_pipeline/tools/`.
+3. Not committed; the user decides on the commit.
+4. Found the eighteen OpenClaw automations on OpenAI-backed agents (ISSUES.md section F item 4); the pipeline's `tools/openai_automations.sh` disables and re-enables them, run by the user.
+5. `skills.workshop.autonomous.mode` set to `propose` on the live gateway (18:20 PST) after `cron disable` proved ineffective on system-owned jobs; snapshot refreshed; restore step 11 in `openclaw/NOTES.md`.
+
+## OpenClaw gateway on demand (2026-11-10)
+
+1. Finding: idle, the gateway (`openclaw-gateway.service`, running since 2026-11-06 23:10 PST) held 3.4 GiB PSS, the largest share of the 13.1 GiB in use; systemd reported a 14.4 GiB memory peak (cgroup `memory.peak`, file cache included) and 8 h 32 min of CPU time.
+2. Decision (user): the gateway runs only while OpenClaw work is in progress.
+3. `openclaw/NOTES.md`: new section "Gateway on demand" (start, stop and restart through `systemctl --user`); restore step 12 (autostart off); steps 8 and 9 restart through `systemctl --user`, because OpenClaw's `gateway stop|restart` treat a disabled unit as not loaded.
+4. Applied at 13:30 PST, after a guard found no client connection on port 18789 and no agent process in the unit's cgroup: `systemctl --user disable --now openclaw-gateway.service` removed the `default.target.wants` link; the gateway logged a clean shutdown and stopped in 2 s. Verified: `is-enabled` disabled, `is-active` inactive, no listener on 18789, no reverse dependency, no gateway process; MemAvailable rose from 15.8 to 19.2 GiB.
+5. Not committed; the user decides on the commit.
+
+## sync.sh enforces the gateway's autostart policy (2026-11-10)
+
+1. Dry run of `sync.sh` (`cmp` per file, `rsync -a --delete -n -i -c` per directory, `bin/sync-openclaw-workspaces diff`, a simulation of `bin/sync-openclaw-baseline`): 24 of 25 targets equal, role files identical, 0 of 51 `AGENTS.md` changed. The single difference: `~/.claude/settings.json`, changed live on 2026-11-10 at 13:32, while the repository copy dates from 2026-11-04; as parsed JSON the two differ only in `model` (repository `claude-fable-5-1[1m]`, live `opus`). A run copies the repository value over the live one, so the assistant did not run `./sync.sh`.
+2. `sync.sh`: when `~/.config/systemd/user/openclaw-gateway.service` exists, the OpenClaw block runs `systemctl --user disable openclaw-gateway.service`, so every sync reverts the autostart that `openclaw gateway install` turns on.
+3. `openclaw/NOTES.md` (restore step 12, section "Gateway on demand") and `README.md` (OpenClaw paragraph) describe the step.
+4. Verified: `bash -n sync.sh`; the step, cut from `sync.sh`, ran after `systemctl --user enable openclaw-gateway.service`: run 1 removed the `default.target.wants` link (exit 0), run 2 changed nothing (exit 0); the gateway stayed inactive. `shellcheck` is not installed.
+5. Open: the `model` value in `.claude/settings.json`, the user's decision. Not committed.
+
+## Claude Code default model: Fable 5.2 (2026-11-10)
+
+1. Decision (user): the default model is Claude Fable 5.2.
+2. `.claude/settings.json`: `model` changed from `claude-fable-5-1[1m]` to `claude-fable-5-2[1m]`. Anthropic's model table (claude-api skill, cached 2026-11-03) lists `claude-fable-5-2` with a 1M context window, which is also its default. The Claude Code 2.1.322 binary contains the ID and the help text "append [1m] to the model name for 1M", so the suffix keeps the earlier choice of a 1M window explicit.
+3. Dry run before the sync: only `.claude/settings.json` differed (the live file held `opus`, set at 13:32 outside the repository). `./sync.sh` exited 0: 0 of 102 role files written, 51 `AGENTS.md` rewritten with identical content, the gateway step found the unit already disabled. Dry run after the sync: every target equal; the live `model` reads `claude-fable-5-2[1m]`.
+4. Not committed; the user decides on the commit.
+
+## Claude Code effort: `max` as the starting level, changeable with `/effort` (2026-11-11)
+
+1. Need (user): `max` stays the default effort, and `/effort` changes the level of a running session without a restart. `/effort xhigh` had answered `CLAUDE_CODE_EFFORT_LEVEL=max overrides this session — clear it and xhigh takes over`; a restart with `claude --resume` (22:17:30 PST) changed nothing.
+2. Finding: no bash file sets the variable. `.claude/settings.json` set it through `env` (entry of 2026-10-22); the start environment of the session process (`/proc/<pid>/environ`) does not contain it, so every restart read it again from the settings.
+3. Evidence from the 2.1.322 binary (`EVIDENCE_INSPIRATION_REFERENCE.md`, 2026-11-11): the variable ranks above the session level; `--effort <level>` initializes the session level, the state that `/effort` replaces; the settings schema still limits `effortLevel` to `low`, `medium`, `high`, `xhigh`.
+4. Change:
+   - `.claude/settings.json`: removed `env.CLAUDE_CODE_EFFORT_LEVEL`; carried over `modelSettings.claude-fable-5-2.effortLevel = "xhigh"`, which `/effort xhigh` had written to the live file at 22:16.
+   - `.bash_aliases`: `claude() { command claude --effort max "$@"; }`. A function and not an alias: `cmax` and `ccw` call `claude` at execution time, whereas bash expands an alias inside `ccw` only when the alias precedes the function definition.
+5. Dry run before the sync: of the `sync.sh` targets only `.claude/settings.json` differed from `$HOME`, as parsed JSON in `modelSettings.claude-fable-5-2.effortLevel` alone. `./sync.sh` exited 0 in each of three runs between 22:24 and 22:27 PST (0 of 102 role files written, 51 `AGENTS.md` rewritten, gateway unit already disabled).
+6. Sessions already running: the settings watcher assigns `env` values to the process and does not remove a deleted key; at 22:26:27, after the first sync, the tool shell of the running session still held `CLAUDE_CODE_EFFORT_LEVEL=max`. A second sync with `"CLAUDE_CODE_EFFORT_LEVEL": ""` (22:27:02) released the override within 3 s: the tool shell held the empty value and `CLAUDE_EFFORT=xhigh`. The binary treats the empty string as no override. A third sync (22:27:22) removed the key; the running session stayed released. Three sessions ran at that time (pids 3538518, 4118726, 4124369); the assistant observed 4124369 only.
+7. Verified with `claude -p "/effort <argument>"` in shells started by `env -i … bash -ic`. The command answers without a model request and, in print mode, writes no settings: the md5 of the live settings file was equal before and after each group of probes.
+
+   | Probe | Before | After |
+   |---|---|---|
+   | `claude`, `/effort status` | `max` | `max` (through the function) |
+   | `claude --effort low`, `/effort status` | `max` | `low` |
+   | `claude`, `/effort xhigh` | the override message | `Set effort level to xhigh (this session only)` |
+   | `command claude`, `/effort status` | `max` | `xhigh` (persisted level) |
+   | `CLAUDE_CODE_EFFORT_LEVEL= command claude`, `/effort high` | not measured | `Set effort level to high (this session only)` |
+
+8. Consequences:
+   - A session that does not start through the function (script, systemd unit, `command claude`) starts at the persisted level, at most `xhigh`. This reverses consequence 3 of 2026-10-22 for such sessions.
+   - In an interactive session `/effort <level>` other than `max` also saves the level as the persisted default (`modelSettings.<model>.effortLevel` in the live `settings.json`), so the live file then differs from the repository copy; sessions started through the function are not affected.
+   - A subagent without its own `effort` inherits the session level, so it follows `/effort`.
+   - `CLAUDE_CODE_EFFORT_LEVEL=<level> claude` still pins one session, as before.
+9. Not committed; the user decides on the commit.
+
+## clangd: C files get `-std=gnu11` (2026-11-11)
+
+1. Finding: the user configuration added `-std=c++20` to every file. For `~/Projects/epi/cxx/linked_list/bootcamp/linked_list.c`, `clangd --check` (22.1.8) reported `invalid argument '-std=c++20' not allowed with 'C'` and, after it, `cannot initialize a variable of type 'Node *' with an rvalue of type 'void *'`.
+2. Change: `.config/clangd/config.yaml` keeps `-Wall -Wextra` and the clang-tidy set for every file. A second fragment adds `-std=c++20` to every path except `.*\.c`; a third adds `-std=gnu11` to `.*\.c`.
+3. Verified with `clangd --check`, first against a candidate under a scratch `XDG_CONFIG_HOME`, then live after `./sync.sh` (exit 0; a dry run before it found every other target equal to `$HOME`): `linked_list.c` parses with `-std=gnu11` and no error; five `.cpp` files and a probe header that includes `<span>` keep `-std=c++20` and their earlier results.
+4. The change does not depend on the machine, so it belongs on branch `centos` at commit time. Not committed; the user decides on the commit.
 
 ## 2026-11-25 — vim: check targets in the C++ Makefile template
 
@@ -379,3 +515,10 @@ The author wants every indentation to use 2 spaces; the gtest skeleton failed `m
 1. A skeleton that `,ut` inserts passes `make format-check` without a reformat.
 2. Ctrl-T inserts a 2-space Python skeleton, and `:FormatJson` writes 2-space JSON.
 3. The two EasyEffects presets keep their 4-space indentation.
+
+## 2026-11-26 — Consolidation of system drift and uncommitted work
+
+1. Request: "find changes from the system, consolidate and push". Of the 22 paths that `sync.sh` deploys and the three copies of the agent instructions, only `.claude/settings.json` and `.codex/config.toml` differed from the repository: Claude Code rewrote the first on 2026-11-23 (model `opus`, effort `xhigh` for `claude-opus-5-5`, keys reordered), Codex the second on 2026-11-24 (model `gpt-6.1-sol`, trusted projects `ai`, `ai/kubernetes` and `forum`). The repository now holds the system's copies, so a later `./sync.sh` keeps them.
+2. The working tree of `centos_xps_9700` held work since October that had been deployed but not committed. Placement rule: a file identical on `centos` and `centos_xps_9700` goes to `centos`, then `centos` merges into `centos_xps_9700`. Four commits on `centos`, made in a separate worktree: the two settings files; `.bash_aliases`, the clangd configuration and `install_llm_cluster_host.sh`; the OpenClaw role files, `bin/sync-openclaw-workspaces`, the gateway override and the OpenClaw parts of `sync.sh` and `README.md`; this log and the evidence file. `heroic/` and its README section serve this machine's games and went to `centos_xps_9700`.
+3. Checks before the commits: no credential in any committed file (pattern scan; the OpenClaw gateway token is the placeholder `REDACTED` that `bin/snapshot-openclaw` writes). After the merge, every path that `sync.sh` deploys equals its copy under `$HOME`, so no `./sync.sh` run was needed.
+4. `centos` and `centos_xps_9700` pushed to `origin` over HTTPS, because SSH to github.com stalls on this machine.

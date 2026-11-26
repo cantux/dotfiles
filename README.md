@@ -122,6 +122,13 @@ the same instructions at both layers:
 It **excludes** `.vim/plugged`, `undodir`, `vimundo`, `.netrwhist` so a sync
 never wipes installed plugins or undo history.
 
+When `~/.openclaw` exists, `sync.sh` also runs `bin/sync-openclaw-workspaces`,
+which writes the tracked `SOUL.md` and `IDENTITY.md` of every agent into
+`~/.openclaw/workspaces/`, and `bin/sync-openclaw-baseline`, which embeds
+`.claude/CLAUDE.md` into every workspace `AGENTS.md`. It then disables the
+autostart of `openclaw-gateway.service`, which runs on demand. Details, the
+import direction and the restore procedure: `openclaw/NOTES.md`.
+
 ## Packages
 
 `init.sh` enables **EPEL + CRB**, installs the `"Development Tools"` group

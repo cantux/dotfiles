@@ -18,7 +18,7 @@
   "agents": {
     "defaults": {
       "model": {
-        "primary": "openai/gpt-6-luna"
+        "primary": "openai/gpt-6-astra"
       },
       "models": {
         "openai/gpt-6-luna": {
@@ -56,6 +56,11 @@
           "agentRuntime": {
             "id": "antigravity"
           }
+        },
+        "openai/gpt-6-astra": {
+          "params": {
+            "thinking": "max"
+          }
         }
       },
       "thinkingDefault": "max",
@@ -69,11 +74,14 @@
       },
       "modelPolicy": {
         "allow": [
+          "openai/gpt-6-astra",
           "openai/gpt-6-luna",
           "anthropic/claude-opus-4-7",
           "google/gemini-2.5-pro",
           "google/gemini-3.1-pro-preview",
-          "google/gemini-3.8-flash"
+          "google/gemini-3.8-flash",
+          "antigravity/gemini-4-argon-high",
+          "openai/*"
         ]
       },
       "systemAgent": {
@@ -81,6 +89,11 @@
       },
       "heartbeat": {
         "agentId": "main"
+      },
+      "compaction": {
+        "memoryFlush": {
+          "enabled": false
+        }
       }
     },
     "ownership": "explicit",
@@ -97,12 +110,13 @@
       "orchestrator": {
         "workspace": "/home/ctuk/.openclaw/workspaces/orchestrator",
         "model": {
-          "primary": "openai/gpt-6-luna"
+          "primary": "openai/gpt-6-astra"
         },
         "name": "Manager",
         "description": "Coordinates independent engineers and a reviewer.",
         "modelPolicy": {
           "allow": [
+            "openai/gpt-6-astra",
             "openai/gpt-6-luna",
             "anthropic/claude-opus-4-7",
             "google/gemini-2.5-pro",
@@ -130,7 +144,7 @@
       "coolguy": {
         "workspace": "/home/ctuk/.openclaw/workspaces/coolguy",
         "model": {
-          "primary": "openai/gpt-6-luna"
+          "primary": "openai/gpt-6-astra"
         }
       },
       "ceo": {
@@ -154,19 +168,19 @@
       "mouse": {
         "workspace": "/home/ctuk/.openclaw/workspaces/mouse",
         "model": {
-          "primary": "openai/gpt-6-luna"
+          "primary": "openai/gpt-6-astra"
         }
       },
       "snake": {
         "workspace": "/home/ctuk/.openclaw/workspaces/snake",
         "model": {
-          "primary": "google/gemini-2.5-pro"
+          "primary": "antigravity/gemini-4-argon-high"
         }
       },
       "hoddard": {
         "workspace": "/home/ctuk/.openclaw/workspaces/hoddard",
         "model": {
-          "primary": "openai/gpt-6-luna"
+          "primary": "openai/gpt-6-astra"
         }
       },
       "engineer_gemini": {
@@ -175,10 +189,15 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/engineer_gemini",
         "cwd": "/home/ctuk/Projects/llm_serving",
         "model": {
-          "primary": "google/gemini-3.8-flash"
+          "primary": "antigravity/gemini-4-argon-high",
+          "fallbacks": [
+            "antigravity/gemini-3.8-flash-high"
+          ]
         },
         "modelPolicy": {
           "allow": [
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-high",
             "google/gemini-3.8-flash"
           ]
         },
@@ -194,10 +213,14 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/engineer_claude",
         "cwd": "/home/ctuk/Projects/llm_serving",
         "model": {
-          "primary": "anthropic/claude-opus-4-7"
+          "primary": "claude-cli/claude-opus-5-5",
+          "fallbacks": [
+            "anthropic/claude-opus-4-7"
+          ]
         },
         "modelPolicy": {
           "allow": [
+            "claude-cli/claude-opus-5-5",
             "anthropic/claude-opus-4-7"
           ]
         },
@@ -213,10 +236,14 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/reviewer_openai",
         "cwd": "/home/ctuk/Projects/llm_serving",
         "model": {
-          "primary": "openai/gpt-6-luna"
+          "primary": "openai/gpt-6-astra",
+          "fallbacks": [
+            "openai/gpt-6-luna"
+          ]
         },
         "modelPolicy": {
           "allow": [
+            "openai/gpt-6-astra",
             "openai/gpt-6-luna"
           ]
         },
@@ -232,17 +259,17 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/researcher_gemini",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "antigravity/gemini-3.8-flash-high",
+          "primary": "antigravity/gemini-4-argon-high",
           "fallbacks": [
-            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-high",
             "antigravity/gemini-3.8-flash-medium"
           ]
         },
         "modelPolicy": {
           "allow": [
+            "antigravity/gemini-4-argon-high",
             "antigravity/gemini-3.8-flash-high",
             "google/gemini-3.8-flash",
-            "antigravity/gemini-4-argon-high",
             "antigravity/gemini-3.8-flash-medium"
           ]
         },
@@ -277,14 +304,16 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/researcher_codex",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "openai/gpt-6-luna",
+          "primary": "openai/gpt-6-astra",
           "fallbacks": [
+            "openai/gpt-6-luna",
             "openai/gpt-5.6-terra",
             "openai/gpt-5.6-luna"
           ]
         },
         "modelPolicy": {
           "allow": [
+            "openai/gpt-6-astra",
             "openai/gpt-6-luna",
             "openai/gpt-5.6-terra",
             "openai/gpt-5.6-luna"
@@ -302,14 +331,16 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/research_merger_codex",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "openai/gpt-6-luna",
+          "primary": "openai/gpt-6-astra",
           "fallbacks": [
+            "openai/gpt-6-luna",
             "openai/gpt-5.6-terra",
             "openai/gpt-5.6-luna"
           ]
         },
         "modelPolicy": {
           "allow": [
+            "openai/gpt-6-astra",
             "openai/gpt-6-luna",
             "openai/gpt-5.6-terra",
             "openai/gpt-5.6-luna"
@@ -327,17 +358,17 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/designer_gemini",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "antigravity/gemini-3.8-flash-high",
+          "primary": "antigravity/gemini-4-argon-high",
           "fallbacks": [
-            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-high",
             "antigravity/gemini-3.8-flash-medium"
           ]
         },
         "modelPolicy": {
           "allow": [
+            "antigravity/gemini-4-argon-high",
             "antigravity/gemini-3.8-flash-high",
             "google/gemini-3.8-flash",
-            "antigravity/gemini-4-argon-high",
             "antigravity/gemini-3.8-flash-medium"
           ]
         },
@@ -372,14 +403,16 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/designer_codex",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "openai/gpt-6-luna",
+          "primary": "openai/gpt-6-astra",
           "fallbacks": [
+            "openai/gpt-6-luna",
             "openai/gpt-5.6-terra",
             "openai/gpt-5.6-luna"
           ]
         },
         "modelPolicy": {
           "allow": [
+            "openai/gpt-6-astra",
             "openai/gpt-6-luna",
             "openai/gpt-5.6-terra",
             "openai/gpt-5.6-luna"
@@ -397,17 +430,17 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_gemini",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "antigravity/gemini-3.8-flash-high",
+          "primary": "antigravity/gemini-4-argon-high",
           "fallbacks": [
-            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-high",
             "antigravity/gemini-3.8-flash-medium"
           ]
         },
         "modelPolicy": {
           "allow": [
+            "antigravity/gemini-4-argon-high",
             "antigravity/gemini-3.8-flash-high",
             "google/gemini-3.8-flash",
-            "antigravity/gemini-4-argon-high",
             "antigravity/gemini-3.8-flash-medium"
           ]
         },
@@ -442,14 +475,16 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_codex",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "openai/gpt-6-luna",
+          "primary": "openai/gpt-6-astra",
           "fallbacks": [
+            "openai/gpt-6-luna",
             "openai/gpt-5.6-terra",
             "openai/gpt-5.6-luna"
           ]
         },
         "modelPolicy": {
           "allow": [
+            "openai/gpt-6-astra",
             "openai/gpt-6-luna",
             "openai/gpt-5.6-terra",
             "openai/gpt-5.6-luna"
@@ -467,17 +502,17 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_gemini",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "antigravity/gemini-3.8-flash-high",
+          "primary": "antigravity/gemini-4-argon-high",
           "fallbacks": [
-            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-high",
             "antigravity/gemini-3.8-flash-medium"
           ]
         },
         "modelPolicy": {
           "allow": [
+            "antigravity/gemini-4-argon-high",
             "antigravity/gemini-3.8-flash-high",
             "google/gemini-3.8-flash",
-            "antigravity/gemini-4-argon-high",
             "antigravity/gemini-3.8-flash-medium"
           ]
         },
@@ -512,14 +547,16 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_codex",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "openai/gpt-6-luna",
+          "primary": "openai/gpt-6-astra",
           "fallbacks": [
+            "openai/gpt-6-luna",
             "openai/gpt-5.6-terra",
             "openai/gpt-5.6-luna"
           ]
         },
         "modelPolicy": {
           "allow": [
+            "openai/gpt-6-astra",
             "openai/gpt-6-luna",
             "openai/gpt-5.6-terra",
             "openai/gpt-5.6-luna"
@@ -659,12 +696,12 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/designer_fable_5_1",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "claude-cli/claude-opus-5-5",
+          "primary": "claude-cli/claude-fable-5-1",
           "fallbacks": [
+            "claude-cli/claude-opus-5-5",
             "claude-cli/claude-sonnet-5-5",
             "antigravity/claude-opus-5-5-high",
-            "antigravity/claude-sonnet-5-5-high",
-            "claude-cli/claude-fable-5-1"
+            "antigravity/claude-sonnet-5-5-high"
           ]
         },
         "modelPolicy": {
@@ -688,12 +725,12 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_fable_5_1",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "claude-cli/claude-opus-5-5",
+          "primary": "claude-cli/claude-fable-5-1",
           "fallbacks": [
+            "claude-cli/claude-opus-5-5",
             "claude-cli/claude-sonnet-5-5",
             "antigravity/claude-opus-5-5-high",
-            "antigravity/claude-sonnet-5-5-high",
-            "claude-cli/claude-fable-5-1"
+            "antigravity/claude-sonnet-5-5-high"
           ]
         },
         "modelPolicy": {
@@ -746,12 +783,12 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/implementation_merger_fable_5_1",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "claude-cli/claude-opus-5-5",
+          "primary": "claude-cli/claude-fable-5-1",
           "fallbacks": [
+            "claude-cli/claude-opus-5-5",
             "claude-cli/claude-sonnet-5-5",
             "antigravity/claude-opus-5-5-high",
-            "antigravity/claude-sonnet-5-5-high",
-            "claude-cli/claude-fable-5-1"
+            "antigravity/claude-sonnet-5-5-high"
           ]
         },
         "modelPolicy": {
@@ -794,21 +831,486 @@
         "workspace": "/home/ctuk/.openclaw/workspaces/research_merger_gemini",
         "cwd": "/home/ctuk/Projects/llm_serving/pipeline",
         "model": {
-          "primary": "antigravity/gemini-3.8-flash-high",
+          "primary": "antigravity/gemini-4-argon-high",
           "fallbacks": [
-            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-high",
             "antigravity/gemini-3.8-flash-medium"
           ]
         },
         "modelPolicy": {
           "allow": [
+            "antigravity/gemini-4-argon-high",
             "antigravity/gemini-3.8-flash-high",
             "google/gemini-3.8-flash",
-            "antigravity/gemini-4-argon-high",
             "antigravity/gemini-3.8-flash-medium"
           ]
         },
         "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "researcher_codex_v2": {
+        "name": "researcher_codex_v2",
+        "description": "Independent web researcher",
+        "workspace": "/home/ctuk/.openclaw/workspaces/researcher_codex_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "openai/gpt-6-astra",
+          "fallbacks": [
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-astra",
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "research_merger_codex_v2": {
+        "name": "research_merger_codex_v2",
+        "description": "Mechanical research merger",
+        "workspace": "/home/ctuk/.openclaw/workspaces/research_merger_codex_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "openai/gpt-6-astra",
+          "fallbacks": [
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-astra",
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "designer_codex_v2": {
+        "name": "designer_codex_v2",
+        "description": "Independent solution designer",
+        "workspace": "/home/ctuk/.openclaw/workspaces/designer_codex_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "openai/gpt-6-astra",
+          "fallbacks": [
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-astra",
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "design_experimenter_evaluator_codex_v2": {
+        "name": "design_experimenter_evaluator_codex_v2",
+        "description": "Design peer reviewer who runs experiments",
+        "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_codex_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "openai/gpt-6-astra",
+          "fallbacks": [
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-astra",
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "implementor_reviewer_codex_v2": {
+        "name": "implementor_reviewer_codex_v2",
+        "description": "Independent implementor, peer reviewer and acceptance runner",
+        "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_codex_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "openai/gpt-6-astra",
+          "fallbacks": [
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "openai/gpt-6-astra",
+            "openai/gpt-6-luna",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "pipeline_manager_v2": {
+        "name": "pipeline_manager_v2",
+        "description": "Runs the pipeline, one phase per session",
+        "workspace": "/home/ctuk/.openclaw/workspaces/pipeline_manager_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "claude-cli/claude-opus-5-5",
+          "fallbacks": [
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high",
+            "claude-cli/claude-fable-5-1"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1",
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash",
+            "anthropic/claude-opus-4-7",
+            "openai/gpt-6-luna",
+            "claude-cli/claude-fable-5",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high",
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-medium",
+            "openai/gpt-5.6-terra",
+            "openai/gpt-5.6-luna"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [
+            "researcher_gemini_v2",
+            "researcher_fable_5_1_v2",
+            "researcher_codex_v2",
+            "research_merger_codex_v2",
+            "research_merger_gemini_v2",
+            "designer_gemini_v2",
+            "designer_fable_5_1_v2",
+            "designer_codex_v2",
+            "design_experimenter_evaluator_gemini_v2",
+            "design_experimenter_evaluator_fable_5_1_v2",
+            "design_experimenter_evaluator_codex_v2",
+            "implementor_reviewer_gemini_v2",
+            "implementor_reviewer_fable_5_1_v2",
+            "implementor_reviewer_codex_v2",
+            "implementation_merger_fable_5_1_v2"
+          ],
+          "requireAgentId": true,
+          "delegationMode": "prefer"
+        }
+      },
+      "researcher_gemini_v2": {
+        "name": "researcher_gemini_v2",
+        "description": "Independent web researcher",
+        "workspace": "/home/ctuk/.openclaw/workspaces/researcher_gemini_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "antigravity/gemini-4-argon-high",
+          "fallbacks": [
+            "antigravity/gemini-3.8-flash-high",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
+        },
+        "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "researcher_fable_5_1_v2": {
+        "name": "researcher_fable_5_1_v2",
+        "description": "Independent web researcher",
+        "workspace": "/home/ctuk/.openclaw/workspaces/researcher_fable_5_1_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "claude-cli/claude-opus-5-5",
+          "fallbacks": [
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high",
+            "claude-cli/claude-fable-5-1"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "research_merger_gemini_v2": {
+        "name": "research_merger_gemini_v2",
+        "description": "Mechanical research merger",
+        "workspace": "/home/ctuk/.openclaw/workspaces/research_merger_gemini_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "antigravity/gemini-4-argon-high",
+          "fallbacks": [
+            "antigravity/gemini-3.8-flash-high",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
+        },
+        "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "designer_gemini_v2": {
+        "name": "designer_gemini_v2",
+        "description": "Independent solution designer",
+        "workspace": "/home/ctuk/.openclaw/workspaces/designer_gemini_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "antigravity/gemini-4-argon-high",
+          "fallbacks": [
+            "antigravity/gemini-3.8-flash-high",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
+        },
+        "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "designer_fable_5_1_v2": {
+        "name": "designer_fable_5_1_v2",
+        "description": "Independent solution designer",
+        "workspace": "/home/ctuk/.openclaw/workspaces/designer_fable_5_1_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "claude-cli/claude-fable-5-1",
+          "fallbacks": [
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "design_experimenter_evaluator_gemini_v2": {
+        "name": "design_experimenter_evaluator_gemini_v2",
+        "description": "Design peer reviewer who runs experiments",
+        "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_gemini_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "antigravity/gemini-4-argon-high",
+          "fallbacks": [
+            "antigravity/gemini-3.8-flash-high",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
+        },
+        "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "design_experimenter_evaluator_fable_5_1_v2": {
+        "name": "design_experimenter_evaluator_fable_5_1_v2",
+        "description": "Design peer reviewer who runs experiments",
+        "workspace": "/home/ctuk/.openclaw/workspaces/design_experimenter_evaluator_fable_5_1_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "claude-cli/claude-fable-5-1",
+          "fallbacks": [
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "implementor_reviewer_gemini_v2": {
+        "name": "implementor_reviewer_gemini_v2",
+        "description": "Independent implementor, peer reviewer and acceptance runner",
+        "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_gemini_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "antigravity/gemini-4-argon-high",
+          "fallbacks": [
+            "antigravity/gemini-3.8-flash-high",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "antigravity/gemini-4-argon-high",
+            "antigravity/gemini-3.8-flash-high",
+            "google/gemini-3.8-flash",
+            "antigravity/gemini-3.8-flash-medium"
+          ]
+        },
+        "thinkingDefault": "high",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "implementor_reviewer_fable_5_1_v2": {
+        "name": "implementor_reviewer_fable_5_1_v2",
+        "description": "Independent implementor, peer reviewer and acceptance runner",
+        "workspace": "/home/ctuk/.openclaw/workspaces/implementor_reviewer_fable_5_1_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "claude-cli/claude-opus-5-5",
+          "fallbacks": [
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high",
+            "claude-cli/claude-fable-5-1"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
+          ]
+        },
+        "thinkingDefault": "max",
+        "subagents": {
+          "allowAgents": [],
+          "requireAgentId": true
+        }
+      },
+      "implementation_merger_fable_5_1_v2": {
+        "name": "implementation_merger_fable_5_1_v2",
+        "description": "Merger of the best implementation parts",
+        "workspace": "/home/ctuk/.openclaw/workspaces/implementation_merger_fable_5_1_v2",
+        "cwd": "/home/ctuk/Projects/openclaw_pipeline",
+        "model": {
+          "primary": "claude-cli/claude-fable-5-1",
+          "fallbacks": [
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
+          ]
+        },
+        "modelPolicy": {
+          "allow": [
+            "claude-cli/claude-fable-5-1",
+            "claude-cli/claude-opus-5-5",
+            "claude-cli/claude-sonnet-5-5",
+            "antigravity/claude-opus-5-5-high",
+            "antigravity/claude-sonnet-5-5-high"
+          ]
+        },
+        "thinkingDefault": "max",
         "subagents": {
           "allowAgents": [],
           "requireAgentId": true
@@ -839,7 +1341,8 @@
         "enabled": true,
         "config": {
           "command": "/home/ctuk/.local/bin/agy",
-          "project": "749a726c-e771-4b76-a646-3e0171617650"
+          "project": "749a726c-e771-4b76-a646-3e0171617650",
+          "printTimeout": "4h"
         }
       }
     }
@@ -935,6 +1438,11 @@
       },
       "xurl": {
         "enabled": false
+      }
+    },
+    "workshop": {
+      "autonomous": {
+        "mode": "propose"
       }
     }
   },
