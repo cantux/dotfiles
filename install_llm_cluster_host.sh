@@ -7,6 +7,8 @@ CILIUM_CLI_VERSION=v0.20.1
 CILIUM_CLI_SHA256=24e817dcfcc8a12e325ce7547617bcbcf171c5b0b335bb24d2bb1207ba047f61
 HUBBLE_VERSION=v1.20.2
 HUBBLE_SHA256=03f248a50cad11e728bf9383382392c57148fd6a19853ad359fb7598dae29312
+NVIDIA_DEVTOOLS_REPO=https://developer.download.nvidia.com/devtools/repos/rhel10/x86_64
+NVIDIA_DEVTOOLS_KEY_SHA256=f394a740ab2edd700c20773a8b9212b48c2d212abca69b066e26c06e6515dde0
 POOL_DIR=/home/mls-pool
 KERNEL_ARGS="intel_iommu=on iommu=pt"
 TARGET_USER=${SUDO_USER:-$USER}
@@ -32,7 +34,13 @@ sudo restorecon -R "$POOL_DIR"
 
 sudo grubby --update-kernel=ALL --args="$KERNEL_ARGS"
 
-sudo dnf config-manager --add-repo https://developer.download.nvidia.com/devtools/repos/rhel10/x86_64/ || true
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+
+curl -fL -o "$work/nvidia.pub" "$NVIDIA_DEVTOOLS_REPO/nvidia.pub"
+echo "$NVIDIA_DEVTOOLS_KEY_SHA256  $work/nvidia.pub" | sha256sum -c -
+sudo rpm --import "$work/nvidia.pub"
+sudo dnf config-manager --add-repo "$NVIDIA_DEVTOOLS_REPO/" || true
 sudo dnf install -y nsight-systems-cli
 
 if command -v kubeadm >/dev/null; then
@@ -40,8 +48,6 @@ if command -v kubeadm >/dev/null; then
 fi
 sudo systemctl disable --now kubelet || true
 
-work=$(mktemp -d)
-trap 'rm -rf "$work"' EXIT
 mkdir -p "$BIN_DIR"
 curl -fL -o "$work/kubectl" "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl"
 echo "$KUBECTL_SHA256  $work/kubectl" | sha256sum -c -
@@ -59,4 +65,4 @@ echo "cilium:  $("$BIN_DIR/cilium" version --client 2>/dev/null | head -1)"
 echo "hubble:  $("$BIN_DIR/hubble" version)"
 echo "nsys:    $(nsys --version)"
 echo "Kernel args now: $(sudo grubby --info=DEFAULT | grep ^args)"
-echo "Next: log out and back in (libvirt group), then reboot (IOMMU)."
+echo "Next: reboot. It applies the IOMMU kernel arguments, and the login after it applies the libvirt group."

@@ -14,6 +14,8 @@ alias tka="tmux kill-server"             # kill all sessions
 # Attach to last session, or start one if none exist.
 tt() { tmux attach || tmux new -s main; }
 
+claude() { command claude --effort max "$@"; }
+
 # Run Claude with max effort on the latest Opus model.
 alias cmax="claude --model opus --effort max"
 
