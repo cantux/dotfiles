@@ -231,6 +231,251 @@ workflow described in Andrii Nakryiko, "BPF Portability and CO-RE"
   the only persistent route to `max`. The effect on a new session is read from
   the code and not yet observed.
 
+## 2026-11-06 — OpenClaw role files under dotfiles
+
+### Primary sources (checked on this box)
+
+- `~/.npm-global/lib/node_modules/openclaw/docs/concepts/agent-workspace.md`
+  (OpenClaw 2026.10.4): lines 70–83 list the standard workspace files; line 77,
+  `SOUL.md` is loaded every session; line 83, `IDENTITY.md` is created or
+  updated during the bootstrap ritual; line 46, `openclaw onboard`,
+  `configure` and `setup` create the workspace and seed the bootstrap files
+  when missing; lines 52–55, `agents.defaults.skipBootstrap: true` is the
+  setting for workspace files managed elsewhere; line 68, the Control UI edits
+  these files in place.
+- `.../docs/concepts/soul.md`, lines 38–41: the documented workflow lets the
+  agent rewrite its own `SOUL.md`. A live edit can therefore precede a sync;
+  the `import` and `diff` modes exist for that case.
+- `.../docs/cli/agents.md`, lines 58–62: `openclaw agents add` creates the
+  workspace; hence `import` once after an agent is created.
+- `~/.openclaw/openclaw.json`, `agents.entries.*.workspace`: 35 entries under
+  `~/.openclaw/workspaces/<id>`; `main` alone uses `~/.openclaw/workspace`, a
+  git repository of its own, left untracked.
+- `sync.sh`, the `items` loop: `cp` for files, `rsync -a --delete` for
+  directories, always to the same relative path under `$HOME`. The repository
+  path `openclaw/workspaces` is not the live path, so the role files need their
+  own script, as `bin/sync-openclaw-baseline` already does for `AGENTS.md`.
+
+### Prior art the mechanism follows
+
+- The repository's own rule (`README.md`, "Quick start"): the repository copy
+  is the source and `sync.sh` overwrites `$HOME`. The role files follow it;
+  `openclaw.json` stays the documented exception (`openclaw/NOTES.md`, "Sync
+  direction").
+- Terraform's `import`: a resource that exists outside the source of truth is
+  brought under management by copying its state in once, after which the
+  source governs (HashiCorp, "Import existing resources",
+  developer.hashicorp.com/terraform/cli/import; not retrieved in this
+  session). The `import` mode is the same step for a workspace the CLI created.
+- Showing the change before applying it: `rsync --dry-run` and `git diff`
+  before `git checkout`. The `diff` mode shows what `apply` would overwrite.
+
+### Method
+
+1. Inventory with `find` over `~/.openclaw/workspaces`: 35 directories; 35
+   each of `AGENTS.md`, `IDENTITY.md`, `SOUL.md`, `USER.md`; 10 `DREAMS.md`;
+   22 `memory/`; four run artifacts of 2026-10-16 and 17.
+2. The secret regex of `bin/snapshot-openclaw` over every `SOUL.md` and
+   `IDENTITY.md`: no match.
+3. `bin/sync-openclaw-workspaces import`, then `diff` (identical), then
+   `apply` (0 of 70 written), then `cmp` per file.
+
+## 2026-11-06 — OpenClaw second pipeline
+
+### Primary sources (checked on this box)
+
+- `~/.npm-global/lib/node_modules/openclaw/docs/cli/agent.md` (OpenClaw 2026.10.4):
+  "Other agent entry points keep their existing rule that a user-selected
+  model disables configured fallbacks"; the basis of the manager rule to spawn
+  without a model parameter (ISSUES.md, fix 4). The same page gives
+  `--session-key agent:<id>:<key>` and `--timeout`, used by the driver script
+  and the smoke test.
+- `~/.openclaw/openclaw.json`, `agents.entries.pipeline_manager`: the
+  `subagents.allowAgents` list, `requireAgentId` and `delegationMode: prefer`,
+  copied into the second manager's entry with the `_v2` identifiers.
+- The configuration write log of this session: write times 41, 55, 97, 128
+  and 161 s for the five accepted entries, eleven refusals naming only
+  `antigravity/` references, `openclaw models list` timing out, and the same
+  eleven entries accepted in 194 s after `openclaw gateway restart`. The
+  refusal came from the gateway's state, not from the entries.
+- `~/.openclaw/workspaces/pipeline_manager_v2/` after the smoke test: a
+  `USER.md` appeared that the sync did not write, so OpenClaw seeds missing
+  bootstrap files at a session's start (`docs/concepts/agent-workspace.md`,
+  lines 46 and 52–55, describe the seeding and `skipBootstrap`).
+
+### Prior art the mechanism follows
+
+- Running the new version beside the old under new identifiers, with the old
+  untouched until the new one is trusted: blue-green deployment (Martin
+  Fowler, "BlueGreenDeployment", martinfowler.com/bliki; not retrieved in this
+  session).
+- One table and templates generating every role file and configuration entry:
+  the deleted `regen_souls.py` and `setup_agents.py` of the first pipeline
+  (`openclaw/NOTES.md` of 2026-10-18 named them); the generator now lives with
+  the files it produces.
+
+### Method
+
+1. `diff` of each role's family variants after normalising the family name:
+   identical, so one template per role suffices.
+2. The generator was run, its output checked for leftover placeholders, and
+   the configuration entries compared field by field with the live file after
+   the writes (16 of 16 equal).
+3. One identity probe through `openclaw agent` as the smoke test; no pipeline
+   phase was run.
+
+## 2026-11-10 — OpenClaw gateway on demand
+
+### Sources
+
+- Measurement: PSS from `/proc/<pid>/smaps_rollup` (Linux kernel
+  documentation, "The /proc Filesystem", docs.kernel.org/filesystems/proc.html);
+  peak from the cgroup file `memory.peak` ("Control Group v2",
+  docs.kernel.org/admin-guide/cgroup-v2.html).
+- OpenClaw 2026.10.4, under `~/.npm-global/lib/node_modules/openclaw/`:
+  - `dist/service-C5e3lih7.mjs:479`: the Linux adapter sets
+    `isLoaded: isSystemdServiceEnabled`.
+  - `dist/lifecycle-core-DKTT_dMI.mjs:400` (`runServiceStop`) and `:515`
+    (`runServiceRestart`): the branches for a service that is not loaded;
+    without a recovery handler, restart ends in `failServiceNotLoaded`.
+  - `dist/systemd-Ch3siJBj.mjs:370-375`: install runs `daemon-reload`,
+    `enable` and `restart`; only `preserveAutoStart` skips `enable`.
+  - `docs/cli/gateway/service.md:206` and `:227`: `gateway stop --disable`
+    acts on launchd only.
+- systemd.service(5), `Restart=`: systemd does not restart a service that it
+  stopped on request. systemctl(1): `disable --now`, `try-restart`.
+  loginctl(1): `enable-linger`.
+
+### Prior art
+
+- A unit installed but not enabled, started by hand: the systemd split between
+  `enable` (start at boot or login) and `start` (start now), systemctl(1).
+- Start on the first connection, stop when idle: inetd, systemd socket
+  activation, and `systemd-socket-proxyd --exit-idle-time=`
+  (systemd-socket-proxyd(8)). Not adopted: it adds a proxy in front of the
+  gateway port, while OpenClaw sessions already begin and end by decision.
+
+### Method
+
+1. Located the unit, its enablement link, linger, and every reference to the
+   gateway in the dotfiles, the Claude configuration and the crontab: only the
+   `default.target.wants` link started it.
+2. Read OpenClaw's lifecycle code to learn how `gateway start|stop|restart|install`
+   treat a disabled unit.
+3. A guard checked for client connections and agent processes; then
+   `systemctl --user disable --now`; then enablement, activity, port, reverse
+   dependencies, processes and MemAvailable.
+
+## 2026-11-10 — sync.sh enforces the gateway's autostart policy
+
+### Sources
+
+- systemctl(1), `disable`: removes the symlinks that `enable` created. Run 2
+  of the test shows that a second call succeeds without a change.
+- `bin/sync-openclaw-baseline`, lines 12-28: rewrites every workspace
+  `AGENTS.md` unconditionally, so the dry run reproduces its output in a
+  scratch file and compares instead of running it.
+
+### Prior art
+
+- Convergent configuration: each run asserts the desired state and changes
+  only what deviates. Mark Burgess, "A Site Configuration Engine", Computing
+  Systems 8(2), 1995 (CFEngine); Ansible's `ansible.builtin.systemd_service`
+  module with `enabled: false` (docs.ansible.com). Not retrieved in this
+  session.
+- The dry run follows `rsync --dry-run --itemize-changes` (rsync(1)) and the
+  `diff` mode of `bin/sync-openclaw-workspaces`.
+
+### Method
+
+1. Dry run: `cmp` for each file item and for the three prompt copies;
+   `rsync -a --delete -n -i -c` with the excludes of `sync.sh` for each
+   directory item; `bin/sync-openclaw-workspaces diff`; the baseline
+   simulation with the repository's `.claude/CLAUDE.md` as source; a
+   parsed-JSON comparison of the differing `settings.json`.
+2. Test: `systemctl --user enable` (without `--now`), then the step cut from
+   `sync.sh`, twice, under `set -euo pipefail`.
+
+## 2026-11-11 — Claude Code effort: `--effort` as a default that `/effort` can change
+
+### Primary sources (checked on this box)
+
+- `~/.local/share/claude/versions/2.1.322` (341 914 128 bytes), byte offsets
+  found with `grep -a -b -o`, context read with `tail -c +N | head -c M`:
+  - 283980485: `effortLevel:()=>B(["low","medium","high","xhigh"]).optional().catch(void 0)`,
+    unchanged since 2.1.309; `maxEffortLevel` is a cap, not a default.
+  - 287946928: `LNe`, the levels that the settings can hold (`low`, `medium`,
+    `high`, `xhigh`).
+  - 287947159: `Hw()` reads `CLAUDE_CODE_EFFORT_LEVEL`; `unset` and `auto`
+    yield `null`; the parser `W4` returns no value for the empty string.
+  - 287951849: `ry()`, the resolution order
+    `v=c??(c===null?m:void 0)??r??n??m` with `c` the variable, `r` the agent
+    or turn effort, `n` the session level and `m` the model default; a hook
+    value returns before this line.
+  - 287953373: `kFt(e)` builds `{sessionEffort:Be(hEo(e)),settingsEffortTable:RZe()}`;
+    304539662: the initial state takes `...kFt(r.effort)` from the
+    command-line option.
+  - 308268531: the `/effort` handler. When `Hw()` yields a level that differs
+    from the request it answers "CLAUDE_CODE_EFFORT_LEVEL=… overrides this
+    session — clear it and … takes over"; otherwise "Set effort level to …"
+    with "(saved as your default for new sessions)" or "(this session only)".
+  - 308277697: the non-interactive `/effort`: `current` and `status` report
+    the level; the argument that permits saving is `!isNonInteractiveSession`.
+  - 301957424: `subagentEffort:Jy(n,p,a.effort??…)`; 318551816: "omit to
+    inherit the session effort".
+  - 288477212: `applyConfigEnvironmentVariables` assigns the `env` map of each
+    settings source to `process.env`; the observation of 2026-11-11 (a removed
+    key stays, a changed value arrives within 3 s) agrees with it.
+- `claude --help` (2.1.322): `--effort <level>  Effort level for the current
+  session (low, medium, high, xhigh, max)`. An unknown value prints a warning
+  and the session uses the default.
+- bash(1) on this box, builtin `command`: "Run command with args suppressing
+  the normal shell function lookup." Section ALIASES: "Aliases are expanded
+  when a function definition is read, not when the function is executed,
+  because a function definition is itself a command." A test confirms it: a
+  function defined before an alias of the name it calls runs the later
+  function of that name; a function defined after the alias runs the alias.
+
+### Prior art
+
+- `bin/gemini` in this repository appends `--effort max` when the caller
+  passed none.
+- `/etc/profile.d/colorls.sh`, line 53, on this box:
+  `alias ls='ls --color=auto'`. The distribution supplies a default option
+  through the shell, and an explicit option on the command line still wins.
+
+### Method
+
+1. Probes: `env -i HOME=… USER=… LOGNAME=… PATH=/usr/local/bin:/usr/bin:/bin
+   TERM=… LANG=… XDG_RUNTIME_DIR=… timeout 150 bash -ic 'claude -p "/effort
+   status"'`, and the same with `/effort xhigh`, `--effort low` and
+   `command claude`. `md5sum ~/.claude/settings.json` before and after.
+2. Running session: `env | grep CLAUDE_CODE_EFFORT_LEVEL` and
+   `CLAUDE_EFFORT` in the session's tool shell after each sync;
+   `/proc/<pid>/environ` for the start environment.
+
+## 2026-11-11 — clangd: C files get `-std=gnu11`
+
+### Sources
+
+- clangd configuration reference, https://clangd.llvm.org/config (retrieved
+  2026-11-11): "Each file can contain multiple fragments separated by ---
+  lines"; "PathMatch: The file being processed must fully match a regular
+  expression"; "PathExclude: The file being processed must not fully match a
+  regular expression"; "Changes should take effect immediately as you
+  continue to edit code."
+- `clangd --check=<file>` (clangd 22.1.8) prints the compile command and the
+  errors of one file under the user configuration; `XDG_CONFIG_HOME` selects
+  the directory that holds `clangd/config.yaml`.
+
+### Method
+
+1. Candidate configuration under a scratch `XDG_CONFIG_HOME`; `clangd
+   --check` on `linked_list.c`, `uniq_linked_list.cpp` and a header that
+   includes `<span>`, under the live and the candidate configuration.
+2. After `./sync.sh`: `clangd --check` on the six sources of
+   `~/Projects/epi/cxx/linked_list/bootcamp`.
+
 ## 2026-11-25 — check targets in the C++ Makefile template
 
 ### Primary sources
@@ -271,3 +516,11 @@ workflow described in Andrii Nakryiko, "BPF Portability and CO-RE"
 
 - Indent-width classification of every tracked file except Markdown, logs and evidence captures: a file counts as 4-space when it has lines at width 4 and none at a width of 2 modulo 4.
 - Equivalence checks: `git config --file <file> --list` before and after the edit; the Containerfile with continuation lines joined and spaces squeezed, before and after the edit.
+
+## 2026-11-26 — Consolidation of system drift and uncommitted work
+
+### Method
+
+- Drift: for each path of `sync.sh`, `cmp` (files) or `diff -rq` with the excludes of `sync.sh` (directories) between the repository and `$HOME`; `cmp` for `.codex/AGENTS.md`, `.gemini/config/rules/GEMINI.md` and `~/AGENTS.md` against their sources.
+- Placement: `git diff --quiet centos centos_xps_9700 -- <file>` for each modified file; a parent directory present on `centos` for each new path.
+- Credentials: a pattern scan for keys, tokens, secrets, passwords, bearer values, `sk-`, `ghp_`, `xox?-`, `AKIA` and private-key blocks over every committed file, and a walk of `openclaw/openclaw.json` for keys named like credentials.
