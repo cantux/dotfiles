@@ -345,3 +345,12 @@ A scratchpad test bed held one directory per defect class; GCC 14.4.1, Clang 23.
 
 1. `.vim/templates/Makefile`: `CXXFLAGS` gains `-D_GLIBCXX_ASSERTIONS`; the binaries also depend on `$(HDRS)`; new variant binaries `main.asan` (ASan with UBSan and `-fno-sanitize-recover=all`) and `main.tsan`; new targets `asan`, `tsan`, `valgrind`, `helgrind`, `format-check`, `warnings` (`WARN_LEVEL` 1 to 3), `clang-tidy` (`TIDY_CHECKS`), `cppcheck`, `cpplint`, and `check`, which runs `format-check warnings clang-tidy cppcheck cpplint test asan tsan valgrind`.
 2. Merged `centos` into `centos_xps_9700` (`15be722`) with `git merge-tree --write-tree` and `git commit-tree`, because a porcelain merge refuses to change `WORKLOG.md` and `EVIDENCE_INSPIRATION_REFERENCE.md` while they carry uncommitted edits. The script overwrote only files without local edits and appended the new text to the two edited files. Each edited file now equals its pre-merge working copy followed by the appended text, the remainder reproduces the pre-merge diff line for line, and `git status` is unchanged.
+3. Deployed `.vim` with the `rsync` command and excludes that `sync.sh` uses for that item; the dry run listed only `templates/Makefile`. Skipped the full `sync.sh`, because the deployed `~/.claude/settings.json` (`model`, `modelSettings.claude-opus-5-5.effortLevel`) and `~/.codex/config.toml` (`model`, trusted projects) hold runtime edits newer than the repo copies. `~/.vim/templates/Makefile` equals the repo template, and the deployed template passes `test`, `asan` and `clang-tidy` in a fresh directory.
+
+### Consequences
+
+1. `make check` runs `format-check`, `warnings` (level 1), `clang-tidy`, `cppcheck`, `cpplint`, `test`, `asan`, `tsan` and `valgrind`, and stops at the first failure; `make -k check` reports every failure.
+2. The clang-tidy check list exists in three copies: `.config/clangd/config.yaml`, the tidy command in `.claude/CLAUDE.md`, and `TIDY_CHECKS` in the template, which adds `clang-analyzer-*` and `misc-include-cleaner`.
+3. `format-check` fails on the gtest skeleton `.vim/templates/gtest.cpp`, which uses 4-space indentation, until vim formats the buffer on save.
+4. cpplint requires header guards derived from the path relative to the repository root.
+5. The runtime edits in `~/.claude/settings.json` and `~/.codex/config.toml` remain outside the repo; the next full `sync.sh` reverts them unless the repo copies take them over first.
