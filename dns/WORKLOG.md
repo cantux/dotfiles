@@ -278,3 +278,10 @@ Root: `/home/ctuk/Projects/dotfiles/dns`.
     6, 7, and 12), `README.md`, `MAP.md`, and evidence item 52. 35 local links
     resolve; all `INSTR.md` shell blocks pass `bash -n`. Unit 12 complete;
     unit 13 awaits the user's `sync.sh --dns`.
+43. 2026-11-25, 21:30 PST: the user ran `sync.sh --dns` from a host terminal.
+    Its output verified TLS 1.3 to `1.1.1.1:853`, source-mark validation, and a
+    system resolver lookup. Afterwards `sync.sh --dns --check` exited 0; the
+    installed file matched its source (mode 644, label `system_conf_t`); the
+    running `src_valid_mark` was 1. The active network was "Blues Junior";
+    no VPN profile was active; the boot dated from 2026-11-21, so boot-time
+    application remains unobserved. Unit 13 complete.

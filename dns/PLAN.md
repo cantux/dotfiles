@@ -126,8 +126,10 @@ Goal: make `net.ipv4.conf.all.src_valid_mark = 1` persistent through
     tests for loading, verification, failure rollback, and version-1 undo.
     Result: 22 of 22 tests pass; `sync.sh --dns --check` reports the missing
     file until application.
-13. State: open. The user applies `~/Projects/dotfiles/sync.sh --dns` from a
-    host terminal. Check: `sync.sh --dns --check` passes; the installed file
+13. State: complete. The user applies `~/Projects/dotfiles/sync.sh --dns` from
+    a host terminal. Check: `sync.sh --dns --check` passes; the installed file
     matches its source; the running value is 1.
+    Result: all three conditions hold. Application at boot follows from
+    sysctl.d(5); no reboot has occurred since installation.
 
 Only the primary session updates this plan, updates `WORKLOG.md`, and commits.
