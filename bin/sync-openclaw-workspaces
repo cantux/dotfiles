@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_WS="$REPO/openclaw/workspaces"
+LIVE_WS="$HOME/.openclaw/workspaces"
+FILES=(SOUL.md IDENTITY.md)
+MODE="${1:-apply}"
+
+copy_role_files() {
+  local from="$1" to="$2" label="$3"
+  local changed=0 total=0 ws name file src dst
+  [[ -d "$from" ]] || { echo "sync-openclaw-workspaces: no $from, nothing to copy"; return 0; }
+  for ws in "$from"/*/; do
+    name="$(basename "$ws")"
+    for file in "${FILES[@]}"; do
+      src="$ws$file"
+      [[ -f "$src" ]] || continue
+      dst="$to/$name/$file"
+      total=$((total + 1))
+      if [[ -f "$dst" ]] && cmp -s "$src" "$dst"; then
+        continue
+      fi
+      mkdir -p "$to/$name"
+      cp "$src" "$dst"
+      echo "  $label $name/$file"
+      changed=$((changed + 1))
+    done
+  done
+  echo "sync-openclaw-workspaces: $label $changed of $total role files ($from -> $to)"
+}
+
+report_differences() {
+  local status=0 ws name file
+  [[ -d "$REPO_WS" ]] || { echo "sync-openclaw-workspaces: missing $REPO_WS" >&2; return 1; }
+  [[ -d "$LIVE_WS" ]] || { echo "sync-openclaw-workspaces: missing $LIVE_WS" >&2; return 1; }
+  for ws in "$REPO_WS"/*/; do
+    name="$(basename "$ws")"
+    for file in "${FILES[@]}"; do
+      [[ -f "$ws$file" ]] || continue
+      diff -u "$ws$file" "$LIVE_WS/$name/$file" || status=1
+    done
+  done
+  for ws in "$LIVE_WS"/*/; do
+    name="$(basename "$ws")"
+    [[ -d "$REPO_WS/$name" ]] || { echo "untracked live workspace: $name"; status=1; }
+  done
+  if [[ "$status" -eq 0 ]]; then
+    echo "sync-openclaw-workspaces: repository and live role files are identical"
+  fi
+  return "$status"
+}
+
+case "$MODE" in
+  apply) copy_role_files "$REPO_WS" "$LIVE_WS" "wrote" ;;
+  import) copy_role_files "$LIVE_WS" "$REPO_WS" "imported" ;;
+  diff) report_differences ;;
+  *) echo "usage: sync-openclaw-workspaces [apply|import|diff]" >&2; exit 2 ;;
+esac

@@ -22,6 +22,8 @@ items=(
   .config/kitty/kitty.conf
   bin/gemini
   bin/sync-openclaw-baseline
+  bin/sync-openclaw-workspaces
+  .config/systemd/user/openclaw-gateway.service.d/override.conf
   .codex/config.toml
   .config/autostart/easyeffects-service.desktop
   .var/app/com.github.wwmm.easyeffects/data/easyeffects/output
@@ -70,7 +72,12 @@ done
 cp "$REPO/CLAUDE.md" "$HOME/AGENTS.md"
 echo "  synced AGENTS.md (copy of CLAUDE.md)"
 
-if [[ -d "$HOME/.openclaw/workspaces" ]]; then
+if [[ -d "$HOME/.openclaw" ]]; then
+  "$REPO/bin/sync-openclaw-workspaces"
   "$REPO/bin/sync-openclaw-baseline"
+  if [[ -f "$HOME/.config/systemd/user/openclaw-gateway.service" ]]; then
+    systemctl --user disable openclaw-gateway.service
+    echo "  disabled autostart of openclaw-gateway.service (on demand: openclaw/NOTES.md)"
+  fi
 fi
 echo "Done. Open a new shell or 'source ~/.bashrc' to pick up changes."
