@@ -15,5 +15,5 @@ edits newer than the repo copies.
 | # | Unit | Check that shows it done | State |
 |---|---|---|---|
 | 1 | Template targets, committed on `centos` | Scratchpad test bed: every defect class fails its target; the formatted gtest skeleton and the split layout pass `make check` | done |
-| 2 | Merge `centos` into `centos_xps_9700` | `git diff --cached` is empty; `git status` lists the same uncommitted paths and added lines as before the merge | open |
+| 2 | Merge `centos` into `centos_xps_9700` | `git diff --cached` is empty; `git status` lists the same uncommitted paths and added lines as before the merge | done |
 | 3 | Deploy `.vim` with the rsync that `sync.sh` runs for that item | The dry run lists only `templates/Makefile`; `cmp` of the repo template and `~/.vim/templates/Makefile` succeeds | open |
