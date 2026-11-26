@@ -98,6 +98,12 @@ to `~/windows_partition`, space for large files beyond `/home`. Install once
 with `./windows_partition/install.sh` (needs `sudo`); see
 `windows_partition/README.md`.
 
+## Heroic Games Launcher
+
+Runs as the Flathub Flatpak `com.heroicgameslauncher.hgl` in user scope;
+CentOS Stream 10 has no 32-bit packages, which the AppImage needs from the
+host for 32-bit games. See `heroic/README.md`.
+
 ## What's tracked
 
 `sync.sh` copies: `.bashrc`, `.bash_aliases`, `.tmux.conf`, `.gitconfig`,
