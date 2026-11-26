@@ -257,3 +257,17 @@ workflow described in Andrii Nakryiko, "BPF Portability and CO-RE"
 
 - One scratchpad directory per defect class, run through each target, with the exit status as the verdict.
 - A minimal Language Server Protocol client sent `initialize` and `textDocument/didOpen` to clangd and printed the published diagnostics, because `clangd --check` prints no clang-tidy findings.
+
+## 2026-11-25 — 2-space indentation in templates, generators and configuration
+
+### Primary sources (checked in the installed copies)
+
+- `man git-config`: "The syntax is fairly flexible and permissive. Whitespace characters, which in this context are the space character (SP) and the horizontal tabulation (HT), are mostly ignored."
+- `python3 -m json.tool --help`: "--indent INDENT  separate items with newlines and use this number of spaces for indentation".
+- `clang-format --style=Google --dump-config`: `IndentWidth: 2`; `AllowShortFunctionsOnASingleLine` with `Empty`, `Inline` and `Other` set to `true`.
+- `.config/yapf/style`: `indent_width = 2`.
+
+### Method
+
+- Indent-width classification of every tracked file except Markdown, logs and evidence captures: a file counts as 4-space when it has lines at width 4 and none at a width of 2 modulo 4.
+- Equivalence checks: `git config --file <file> --list` before and after the edit; the Containerfile with continuation lines joined and spaces squeezed, before and after the edit.

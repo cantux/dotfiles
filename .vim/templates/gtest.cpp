@@ -11,14 +11,12 @@ int add(int a, int b) { return a + b; }
 
 // TEST(Suite, Name) -- one named case. EXPECT_* is non-fatal (keeps going).
 TEST(AddTest, Basics) {
-    EXPECT_EQ(add(2, 3), 5);
-    EXPECT_EQ(add(-1, 1), 0);
+  EXPECT_EQ(add(2, 3), 5);
+  EXPECT_EQ(add(-1, 1), 0);
 }
 
 // ASSERT_* is fatal: stops THIS test on failure (not the whole run).
-TEST(AddTest, Negatives) {
-    ASSERT_EQ(add(-2, -3), -5);
-}
+TEST(AddTest, Negatives) { ASSERT_EQ(add(-2, -3), -5); }
 
 // Common checks:
 //   EXPECT_EQ / NE / LT / LE / GT / GE        compare two values

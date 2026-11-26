@@ -354,3 +354,20 @@ A scratchpad test bed held one directory per defect class; GCC 14.4.1, Clang 23.
 3. `format-check` fails on the gtest skeleton `.vim/templates/gtest.cpp`, which uses 4-space indentation, until vim formats the buffer on save.
 4. cpplint requires header guards derived from the path relative to the repository root.
 5. The runtime edits in `~/.claude/settings.json` and `~/.codex/config.toml` remain outside the repo; the next full `sync.sh` reverts them unless the repo copies take them over first.
+
+## 2026-11-25 — 2-space indentation in templates, generators and configuration
+
+### Need
+
+The author wants every indentation to use 2 spaces; the gtest skeleton failed `make format-check` because of its 4-space indentation.
+
+### Evidence
+
+1. A scan classified every tracked file by its indent widths: a width of 2 modulo 4 marks 2-space indentation, while nested 2-space code also reaches width 4. Five files used 4-space indentation only: `.vim/templates/gtest.cpp`, `.gitconfig`, `containers/Containerfile.agy-dev`, and two EasyEffects presets under `.var/app/com.github.wwmm.easyeffects/`.
+2. Two generators in `.vimrc` emit 4-space text: `py_template`, which Ctrl-T inserts, and `:FormatJson`, because `python3 -m json.tool` indents by 4 by default.
+3. vim already indents by 2 (`expandtab`, `tabstop=2`, `softtabstop=2`, `shiftwidth=2`), and `.config/yapf/style` sets `indent_width = 2`.
+4. clang-format in the Google style also joins the one-statement `TEST(AddTest, Negatives)` onto one line (`AllowShortFunctionsOnASingleLine`), the layout that vim's format-on-save produces from the skeleton.
+
+### Implementation
+
+1. `.vim/templates/gtest.cpp` takes the output of `clang-format --style=file`; `py_template` in `.vimrc` indents by 2; `:FormatJson` passes `--indent 2`; `.gitconfig`, including the tab under `[user]`, and the Containerfile indent by 2. Checks: `clang-format --dry-run --Werror` accepts `gtest.cpp`, and `make check` passes on the unmodified skeleton; the evaluated `py_template` has indent width 2 and runs; `:FormatJson` writes widths 2, 4 and 6 for three levels; `git config --list` of `.gitconfig` (17 entries) and the joined Containerfile instructions are unchanged. The two EasyEffects presets remain unchanged: they are EasyEffects data files, not authored text.

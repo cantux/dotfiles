@@ -236,18 +236,18 @@ let py_template = [
             \"#!/usr/bin/env python",
             \"",
             \"def fnc():",
-            \"    return None",
+            \"  return None",
             \"",
             \"def test():",
-            \"    assert fnc() == None",
+            \"  assert fnc() == None",
             \"",
             \"if __name__ == \"__main__\":",
-            \"    test()",
+            \"  test()",
             \""
             \]
 inoremap <C-T> <C-o>:set paste<CR><C-o>:call append(line('$'), py_template)<CR><C-o>:set nopaste<CR>
 
-command FormatJson %!python3 -m json.tool
+command FormatJson %!python3 -m json.tool --indent 2
 
 "----------------------------------------------------------------------------------------------------------------------"
 " Autocommands
