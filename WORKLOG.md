@@ -371,3 +371,11 @@ The author wants every indentation to use 2 spaces; the gtest skeleton failed `m
 ### Implementation
 
 1. `.vim/templates/gtest.cpp` takes the output of `clang-format --style=file`; `py_template` in `.vimrc` indents by 2; `:FormatJson` passes `--indent 2`; `.gitconfig`, including the tab under `[user]`, and the Containerfile indent by 2. Checks: `clang-format --dry-run --Werror` accepts `gtest.cpp`, and `make check` passes on the unmodified skeleton; the evaluated `py_template` has indent width 2 and runs; `:FormatJson` writes widths 2, 4 and 6 for three levels; `git config --list` of `.gitconfig` (17 entries) and the joined Containerfile instructions are unchanged. The two EasyEffects presets remain unchanged: they are EasyEffects data files, not authored text.
+2. Merged `centos` into `centos_xps_9700` (`918cdbd`) with the script of the previous entry, which leaves the uncommitted edits of the working tree in place: `git status` and the uncommitted diff are byte-identical before and after the merge.
+3. Deployed `.vim` with the `rsync` command of `sync.sh`, whose dry run listed only `templates/gtest.cpp`, and copied `.vimrc` and `.gitconfig` as `sync.sh` does, after confirming that the deployed copies equalled the pre-change repo versions. The deployed files equal the repo; git reads the deployed `.gitconfig`, and vim with the deployed `.vimrc` defines the 2-space `py_template`. Skipped the full `sync.sh` for the reason that the previous entry records.
+
+### Consequences
+
+1. A skeleton that `,ut` inserts passes `make format-check` without a reformat.
+2. Ctrl-T inserts a 2-space Python skeleton, and `:FormatJson` writes 2-space JSON.
+3. The two EasyEffects presets keep their 4-space indentation.
