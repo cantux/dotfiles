@@ -321,3 +321,26 @@ The author wants every model to work at its maximum reasoning effort by default.
 2. The binary treats claude-3-*, claude-opus-4-0, claude-opus-4-1, claude-sonnet-4-0, claude-sonnet-4-5 and claude-haiku-4-5 as models without an effort setting; they ignore the variable.
 3. Every Claude Code session of this account, among them the persistent session of `claude-slack-cli`, now runs at `max`.
 4. The effect on a new session is read from the code, not observed. `/effort status` in a new session shows it.
+
+## 2026-11-25 — vim: check targets in the C++ Makefile template
+
+### Need
+
+The author wants the C++ Makefile template (`,mk`) to run AddressSanitizer, ThreadSanitizer, several warning levels and clang-tidy, plus the further checks that the installed toolchain supports.
+
+### Evidence
+
+A scratchpad test bed held one directory per defect class; GCC 14.4.1, Clang 23.1.3, cppcheck 2.18.2, Valgrind 3.28.0 and gtest 1.14 ran it.
+
+1. Each defect class fails exactly the targets meant to detect it: a heap overflow fails `asan` and `valgrind`; a leak fails `asan` (LeakSanitizer) and `valgrind`; a signed overflow fails `asan` (UndefinedBehaviorSanitizer); `v[i]` with `size() <= i < capacity()` fails every build through `_GLIBCXX_ASSERTIONS`, while ASan alone stays silent; a data race fails `tsan` and `helgrind`; an uninitialized heap read fails only `valgrind`; a leak on a path that no test executes fails only `clang-tidy` (`clang-analyzer-cplusplus.NewDeleteLeaks`) and `cppcheck` (`memleak`). The formatted gtest skeleton and a `solution.h`/`solution.cpp`/`solution_test.cpp` layout pass `make check`.
+2. GCC reports `-Wmaybe-uninitialized` for a loop-assigned variable only at `-O2`, not under `-fsyntax-only` or `-O0`; `warnings` therefore compiles at `-O2` and links to `/dev/null`.
+3. Clang rejects `-Wduplicated-cond`, `-Wduplicated-branches`, `-Wlogical-op` and `-Wuseless-cast` under `-Werror`; the warning levels omit them, so `CXX=clang++` works at every level.
+4. GCC 14 and Clang 23 both refuse `-fsanitize=address,thread`; the template builds `main.asan` and `main.tsan` as separate binaries.
+5. GCC 14.4 leaves `_GLIBCXX_ASSERTIONS` undefined at `-O0`; `rpm --eval '%{optflags}'` shows that RHEL defines it for every package.
+6. clang-tidy 23 without a `.clang-tidy` file enables only `clang-diagnostic-*`. `TIDY_CHECKS` carries the clangd set of `.config/clangd/config.yaml` plus `clang-analyzer-*` and `misc-include-cleaner`: 371 checks. A Language Server Protocol probe showed that clangd 23.1.3 publishes no `clang-analyzer-*` and no `misc-include-cleaner` finding, so the template target is the only place where those checks run.
+7. The Clang Static Analyzer analyzes a function only inside the gtest `TEST` that inlines it: `-analyzer-display-progress` lists the test body as the only entry point. With the solution in its own translation unit, the analyzer reports the leak.
+8. DRD skips stack variables by default (`--check-stack-var=no`) and missed the race on a stack counter; Helgrind reported it. The template carries Helgrind.
+
+### Implementation
+
+1. `.vim/templates/Makefile`: `CXXFLAGS` gains `-D_GLIBCXX_ASSERTIONS`; the binaries also depend on `$(HDRS)`; new variant binaries `main.asan` (ASan with UBSan and `-fno-sanitize-recover=all`) and `main.tsan`; new targets `asan`, `tsan`, `valgrind`, `helgrind`, `format-check`, `warnings` (`WARN_LEVEL` 1 to 3), `clang-tidy` (`TIDY_CHECKS`), `cppcheck`, `cpplint`, and `check`, which runs `format-check warnings clang-tidy cppcheck cpplint test asan tsan valgrind`.
